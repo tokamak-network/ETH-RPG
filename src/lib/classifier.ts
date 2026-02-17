@@ -57,10 +57,13 @@ export function classifyTransactions(
     const fromProtocol = getProtocolType(transfer.from);
     const matchedProtocol = toProtocol ?? fromProtocol;
 
-    if (transfer.to !== null) {
+    if (transfer.contractAddress !== null) {
+      uniqueContractSet.add(transfer.contractAddress.toLowerCase());
+    }
+    if (transfer.to !== null && getProtocolType(transfer.to) !== null) {
       uniqueContractSet.add(transfer.to.toLowerCase());
     }
-    if (transfer.from !== null) {
+    if (transfer.from !== null && getProtocolType(transfer.from) !== null) {
       uniqueContractSet.add(transfer.from.toLowerCase());
     }
 

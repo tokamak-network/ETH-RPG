@@ -1,8 +1,7 @@
 // Stats calculation engine for Eth-RPG character generation
 import type { WalletRawData, TxClassification, CharacterStats } from '@/lib/types';
-
-// --- Conversion constants ---
-export const WEI_PER_ETH = 1e18;
+import { getRelevantEvents } from '@/lib/crypto-events';
+import { toBalanceEth, toWalletAgeYears } from '@/lib/conversions';
 
 // --- Level constants ---
 export const LEVEL_LOG_MULTIPLIER = 10;
@@ -28,7 +27,6 @@ export const INT_LOG_MULTIPLIER = 180;
 // --- LUCK constants ---
 export const LUCK_BASE = 50;
 export const LUCK_LOG_MULTIPLIER = 120;
-export const LUCK_UNIQUE_CONTRACT_WEIGHT = 0.1;
 
 // --- Power weight constants ---
 export const POWER_LEVEL_WEIGHT = 1000;
@@ -38,22 +36,8 @@ export const POWER_HP_WEIGHT = 10;
 export const POWER_MP_WEIGHT = 10;
 export const POWER_LUCK_WEIGHT = 20;
 
-// --- Time constants ---
-const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
-}
-
-function toBalanceEth(balance: bigint): number {
-  return Number(balance) / WEI_PER_ETH;
-}
-
-function toWalletAgeYears(firstTxTimestamp: number | null): number {
-  if (firstTxTimestamp === null) {
-    return 0;
-  }
-  return (Date.now() - firstTxTimestamp) / MS_PER_YEAR;
 }
 
 function calculateLevel(txCount: number): number {
@@ -77,8 +61,8 @@ function calculateINT(uniqueContracts: number): number {
   return Math.round(INT_BASE + INT_LOG_MULTIPLIER * Math.log10(1 + uniqueContracts));
 }
 
-function calculateLUCK(uniqueContracts: number, walletAgeYears: number): number {
-  const rareEvents = uniqueContracts * LUCK_UNIQUE_CONTRACT_WEIGHT + walletAgeYears;
+function calculateLUCK(relevantEventCount: number, walletAgeYears: number): number {
+  const rareEvents = relevantEventCount + walletAgeYears;
   return Math.round(LUCK_BASE + LUCK_LOG_MULTIPLIER * Math.log10(1 + rareEvents));
 }
 
@@ -112,7 +96,8 @@ export function calculateStats(
   const mp = calculateMP(raw.gasSpentEth);
   const str = calculateSTR(classification.dexSwapCount, classification.bridgeCount);
   const int = calculateINT(classification.uniqueContracts);
-  const luck = calculateLUCK(classification.uniqueContracts, walletAgeYears);
+  const relevantEventCount = getRelevantEvents(raw.firstTxTimestamp, raw.lastTxTimestamp).length;
+  const luck = calculateLUCK(relevantEventCount, walletAgeYears);
   const power = calculatePower(level, str, int, hp, mp, luck);
 
   return { level, hp, mp, str, int, luck, power };

@@ -18,6 +18,7 @@ export interface AssetTransferItem {
   readonly value: number | null;
   readonly asset: string | null;
   readonly blockTimestamp: string | undefined;
+  readonly contractAddress: string | null;
 }
 
 export interface TxClassification {

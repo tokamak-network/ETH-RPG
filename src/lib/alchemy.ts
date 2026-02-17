@@ -11,8 +11,16 @@ import type {
 
 import type { AssetTransferItem, WalletRawData } from '@/lib/types';
 
-const AVERAGE_GAS_COST_ETH = 0.003 as const;
 const MAX_TRANSFER_COUNT = 1000 as const;
+
+const GAS_COST_BY_CATEGORY: Record<AssetTransferItem['category'], number> = {
+  external: 0.0005,
+  erc20: 0.003,
+  erc721: 0.006,
+  erc1155: 0.005,
+} as const;
+
+const GAS_COST_FALLBACK = 0.002 as const;
 
 const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 const ENS_SUFFIX = '.eth';
@@ -24,16 +32,23 @@ const TRANSFER_CATEGORIES = [
   AssetTransfersCategory.ERC1155,
 ] as const;
 
+let alchemyInstance: Alchemy | null = null;
+
 function getAlchemy(): Alchemy {
+  if (alchemyInstance) {
+    return alchemyInstance;
+  }
+
   const apiKey = process.env.ALCHEMY_API_KEY;
   if (!apiKey) {
     throw new Error('ALCHEMY_API_KEY environment variable is not configured');
   }
 
-  return new Alchemy({
+  alchemyInstance = new Alchemy({
     apiKey,
     network: Network.ETH_MAINNET,
   });
+  return alchemyInstance;
 }
 
 function isValidEthAddress(address: string): boolean {
@@ -84,6 +99,7 @@ function mapTransferToItem(
     value: transfer.value ?? null,
     asset: transfer.asset ?? null,
     blockTimestamp: transfer.metadata.blockTimestamp,
+    contractAddress: transfer.rawContract.address ?? null,
   };
 }
 
@@ -135,6 +151,21 @@ function extractTimestamps(
   };
 }
 
+function estimateGasSpent(
+  fromTransfers: readonly AssetTransferItem[],
+  txCount: number,
+): number {
+  let gasFromTransfers = 0;
+  for (const transfer of fromTransfers) {
+    gasFromTransfers += GAS_COST_BY_CATEGORY[transfer.category];
+  }
+
+  const uncoveredTxCount = Math.max(0, txCount - fromTransfers.length);
+  const gasFromUncovered = uncoveredTxCount * GAS_COST_FALLBACK;
+
+  return gasFromTransfers + gasFromUncovered;
+}
+
 /**
  * Fetches all on-chain data for a given wallet address and returns
  * a structured WalletRawData object.
@@ -153,7 +184,7 @@ export async function fetchWalletData(
   ]);
 
   const allTransfers = [...fromTransfers, ...toTransfers];
-  const gasSpentEth = txCount * AVERAGE_GAS_COST_ETH;
+  const gasSpentEth = estimateGasSpent(fromTransfers, txCount);
   const { firstTxTimestamp, lastTxTimestamp } = extractTimestamps(allTransfers);
 
   const balanceWei = BigInt(balanceResult.toString());
