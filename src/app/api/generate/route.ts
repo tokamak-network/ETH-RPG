@@ -165,6 +165,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(response);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
+    const stack = error instanceof Error ? error.stack : undefined;
+
+    // Log error details server-side
+    console.error('[generate] Error:', message, stack);
 
     // Differentiate between known error types
     if (message.includes('ENS name') || message.includes('Invalid Ethereum')) {
@@ -173,7 +177,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return errorResponse(
       ErrorCode.API_ERROR,
-      '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      process.env.NODE_ENV === 'development'
+        ? `서버 오류: ${message}`
+        : '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
       500,
     );
   }

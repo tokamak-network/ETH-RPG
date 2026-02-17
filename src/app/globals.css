@@ -116,6 +116,51 @@ body {
   animation: loading-pulse 1.5s ease-in-out infinite;
 }
 
+/* Pixel character idle bob */
+@keyframes pixel-idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Pixel character entrance + idle */
+@keyframes pixel-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pixel-character {
+  animation: pixel-appear 0.5s ease-out forwards,
+             pixel-idle 2.5s ease-in-out 0.5s infinite;
+  will-change: transform, opacity;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .pixel-character {
+    animation: none;
+    opacity: 1;
+  }
+
+  .stat-bar-fill {
+    animation: none;
+  }
+
+  .text-gold-shimmer {
+    animation: none;
+  }
+
+  .loading-pulse {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;

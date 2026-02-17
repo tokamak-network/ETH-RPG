@@ -3,6 +3,7 @@
 import type { GenerateResponse } from '@/lib/types';
 import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS } from '@/styles/themes';
 import StatBar from './StatBar';
+import { PixelCharacter } from './pixel-sprites';
 
 interface CharacterCardProps {
   readonly data: GenerateResponse;
@@ -62,9 +63,22 @@ export default function CharacterCard({ data }: CharacterCardProps) {
       </div>
 
       {/* Display name */}
-      <p className="text-center text-sm font-mono text-text-secondary mb-6 truncate">
+      <p className="text-center text-sm font-mono text-text-secondary mb-4 truncate">
         {displayName}
       </p>
+
+      {/* Pixel character sprite */}
+      <div className="flex justify-center mb-5">
+        <div
+          className="rounded-lg p-3"
+          style={{
+            border: `1px solid ${theme.primary}20`,
+            background: `radial-gradient(circle, ${theme.primary}08 0%, transparent 70%)`,
+          }}
+        >
+          <PixelCharacter classId={data.class.id} size={128} />
+        </div>
+      </div>
 
       {/* Stat bars */}
       <div className="flex flex-col gap-2 mb-6">
