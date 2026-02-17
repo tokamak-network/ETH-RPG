@@ -77,6 +77,7 @@ export interface GenerateResponse {
   readonly stats: CharacterStats;
   readonly class: ClassResult;
   readonly lore: string;
+  readonly longLore: string;
   readonly cardImageUrl: string;
   readonly ogImageUrl: string;
   readonly cached: boolean;

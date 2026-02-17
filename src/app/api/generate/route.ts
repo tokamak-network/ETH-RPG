@@ -7,7 +7,7 @@ import { fetchWalletData } from '@/lib/alchemy';
 import { classifyTransactions } from '@/lib/classifier';
 import { calculateStats } from '@/lib/stats';
 import { determineClass } from '@/lib/class';
-import { generateLore } from '@/lib/lore';
+import { generateLore, generateLongLore } from '@/lib/lore';
 import { getCached, setCache } from '@/lib/cache';
 import { checkRateLimit } from '@/lib/rate-limit';
 import {
@@ -143,8 +143,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       activityPattern: describeActivityPattern(classification),
     };
 
-    // 7. Generate lore
-    const lore = await generateLore(loreInput);
+    // 7. Generate lore (short + long in parallel)
+    const [lore, longLore] = await Promise.all([
+      generateLore(loreInput),
+      generateLongLore(loreInput),
+    ]);
 
     // 8. Build response
     const resolvedAddress = rawData.address;
@@ -154,6 +157,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       stats,
       class: characterClass,
       lore,
+      longLore,
       cardImageUrl: `${siteUrl}/api/card/${resolvedAddress}`,
       ogImageUrl: `${siteUrl}/api/og/${resolvedAddress}`,
       cached: false,
