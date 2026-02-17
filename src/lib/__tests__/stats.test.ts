@@ -1,0 +1,492 @@
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import {
+  calculateStats,
+  LEVEL_LOG_MULTIPLIER,
+  LEVEL_MIN,
+  LEVEL_MAX,
+  HP_BASE,
+  HP_LOG_MULTIPLIER,
+  MP_BASE,
+  MP_LOG_MULTIPLIER,
+  STR_BASE,
+  STR_LOG_MULTIPLIER,
+  INT_BASE,
+  INT_LOG_MULTIPLIER,
+  LUCK_BASE,
+  LUCK_LOG_MULTIPLIER,
+  POWER_LEVEL_WEIGHT,
+  POWER_STR_WEIGHT,
+  POWER_INT_WEIGHT,
+  POWER_HP_WEIGHT,
+  POWER_MP_WEIGHT,
+  POWER_LUCK_WEIGHT,
+} from '@/lib/stats';
+import { makeWalletRawData, makeClassification } from './fixtures';
+
+// Mock crypto-events to control relevantEventCount independently
+vi.mock('@/lib/crypto-events', () => ({
+  getRelevantEvents: vi.fn(() => []),
+}));
+
+// Import the mock so we can override return values per test
+import { getRelevantEvents } from '@/lib/crypto-events';
+const mockGetRelevantEvents = vi.mocked(getRelevantEvents);
+
+// Fixed timestamp: 2025-01-01T00:00:00Z
+const FIXED_NOW = new Date('2025-01-01T00:00:00Z').getTime();
+const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  mockGetRelevantEvents.mockReturnValue([]);
+});
+
+// ---------------------------------------------------------------------------
+// 1. Level calculation
+// ---------------------------------------------------------------------------
+describe('Level calculation', () => {
+  it('returns level=1 when txCount=0', () => {
+    const raw = makeWalletRawData({ txCount: 0 });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // 1 + floor(10 * log10(1)) = 1 + 0 = 1
+    expect(stats.level).toBe(1);
+  });
+
+  it('returns level=11 when txCount=9', () => {
+    const raw = makeWalletRawData({ txCount: 9 });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // 1 + floor(10 * log10(10)) = 1 + floor(10 * 1) = 11
+    expect(stats.level).toBe(11);
+  });
+
+  it('clamps level to 60 for very high txCount', () => {
+    const raw = makeWalletRawData({ txCount: 999999 });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // 1 + floor(10 * log10(1000000)) = 1 + floor(60) = 61 -> clamped to 60
+    expect(stats.level).toBe(LEVEL_MAX);
+  });
+
+  it('produces a moderate level for txCount=100', () => {
+    const raw = makeWalletRawData({ txCount: 100 });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // 1 + floor(10 * log10(101)) ~= 1 + floor(20.04) = 21
+    expect(stats.level).toBe(21);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 2. HP calculation
+// ---------------------------------------------------------------------------
+describe('HP calculation', () => {
+  it('returns hp=100 when balance=0', () => {
+    const raw = makeWalletRawData({ balance: BigInt(0) });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // 100 + 250 * log10(1) = 100
+    expect(stats.hp).toBe(HP_BASE);
+  });
+
+  it('calculates correct HP for 10 ETH balance', () => {
+    // 10 ETH = 10 * 10^18 wei
+    const tenEthWei = BigInt(10) * BigInt(10) ** BigInt(18);
+    const raw = makeWalletRawData({ balance: tenEthWei });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // toBalanceEth: Number(10e18 / 1e14) / 1e4 = 10.0 ETH
+    // HP = round(100 + 250 * log10(11)) ~= round(100 + 260.21) = 360
+    const expectedHP = Math.round(HP_BASE + HP_LOG_MULTIPLIER * Math.log10(1 + 10));
+    expect(stats.hp).toBe(expectedHP);
+  });
+
+  it('calculates correct HP for 100 ETH balance', () => {
+    const hundredEthWei = BigInt(100) * BigInt(10) ** BigInt(18);
+    const raw = makeWalletRawData({ balance: hundredEthWei });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // toBalanceEth: Number(100e18 / 1e14) / 1e4 = 100.0 ETH
+    // HP = round(100 + 250 * log10(101)) ~= round(100 + 501.07) = 601
+    const expectedHP = Math.round(HP_BASE + HP_LOG_MULTIPLIER * Math.log10(1 + 100));
+    expect(stats.hp).toBe(expectedHP);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 3. MP calculation
+// ---------------------------------------------------------------------------
+describe('MP calculation', () => {
+  it('returns mp=80 when gasSpentEth=0', () => {
+    const raw = makeWalletRawData({ gasSpentEth: 0 });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // 80 + 220 * log10(1) = 80
+    expect(stats.mp).toBe(MP_BASE);
+  });
+
+  it('calculates correct MP for gasSpentEth=1.0', () => {
+    const raw = makeWalletRawData({ gasSpentEth: 1.0 });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // round(80 + 220 * log10(2)) ~= round(80 + 66.22) = 146
+    const expectedMP = Math.round(MP_BASE + MP_LOG_MULTIPLIER * Math.log10(2));
+    expect(stats.mp).toBe(expectedMP);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 4. STR calculation
+// ---------------------------------------------------------------------------
+describe('STR calculation', () => {
+  it('returns str=50 when dexSwapCount=0 and bridgeCount=0', () => {
+    const raw = makeWalletRawData();
+    const classification = makeClassification({ dexSwapCount: 0, bridgeCount: 0 });
+
+    const stats = calculateStats(raw, classification);
+
+    // 50 + 180 * log10(1) = 50
+    expect(stats.str).toBe(STR_BASE);
+  });
+
+  it('calculates correct STR for dexSwapCount=99, bridgeCount=1', () => {
+    const raw = makeWalletRawData();
+    const classification = makeClassification({ dexSwapCount: 99, bridgeCount: 1 });
+
+    const stats = calculateStats(raw, classification);
+
+    // round(50 + 180 * log10(101)) ~= round(50 + 360.77) = 411
+    const expectedSTR = Math.round(STR_BASE + STR_LOG_MULTIPLIER * Math.log10(1 + 99 + 1));
+    expect(stats.str).toBe(expectedSTR);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 5. INT calculation
+// ---------------------------------------------------------------------------
+describe('INT calculation', () => {
+  it('returns int=50 when uniqueContracts=0', () => {
+    const raw = makeWalletRawData();
+    const classification = makeClassification({ uniqueContracts: 0 });
+
+    const stats = calculateStats(raw, classification);
+
+    // 50 + 180 * log10(1) = 50
+    expect(stats.int).toBe(INT_BASE);
+  });
+
+  it('calculates correct INT for uniqueContracts=100', () => {
+    const raw = makeWalletRawData();
+    const classification = makeClassification({ uniqueContracts: 100 });
+
+    const stats = calculateStats(raw, classification);
+
+    // round(50 + 180 * log10(101)) ~= round(50 + 360.77) = 411
+    const expectedINT = Math.round(INT_BASE + INT_LOG_MULTIPLIER * Math.log10(1 + 100));
+    expect(stats.int).toBe(expectedINT);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 6. LUCK calculation (requires Date.now mock)
+// ---------------------------------------------------------------------------
+describe('LUCK calculation', () => {
+  it('returns base luck when firstTxTimestamp is null and no relevant events', () => {
+    const raw = makeWalletRawData({ firstTxTimestamp: null });
+    const classification = makeClassification();
+    mockGetRelevantEvents.mockReturnValue([]);
+
+    const stats = calculateStats(raw, classification);
+
+    // walletAgeYears = 0, relevantEventCount = 0
+    // rareEvents = 0 + 0 = 0
+    // round(50 + 120 * log10(1)) = 50
+    expect(stats.luck).toBe(LUCK_BASE);
+  });
+
+  it('calculates luck with wallet age of 2 years and relevant events', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(FIXED_NOW);
+
+    const twoYearsAgo = FIXED_NOW - 2 * MS_PER_YEAR;
+    const raw = makeWalletRawData({
+      firstTxTimestamp: twoYearsAgo,
+      lastTxTimestamp: FIXED_NOW,
+    });
+    const classification = makeClassification();
+
+    // Simulate 3 relevant events found between firstTx and lastTx
+    mockGetRelevantEvents.mockReturnValue([
+      'event1',
+      'event2',
+      'event3',
+    ]);
+
+    const stats = calculateStats(raw, classification);
+
+    // walletAgeYears = 2.0, relevantEventCount = 3
+    // rareEvents = 3 + 2.0 = 5.0
+    // round(50 + 120 * log10(6.0)) ~= round(50 + 93.35) = 143
+    const expectedLUCK = Math.round(LUCK_BASE + LUCK_LOG_MULTIPLIER * Math.log10(1 + 3 + 2));
+    expect(stats.luck).toBe(expectedLUCK);
+  });
+
+  it('scales luck with many relevant events', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(FIXED_NOW);
+
+    const fiveYearsAgo = FIXED_NOW - 5 * MS_PER_YEAR;
+    const raw = makeWalletRawData({
+      firstTxTimestamp: fiveYearsAgo,
+      lastTxTimestamp: FIXED_NOW,
+    });
+    const classification = makeClassification();
+
+    // 8 relevant events
+    mockGetRelevantEvents.mockReturnValue(
+      Array.from({ length: 8 }, (_, i) => `event${i}`),
+    );
+
+    const stats = calculateStats(raw, classification);
+
+    // walletAgeYears = 5.0, relevantEventCount = 8
+    // rareEvents = 8 + 5 = 13
+    // round(50 + 120 * log10(14)) ~= round(50 + 137.55) = 188
+    const expectedLUCK = Math.round(LUCK_BASE + LUCK_LOG_MULTIPLIER * Math.log10(1 + 8 + 5));
+    expect(stats.luck).toBe(expectedLUCK);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 7. Power composite formula
+// ---------------------------------------------------------------------------
+describe('Power calculation', () => {
+  it('computes power as the correct weighted sum of all stats', () => {
+    const raw = makeWalletRawData({
+      txCount: 100,
+      balance: BigInt(10) * BigInt(10) ** BigInt(18),
+      gasSpentEth: 1.0,
+    });
+    const classification = makeClassification({
+      dexSwapCount: 50,
+      bridgeCount: 5,
+      uniqueContracts: 30,
+    });
+    mockGetRelevantEvents.mockReturnValue([]);
+
+    const stats = calculateStats(raw, classification);
+
+    const expectedPower =
+      stats.level * POWER_LEVEL_WEIGHT +
+      stats.str * POWER_STR_WEIGHT +
+      stats.int * POWER_INT_WEIGHT +
+      stats.hp * POWER_HP_WEIGHT +
+      stats.mp * POWER_MP_WEIGHT +
+      stats.luck * POWER_LUCK_WEIGHT;
+
+    expect(stats.power).toBe(expectedPower);
+  });
+
+  it('produces a higher power for higher stats', () => {
+    const lowRaw = makeWalletRawData({ txCount: 1, balance: BigInt(0), gasSpentEth: 0 });
+    const highRaw = makeWalletRawData({
+      txCount: 10000,
+      balance: BigInt(1000) * BigInt(10) ** BigInt(18),
+      gasSpentEth: 50,
+    });
+    const lowClassification = makeClassification();
+    const highClassification = makeClassification({
+      dexSwapCount: 200,
+      bridgeCount: 20,
+      uniqueContracts: 150,
+    });
+
+    const lowStats = calculateStats(lowRaw, lowClassification);
+    const highStats = calculateStats(highRaw, highClassification);
+
+    expect(highStats.power).toBeGreaterThan(lowStats.power);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 8. BigInt balance conversion through calculateStats
+// ---------------------------------------------------------------------------
+describe('BigInt balance conversion', () => {
+  it('handles large balances (100 ETH) without precision loss', () => {
+    const hundredEthWei = BigInt(100) * BigInt(10) ** BigInt(18);
+    const raw = makeWalletRawData({ balance: hundredEthWei });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // toBalanceEth(100e18) = Number(100e18 / 1e14) / 1e4 = Number(1e6) / 1e4 = 100.0
+    // HP should be > base 100
+    const expectedHP = Math.round(HP_BASE + HP_LOG_MULTIPLIER * Math.log10(101));
+    expect(stats.hp).toBe(expectedHP);
+  });
+
+  it('handles very large balances (10000 ETH)', () => {
+    const tenKEthWei = BigInt(10000) * BigInt(10) ** BigInt(18);
+    const raw = makeWalletRawData({ balance: tenKEthWei });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // toBalanceEth(10000e18) = 10000.0
+    // HP = round(100 + 250 * log10(10001)) ~= round(100 + 1000.0) = 1100
+    const expectedHP = Math.round(HP_BASE + HP_LOG_MULTIPLIER * Math.log10(1 + 10000));
+    expect(stats.hp).toBe(expectedHP);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 9. Null firstTxTimestamp edge case
+// ---------------------------------------------------------------------------
+describe('Null firstTxTimestamp', () => {
+  it('produces walletAgeYears=0 resulting in base luck when no events exist', () => {
+    const raw = makeWalletRawData({
+      firstTxTimestamp: null,
+      lastTxTimestamp: null,
+    });
+    const classification = makeClassification();
+    mockGetRelevantEvents.mockReturnValue([]);
+
+    const stats = calculateStats(raw, classification);
+
+    // walletAgeYears = 0, relevantEventCount = 0
+    // rareEvents = 0, luck = round(50 + 120 * log10(1)) = 50
+    expect(stats.luck).toBe(LUCK_BASE);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 10. Full integration with realistic inputs
+// ---------------------------------------------------------------------------
+describe('Full integration with realistic wallet data', () => {
+  it('produces consistent stats for a moderately active wallet', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(FIXED_NOW);
+
+    const threeYearsAgo = FIXED_NOW - 3 * MS_PER_YEAR;
+    const lastMonth = FIXED_NOW - 30 * 24 * 60 * 60 * 1000;
+
+    const raw = makeWalletRawData({
+      txCount: 500,
+      balance: BigInt(25) * BigInt(10) ** BigInt(18), // 25 ETH
+      gasSpentEth: 2.5,
+      firstTxTimestamp: threeYearsAgo,
+      lastTxTimestamp: lastMonth,
+    });
+    const classification = makeClassification({
+      nftRatio: 0.15,
+      dexRatio: 0.30,
+      dexSwapCount: 80,
+      bridgeCount: 3,
+      uniqueContracts: 45,
+      contractInteractions: 120,
+      stableRatio: 0.10,
+      bridgeRatio: 0.02,
+    });
+
+    // Simulate some relevant crypto events
+    mockGetRelevantEvents.mockReturnValue([
+      '대통합의 의식에 참여했다',
+      '거래소 왕국의 배신을 겪었다',
+    ]);
+
+    const stats = calculateStats(raw, classification);
+
+    // Level: 1 + floor(10 * log10(501)) ~= 1 + floor(26.99) = 28
+    const expectedLevel = 1 + Math.floor(LEVEL_LOG_MULTIPLIER * Math.log10(1 + 500));
+    expect(stats.level).toBe(expectedLevel);
+
+    // HP: round(100 + 250 * log10(26)) ~= round(100 + 353.84) = 454
+    const balanceEth = Number(BigInt(25) * BigInt(10) ** BigInt(18) / BigInt(1e14)) / 1e4;
+    const expectedHP = Math.round(HP_BASE + HP_LOG_MULTIPLIER * Math.log10(1 + balanceEth));
+    expect(stats.hp).toBe(expectedHP);
+
+    // MP: round(80 + 220 * log10(3.5)) ~= round(80 + 119.62) = 200
+    const expectedMP = Math.round(MP_BASE + MP_LOG_MULTIPLIER * Math.log10(1 + 2.5));
+    expect(stats.mp).toBe(expectedMP);
+
+    // STR: round(50 + 180 * log10(84)) ~= round(50 + 346.39) = 396
+    const expectedSTR = Math.round(STR_BASE + STR_LOG_MULTIPLIER * Math.log10(1 + 80 + 3));
+    expect(stats.str).toBe(expectedSTR);
+
+    // INT: round(50 + 180 * log10(46)) ~= round(50 + 299.47) = 349
+    const expectedINT = Math.round(INT_BASE + INT_LOG_MULTIPLIER * Math.log10(1 + 45));
+    expect(stats.int).toBe(expectedINT);
+
+    // LUCK: walletAgeYears = 3.0, relevantEventCount = 2
+    // rareEvents = 2 + 3 = 5, round(50 + 120 * log10(6)) ~= round(50 + 93.35) = 143
+    const expectedLUCK = Math.round(LUCK_BASE + LUCK_LOG_MULTIPLIER * Math.log10(1 + 2 + 3));
+    expect(stats.luck).toBe(expectedLUCK);
+
+    // Power: weighted sum
+    const expectedPower =
+      expectedLevel * POWER_LEVEL_WEIGHT +
+      expectedSTR * POWER_STR_WEIGHT +
+      expectedINT * POWER_INT_WEIGHT +
+      expectedHP * POWER_HP_WEIGHT +
+      expectedMP * POWER_MP_WEIGHT +
+      expectedLUCK * POWER_LUCK_WEIGHT;
+    expect(stats.power).toBe(expectedPower);
+
+    // Verify all stats are positive integers
+    for (const [key, value] of Object.entries(stats)) {
+      expect(value, `${key} should be a positive integer`).toBeGreaterThan(0);
+      expect(Number.isInteger(value), `${key} should be an integer`).toBe(true);
+    }
+  });
+
+  it('handles a brand new empty wallet gracefully', () => {
+    const raw = makeWalletRawData({
+      txCount: 0,
+      balance: BigInt(0),
+      gasSpentEth: 0,
+      firstTxTimestamp: null,
+      lastTxTimestamp: null,
+    });
+    const classification = makeClassification({
+      dexSwapCount: 0,
+      bridgeCount: 0,
+      uniqueContracts: 0,
+    });
+    mockGetRelevantEvents.mockReturnValue([]);
+
+    const stats = calculateStats(raw, classification);
+
+    expect(stats.level).toBe(LEVEL_MIN);
+    expect(stats.hp).toBe(HP_BASE);
+    expect(stats.mp).toBe(MP_BASE);
+    expect(stats.str).toBe(STR_BASE);
+    expect(stats.int).toBe(INT_BASE);
+    expect(stats.luck).toBe(LUCK_BASE);
+
+    // Minimum power: 1*1000 + 50*30 + 50*30 + 100*10 + 80*10 + 50*20
+    const minPower =
+      LEVEL_MIN * POWER_LEVEL_WEIGHT +
+      STR_BASE * POWER_STR_WEIGHT +
+      INT_BASE * POWER_INT_WEIGHT +
+      HP_BASE * POWER_HP_WEIGHT +
+      MP_BASE * POWER_MP_WEIGHT +
+      LUCK_BASE * POWER_LUCK_WEIGHT;
+    expect(stats.power).toBe(minPower);
+  });
+});
