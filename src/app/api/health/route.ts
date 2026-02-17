@@ -4,18 +4,24 @@ import { getCacheStats } from '@/lib/cache';
 
 export async function GET(): Promise<NextResponse> {
   const cacheStats = getCacheStats();
+  const isProduction = process.env.NODE_ENV === 'production';
 
-  return NextResponse.json({
+  const body: Record<string, unknown> = {
     status: 'ok',
     timestamp: new Date().toISOString(),
     cache: {
       size: cacheStats.size,
       hitRate: Math.round(cacheStats.hitRate * 100),
     },
-    env: {
+  };
+
+  if (!isProduction) {
+    body.env = {
       alchemy: !!process.env.ALCHEMY_API_KEY,
       anthropic: !!process.env.ANTHROPIC_API_KEY,
       siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'not set',
-    },
-  });
+    };
+  }
+
+  return NextResponse.json(body);
 }

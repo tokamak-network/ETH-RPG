@@ -19,7 +19,7 @@ import type { GenerateResponse, LoreInputData } from '@/lib/types';
 import { ErrorCode } from '@/lib/types';
 
 const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
-const ENS_REGEX = /^[a-zA-Z0-9-]+\.eth$/;
+const ENS_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9.-]*\.eth$/;
 const MAX_INPUT_LENGTH = 256;
 
 function isValidInput(input: string): boolean {

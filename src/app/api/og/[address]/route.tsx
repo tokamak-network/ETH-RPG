@@ -9,6 +9,8 @@ export const runtime = 'edge';
 
 const CARD_WIDTH = 1200;
 const CARD_HEIGHT = 630;
+const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
+const CACHE_HEADERS = { 'Cache-Control': 'public, max-age=86400, s-maxage=86400' };
 
 function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -96,12 +98,23 @@ export async function GET(
   { params }: { params: Promise<{ address: string }> },
 ): Promise<ImageResponse> {
   const { address } = await params;
+
+  if (!ETH_ADDRESS_REGEX.test(address)) {
+    return new ImageResponse(<DefaultOG />, {
+      width: CARD_WIDTH,
+      height: CARD_HEIGHT,
+      status: 400,
+      headers: { 'Cache-Control': 'private, no-store' },
+    });
+  }
+
   const data = getCached(address);
 
   if (!data) {
     return new ImageResponse(<DefaultOG />, {
       width: CARD_WIDTH,
       height: CARD_HEIGHT,
+      headers: CACHE_HEADERS,
     });
   }
 
@@ -185,6 +198,6 @@ export async function GET(
         </div>
       </div>
     ),
-    { width: CARD_WIDTH, height: CARD_HEIGHT },
+    { width: CARD_WIDTH, height: CARD_HEIGHT, headers: CACHE_HEADERS },
   );
 }

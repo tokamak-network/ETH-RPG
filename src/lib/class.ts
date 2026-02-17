@@ -1,11 +1,6 @@
 // Class determination engine for Eth-RPG character generation
 import type { WalletRawData, TxClassification, ClassResult } from '@/lib/types';
-
-// --- Conversion constants ---
-export const WEI_PER_ETH = 1e18;
-
-// --- Time constants ---
-const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
+import { toBalanceEth, toWalletAgeYears } from '@/lib/conversions';
 
 // --- Class threshold constants ---
 export const HUNTER_NFT_RATIO_THRESHOLD = 0.30;
@@ -29,17 +24,6 @@ const PRIEST: ClassResult = { id: 'priest', name: '성직자(Priest)', nameEn: '
 const ELDER_WIZARD: ClassResult = { id: 'elder_wizard', name: '고대 마법사(Elder Wizard)', nameEn: 'Elder Wizard' };
 const GUARDIAN: ClassResult = { id: 'guardian', name: '수호자(Guardian)', nameEn: 'Guardian' };
 const WARRIOR: ClassResult = { id: 'warrior', name: '전사(Warrior)', nameEn: 'Warrior' };
-
-function toBalanceEth(balance: bigint): number {
-  return Number(balance) / WEI_PER_ETH;
-}
-
-function toWalletAgeYears(firstTxTimestamp: number | null): number {
-  if (firstTxTimestamp === null) {
-    return 0;
-  }
-  return (Date.now() - firstTxTimestamp) / MS_PER_YEAR;
-}
 
 type ClassMatcher = (
   raw: WalletRawData,

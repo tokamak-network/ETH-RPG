@@ -8,7 +8,7 @@ interface AddressInputProps {
 }
 
 const ETH_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
-const ENS_NAME_REGEX = /^[a-zA-Z0-9-]+\.eth$/;
+const ENS_NAME_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9.-]*\.eth$/;
 
 function isValidAddressOrEns(value: string): boolean {
   const trimmed = value.trim();
