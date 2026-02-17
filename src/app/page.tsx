@@ -1,65 +1,89 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import TrustBanner from '@/components/TrustBanner';
+import AddressInput from '@/components/AddressInput';
+import FAQ from '@/components/FAQ';
+
+export default function LandingPage() {
+  const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  function handleSubmit(address: string) {
+    setIsNavigating(true);
+    router.push(`/result/${encodeURIComponent(address)}`);
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen flex flex-col">
+      <TrustBanner />
+
+      {/* Hero Section */}
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-16">
+        <div className="text-center max-w-2xl mx-auto">
+          {/* Title */}
+          <h1
+            className="text-5xl sm:text-6xl font-bold mb-4 text-gold-shimmer"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            Eth{'\u00B7'}RPG
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-xl sm:text-2xl mb-12" style={{ color: 'var(--color-text-secondary)' }}>
+            당신의 지갑은 어떤 영웅입니까?
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+          {/* Address Input */}
+          <div className="max-w-lg mx-auto mb-16">
+            <AddressInput onSubmit={handleSubmit} isLoading={isNavigating} />
+          </div>
+
+          {/* Sample Classes Preview */}
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 max-w-md mx-auto mb-16">
+            {[
+              { icon: '\u{1F3F9}', name: 'Hunter', color: '#22c55e' },
+              { icon: '\u{1F5E1}\uFE0F', name: 'Rogue', color: '#ef4444' },
+              { icon: '\u{1F300}', name: 'Summoner', color: '#8b5cf6' },
+              { icon: '\u{1F4B0}', name: 'Merchant', color: '#f4c430' },
+              { icon: '\u2720\uFE0F', name: 'Priest', color: '#60a5fa' },
+              { icon: '\u{1F52E}', name: 'Wizard', color: '#a78bfa' },
+              { icon: '\u{1F6E1}\uFE0F', name: 'Guardian', color: '#f97316' },
+              { icon: '\u2694\uFE0F', name: 'Warrior', color: '#94a3b8' },
+            ].map((cls) => (
+              <div
+                key={cls.name}
+                className="flex flex-col items-center gap-1"
+              >
+                <span className="text-2xl">{cls.icon}</span>
+                <span
+                  className="text-xs font-medium"
+                  style={{ color: cls.color }}
+                >
+                  {cls.name}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </main>
+
+      {/* FAQ Section */}
+      <section className="max-w-2xl mx-auto w-full px-4 pb-16">
+        <h2
+          className="text-2xl font-bold text-center mb-8"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          자주 묻는 질문
+        </h2>
+        <FAQ />
+      </section>
+
+      {/* Footer */}
+      <footer className="text-center py-8 border-t" style={{ borderColor: 'var(--color-border)' }}>
+        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+          Eth{'\u00B7'}RPG — 공개 블록체인 데이터만 사용합니다
+        </p>
+      </footer>
     </div>
   );
 }
