@@ -12,6 +12,7 @@ describe('GET /api/health', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
   });
 
   afterEach(() => {
@@ -21,45 +22,54 @@ describe('GET /api/health', () => {
   async function callHealth() {
     const { GET } = await import('@/app/api/health/route');
     const response = await GET();
-    return response.json();
+    return { data: await response.json(), status: response.status };
   }
 
-  it('returns status ok', async () => {
+  it('returns status ok when all required env vars are set', async () => {
+    process.env.ALCHEMY_API_KEY = 'test-key';
+    process.env.ANTHROPIC_API_KEY = 'test-key';
+    process.env.NEXT_PUBLIC_SITE_URL = 'https://example.com';
     mockGetCacheStats.mockReturnValue({ size: 0, hitRate: 0 });
 
-    const data = await callHealth();
+    const { data, status } = await callHealth();
 
     expect(data.status).toBe('ok');
+    expect(status).toBe(200);
+  });
+
+  it('returns degraded when required env vars are missing', async () => {
+    delete process.env.ALCHEMY_API_KEY;
+    delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+    mockGetCacheStats.mockReturnValue({ size: 0, hitRate: 0 });
+
+    const { data, status } = await callHealth();
+
+    expect(data.status).toBe('degraded');
+    expect(status).toBe(503);
   });
 
   it('returns cache stats', async () => {
+    process.env.ALCHEMY_API_KEY = 'test-key';
+    process.env.ANTHROPIC_API_KEY = 'test-key';
+    process.env.NEXT_PUBLIC_SITE_URL = 'https://example.com';
     mockGetCacheStats.mockReturnValue({ size: 42, hitRate: 0.75 });
 
-    const data = await callHealth();
+    const { data } = await callHealth();
 
     expect(data.cache.size).toBe(42);
     expect(data.cache.hitRate).toBe(75);
   });
 
   it('returns a valid ISO timestamp', async () => {
-    mockGetCacheStats.mockReturnValue({ size: 0, hitRate: 0 });
-
-    const data = await callHealth();
-
-    expect(data.timestamp).toBeDefined();
-    expect(() => new Date(data.timestamp)).not.toThrow();
-  });
-
-  it('reports env variable presence', async () => {
     process.env.ALCHEMY_API_KEY = 'test-key';
     process.env.ANTHROPIC_API_KEY = 'test-key';
     process.env.NEXT_PUBLIC_SITE_URL = 'https://example.com';
     mockGetCacheStats.mockReturnValue({ size: 0, hitRate: 0 });
 
-    const data = await callHealth();
+    const { data } = await callHealth();
 
-    expect(data.env.alchemy).toBe(true);
-    expect(data.env.anthropic).toBe(true);
-    expect(data.env.siteUrl).toBe('https://example.com');
+    expect(data.timestamp).toBeDefined();
+    expect(() => new Date(data.timestamp)).not.toThrow();
   });
 });

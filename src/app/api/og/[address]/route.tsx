@@ -1,16 +1,20 @@
 // GET /api/og/[address] — Dynamic OG image (1200x630)
 import { ImageResponse } from '@vercel/og';
+import * as Sentry from '@sentry/nextjs';
 import { getCached } from '@/lib/cache';
+import { generateCharacterData } from '@/lib/pipeline';
 import { CLASS_THEMES } from '@/styles/themes';
 import { STAT_MAX_VALUES, STAT_COLORS } from '@/styles/themes';
-import type { CharacterClassId } from '@/lib/types';
+import type { CharacterClassId, GenerateResponse } from '@/lib/types';
 
-export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 const CARD_WIDTH = 1200;
 const CARD_HEIGHT = 630;
 const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
-const CACHE_HEADERS = { 'Cache-Control': 'public, max-age=86400, s-maxage=86400' };
+
+const SUCCESS_CACHE_HEADERS = { 'Cache-Control': 'public, max-age=86400, s-maxage=86400' };
+const ERROR_CACHE_HEADERS = { 'Cache-Control': 'private, no-store' };
 
 function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -93,6 +97,22 @@ function DefaultOG() {
   );
 }
 
+async function resolveCharacterData(address: string): Promise<GenerateResponse | null> {
+  // Try cache first
+  const cached = getCached(address);
+  if (cached) {
+    return cached;
+  }
+
+  // Self-heal: regenerate data without AI lore (fast fallback templates)
+  try {
+    return await generateCharacterData(address, { skipAiLore: true });
+  } catch (error) {
+    Sentry.captureException(error, { level: 'warning', tags: { route: 'og-image' } });
+    return null;
+  }
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ address: string }> },
@@ -104,17 +124,18 @@ export async function GET(
       width: CARD_WIDTH,
       height: CARD_HEIGHT,
       status: 400,
-      headers: { 'Cache-Control': 'private, no-store' },
+      headers: ERROR_CACHE_HEADERS,
     });
   }
 
-  const data = getCached(address);
+  const data = await resolveCharacterData(address);
 
   if (!data) {
+    // Failure fallback — do NOT cache at CDN level
     return new ImageResponse(<DefaultOG />, {
       width: CARD_WIDTH,
       height: CARD_HEIGHT,
-      headers: CACHE_HEADERS,
+      headers: ERROR_CACHE_HEADERS,
     });
   }
 
@@ -198,6 +219,6 @@ export async function GET(
         </div>
       </div>
     ),
-    { width: CARD_WIDTH, height: CARD_HEIGHT, headers: CACHE_HEADERS },
+    { width: CARD_WIDTH, height: CARD_HEIGHT, headers: SUCCESS_CACHE_HEADERS },
   );
 }

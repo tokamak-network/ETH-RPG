@@ -1,4 +1,5 @@
 // AI lore generation and fallback template engine for Eth-RPG character narratives
+import * as Sentry from '@sentry/nextjs';
 import type { LoreInputData, CharacterClassId } from '@/lib/types';
 import { FALLBACK_TEMPLATES, LONG_FALLBACK_TEMPLATES } from '@/lib/lore-templates';
 
@@ -276,8 +277,8 @@ export async function generateLore(input: LoreInputData): Promise<string> {
       if (result) {
         return validateLore(result);
       }
-    } catch {
-      // Fall through to Anthropic direct or template fallback
+    } catch (error) {
+      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-short' } });
     }
   }
 
@@ -288,8 +289,8 @@ export async function generateLore(input: LoreInputData): Promise<string> {
       if (result) {
         return validateLore(result);
       }
-    } catch {
-      // Fall through to template fallback
+    } catch (error) {
+      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-anthropic-short' } });
     }
   }
 
@@ -405,8 +406,8 @@ export async function generateLongLore(input: LoreInputData): Promise<string> {
       if (result) {
         return validateLongLore(result);
       }
-    } catch {
-      // Fall through
+    } catch (error) {
+      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-long' } });
     }
   }
 
@@ -420,8 +421,8 @@ export async function generateLongLore(input: LoreInputData): Promise<string> {
       if (result) {
         return validateLongLore(result);
       }
-    } catch {
-      // Fall through
+    } catch (error) {
+      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-anthropic-long' } });
     }
   }
 

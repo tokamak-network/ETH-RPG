@@ -1,15 +1,19 @@
 // GET /api/card/[address] — Share card image (1080x1350)
 import { ImageResponse } from '@vercel/og';
+import * as Sentry from '@sentry/nextjs';
 import { getCached } from '@/lib/cache';
+import { generateCharacterData } from '@/lib/pipeline';
 import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS } from '@/styles/themes';
-import type { CharacterClassId } from '@/lib/types';
+import type { CharacterClassId, GenerateResponse } from '@/lib/types';
 
-export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
 const CARD_WIDTH = 1080;
 const CARD_HEIGHT = 1350;
 const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
-const CACHE_HEADERS = { 'Cache-Control': 'public, max-age=86400, s-maxage=86400' };
+
+const SUCCESS_CACHE_HEADERS = { 'Cache-Control': 'public, max-age=86400, s-maxage=86400' };
+const ERROR_CACHE_HEADERS = { 'Cache-Control': 'private, no-store' };
 
 function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -71,21 +75,91 @@ function StatBarCard({ label, value, maxValue, color }: StatBarCardProps) {
   );
 }
 
+function ErrorCard() {
+  return (
+    <div style={{
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#0a0a0f',
+      color: '#e8e8ed',
+      border: '2px solid #2a2a3e',
+      borderRadius: 16,
+    }}>
+      <div style={{
+        fontSize: 64,
+        marginBottom: 20,
+      }}>
+        {'\u2694\uFE0F'}
+      </div>
+      <div style={{
+        fontSize: 36,
+        fontWeight: 900,
+        color: '#f4c430',
+        marginBottom: 12,
+      }}>
+        {'Eth\u00B7RPG'}
+      </div>
+      <div style={{
+        fontSize: 22,
+        color: '#9ca3af',
+        textAlign: 'center' as const,
+        padding: '0 60px',
+      }}>
+        {'캐릭터를 생성해주세요'}
+      </div>
+      <div style={{
+        fontSize: 16,
+        color: '#6b7280',
+        marginTop: 16,
+      }}>
+        {'ethrpg.com'}
+      </div>
+    </div>
+  );
+}
+
+async function resolveCharacterData(address: string): Promise<GenerateResponse | null> {
+  // Try cache first
+  const cached = getCached(address);
+  if (cached) {
+    return cached;
+  }
+
+  // Self-heal: regenerate data without AI lore (fast fallback templates)
+  try {
+    return await generateCharacterData(address, { skipAiLore: true });
+  } catch (error) {
+    Sentry.captureException(error, { level: 'warning', tags: { route: 'card-image' } });
+    return null;
+  }
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ address: string }> },
-): Promise<Response> {
+): Promise<ImageResponse> {
   const { address } = await params;
 
   if (!ETH_ADDRESS_REGEX.test(address)) {
-    return new Response('Invalid address format', { status: 400 });
+    return new ImageResponse(<ErrorCard />, {
+      width: CARD_WIDTH,
+      height: CARD_HEIGHT,
+      status: 400,
+      headers: ERROR_CACHE_HEADERS,
+    });
   }
 
-  const data = getCached(address);
+  const data = await resolveCharacterData(address);
 
   if (!data) {
-    return new Response('Character not found. Generate it first via POST /api/generate', {
-      status: 404,
+    return new ImageResponse(<ErrorCard />, {
+      width: CARD_WIDTH,
+      height: CARD_HEIGHT,
+      headers: ERROR_CACHE_HEADERS,
     });
   }
 
@@ -240,6 +314,6 @@ export async function GET(
         </div>
       </div>
     ),
-    { width: CARD_WIDTH, height: CARD_HEIGHT, headers: CACHE_HEADERS },
+    { width: CARD_WIDTH, height: CARD_HEIGHT, headers: SUCCESS_CACHE_HEADERS },
   );
 }

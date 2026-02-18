@@ -3,19 +3,9 @@
 // Output: GenerateResponse | ApiErrorResponse
 
 import { NextRequest, NextResponse } from 'next/server';
-import { fetchWalletData } from '@/lib/alchemy';
-import { classifyTransactions } from '@/lib/classifier';
-import { calculateStats } from '@/lib/stats';
-import { determineClass } from '@/lib/class';
-import { generateLore, generateLongLore } from '@/lib/lore';
-import { getCached, setCache } from '@/lib/cache';
+import * as Sentry from '@sentry/nextjs';
+import { generateCharacterData, EmptyWalletError } from '@/lib/pipeline';
 import { checkRateLimit } from '@/lib/rate-limit';
-import {
-  getRelevantEvents,
-  describeActivityPattern,
-  formatWalletAge,
-} from '@/lib/crypto-events';
-import type { GenerateResponse, LoreInputData } from '@/lib/types';
 import { ErrorCode } from '@/lib/types';
 
 const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
@@ -35,13 +25,6 @@ function getClientIp(request: NextRequest): string {
     return forwarded.split(',')[0].trim();
   }
   return request.headers.get('x-real-ip') ?? '127.0.0.1';
-}
-
-function formatTimestamp(ts: number | null): string {
-  if (ts === null) {
-    return '기록 없음';
-  }
-  return new Date(ts).toISOString().split('T')[0];
 }
 
 function errorResponse(
@@ -96,18 +79,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Cache check
-  const cached = getCached(address);
-  if (cached) {
-    return NextResponse.json({ ...cached, cached: true });
-  }
-
   try {
-    // 1. Fetch on-chain data
-    const rawData = await fetchWalletData(address);
-
-    // 2. Validate wallet has transactions
-    if (rawData.txCount === 0 && rawData.transfers.length === 0) {
+    const response = await generateCharacterData(address);
+    return NextResponse.json(response);
+  } catch (error) {
+    if (error instanceof EmptyWalletError) {
       return errorResponse(
         ErrorCode.NO_TRANSACTIONS,
         '이 지갑에는 트랜잭션이 없습니다. 활동 이력이 있는 주소를 입력해주세요.',
@@ -115,67 +91,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // 3. Classify transactions
-    const classification = classifyTransactions(rawData.transfers);
-
-    // 4. Determine class (before stats, so classId can feed power bonus)
-    const characterClass = determineClass(rawData, classification);
-
-    // 5. Calculate stats (with class-specific power bonus)
-    const stats = calculateStats(rawData, classification, characterClass.id);
-
-    // 6. Prepare lore input data
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-
-    const loreInput: LoreInputData = {
-      className: characterClass.name,
-      classNameEn: characterClass.nameEn,
-      level: stats.level,
-      power: stats.power,
-      txCount: rawData.txCount,
-      walletAgeDescription: formatWalletAge(rawData.firstTxTimestamp),
-      firstTxDate: formatTimestamp(rawData.firstTxTimestamp),
-      lastTxDate: formatTimestamp(rawData.lastTxTimestamp),
-      relevantEvents: getRelevantEvents(
-        rawData.firstTxTimestamp,
-        rawData.lastTxTimestamp,
-      ),
-      activityPattern: describeActivityPattern(classification),
-    };
-
-    // 7. Generate lore (short + long in parallel)
-    const [lore, longLore] = await Promise.all([
-      generateLore(loreInput),
-      generateLongLore(loreInput),
-    ]);
-
-    // 8. Build response
-    const resolvedAddress = rawData.address;
-    const response: GenerateResponse = {
-      address: resolvedAddress,
-      ...(rawData.ensName ? { ensName: rawData.ensName } : {}),
-      stats,
-      class: characterClass,
-      lore,
-      longLore,
-      cardImageUrl: `${siteUrl}/api/card/${resolvedAddress}`,
-      ogImageUrl: `${siteUrl}/api/og/${resolvedAddress}`,
-      cached: false,
-    };
-
-    // 9. Cache the result (under resolved address + ENS name if available)
-    setCache(resolvedAddress, response);
-    if (rawData.ensName) {
-      setCache(rawData.ensName.toLowerCase(), response);
-    }
-
-    return NextResponse.json(response);
-  } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    const stack = error instanceof Error ? error.stack : undefined;
 
-    // Log error details server-side
-    console.error('[generate] Error:', message, stack);
+    Sentry.captureException(error);
 
     // Differentiate between known error types
     if (message.includes('ENS name') || message.includes('Invalid Ethereum')) {

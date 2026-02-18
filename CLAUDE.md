@@ -155,7 +155,8 @@ eth-rpg/
 ALCHEMY_API_KEY=           # Alchemy API 키 (필수)
 ANTHROPIC_API_KEY=         # Claude API 키 (필수)
 NEXT_PUBLIC_SITE_URL=      # 사이트 URL (필수, OG/공유용)
-SENTRY_DSN=                # Sentry DSN (선택)
+SENTRY_DSN=                # Sentry 서버 DSN (선택)
+NEXT_PUBLIC_SENTRY_DSN=    # Sentry 클라이언트 DSN (선택)
 ```
 
 ---

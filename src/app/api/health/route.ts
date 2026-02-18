@@ -2,12 +2,34 @@
 import { NextResponse } from 'next/server';
 import { getCacheStats } from '@/lib/cache';
 
+interface EnvCheckResult {
+  readonly name: string;
+  readonly present: boolean;
+  readonly required: boolean;
+}
+
+function checkEnvVars(): readonly EnvCheckResult[] {
+  return [
+    { name: 'ALCHEMY_API_KEY', present: !!process.env.ALCHEMY_API_KEY, required: true },
+    { name: 'ANTHROPIC_API_KEY', present: !!process.env.ANTHROPIC_API_KEY, required: true },
+    { name: 'NEXT_PUBLIC_SITE_URL', present: !!process.env.NEXT_PUBLIC_SITE_URL, required: true },
+    { name: 'SENTRY_DSN', present: !!process.env.SENTRY_DSN, required: false },
+    { name: 'NEXT_PUBLIC_SENTRY_DSN', present: !!process.env.NEXT_PUBLIC_SENTRY_DSN, required: false },
+  ];
+}
+
+function determineStatus(envChecks: readonly EnvCheckResult[]): 'ok' | 'degraded' {
+  const missingRequired = envChecks.some((check) => check.required && !check.present);
+  return missingRequired ? 'degraded' : 'ok';
+}
+
 export async function GET(): Promise<NextResponse> {
   const cacheStats = getCacheStats();
-  const isProduction = process.env.NODE_ENV === 'production';
+  const envChecks = checkEnvVars();
+  const status = determineStatus(envChecks);
 
   const body: Record<string, unknown> = {
-    status: 'ok',
+    status,
     timestamp: new Date().toISOString(),
     cache: {
       size: cacheStats.size,
@@ -15,13 +37,12 @@ export async function GET(): Promise<NextResponse> {
     },
   };
 
-  if (!isProduction) {
-    body.env = {
-      alchemy: !!process.env.ALCHEMY_API_KEY,
-      anthropic: !!process.env.ANTHROPIC_API_KEY,
-      siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'not set',
-    };
+  if (process.env.NODE_ENV !== 'production') {
+    body.env = Object.fromEntries(
+      envChecks.map((check) => [check.name, check.present]),
+    );
   }
 
-  return NextResponse.json(body);
+  const httpStatus = status === 'ok' ? 200 : 503;
+  return NextResponse.json(body, { status: httpStatus });
 }
