@@ -1,10 +1,8 @@
 // GET /api/card/[address] — Share card image (1080x1350)
 import { ImageResponse } from 'next/og';
-import * as Sentry from '@sentry/nextjs';
 import { getCached } from '@/lib/cache';
-import { generateCharacterData } from '@/lib/pipeline';
 import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS } from '@/styles/themes';
-import type { CharacterClassId, GenerateResponse } from '@/lib/types';
+import type { CharacterClassId } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +35,7 @@ function StatBarCard({ label, value, maxValue, color }: StatBarCardProps) {
       width: '100%',
     }}>
       <div style={{
+        display: 'flex',
         width: 60,
         fontSize: 18,
         color: '#9ca3af',
@@ -46,16 +45,17 @@ function StatBarCard({ label, value, maxValue, color }: StatBarCardProps) {
         {label}
       </div>
       <div style={{
+        display: 'flex',
         flex: 1,
         height: 20,
         borderRadius: 10,
         background: '#1a1a2e',
         overflow: 'hidden',
-        display: 'flex',
         marginLeft: 12,
         marginRight: 12,
       }}>
         <div style={{
+          display: 'flex',
           width: `${percentage}%`,
           height: '100%',
           background: color,
@@ -63,6 +63,7 @@ function StatBarCard({ label, value, maxValue, color }: StatBarCardProps) {
         }} />
       </div>
       <div style={{
+        display: 'flex',
         width: 50,
         fontSize: 18,
         color: '#e8e8ed',
@@ -90,20 +91,23 @@ function ErrorCard() {
       borderRadius: 16,
     }}>
       <div style={{
+        display: 'flex',
         fontSize: 64,
         marginBottom: 20,
       }}>
         {'\u2694\uFE0F'}
       </div>
       <div style={{
+        display: 'flex',
         fontSize: 36,
         fontWeight: 900,
         color: '#f4c430',
         marginBottom: 12,
       }}>
-        {'Eth\u00B7RPG'}
+        {'\u0045\u0074\u0068\u00B7\u0052\u0050\u0047'}
       </div>
       <div style={{
+        display: 'flex',
         fontSize: 22,
         color: '#9ca3af',
         textAlign: 'center' as const,
@@ -112,6 +116,7 @@ function ErrorCard() {
         {'Please generate a character'}
       </div>
       <div style={{
+        display: 'flex',
         fontSize: 16,
         color: '#6b7280',
         marginTop: 16,
@@ -122,26 +127,10 @@ function ErrorCard() {
   );
 }
 
-async function resolveCharacterData(address: string): Promise<GenerateResponse | null> {
-  // Try cache first
-  const cached = getCached(address);
-  if (cached) {
-    return cached;
-  }
-
-  // Self-heal: regenerate data without AI lore (fast fallback templates)
-  try {
-    return await generateCharacterData(address, { skipAiLore: true });
-  } catch (error) {
-    Sentry.captureException(error, { level: 'warning', tags: { route: 'card-image' } });
-    return null;
-  }
-}
-
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ address: string }> },
-): Promise<ImageResponse | Response> {
+): Promise<ImageResponse> {
   const { address } = await params;
 
   if (!ETH_ADDRESS_REGEX.test(address)) {
@@ -154,7 +143,7 @@ export async function GET(
   }
 
   try {
-    const data = await resolveCharacterData(address);
+    const data = getCached(address);
 
     if (!data) {
       return new ImageResponse(<ErrorCard />, {
@@ -180,7 +169,6 @@ export async function GET(
           borderRadius: 16,
           padding: 60,
         }}>
-          {/* Top section: Class icon + name + level */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -188,13 +176,14 @@ export async function GET(
             marginBottom: 32,
           }}>
             <div style={{
+              display: 'flex',
               fontSize: 80,
               marginBottom: 12,
-              display: 'flex',
             }}>
               {theme.icon}
             </div>
             <div style={{
+              display: 'flex',
               fontSize: 44,
               color: theme.primary,
               fontWeight: 900,
@@ -203,22 +192,22 @@ export async function GET(
               {data.class.name}
             </div>
             <div style={{
+              display: 'flex',
               fontSize: 24,
               color: '#9ca3af',
             }}>
-              Lv. {data.stats.level} | {displayName}
+              {`Lv. ${data.stats.level} | ${displayName}`}
             </div>
           </div>
 
-          {/* Divider */}
           <div style={{
+            display: 'flex',
             width: '100%',
             height: 1,
             background: '#2a2a3e',
             marginBottom: 32,
           }} />
 
-          {/* Stats section */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -232,15 +221,14 @@ export async function GET(
             <StatBarCard label="LUCK" value={data.stats.luck} maxValue={STAT_MAX_VALUES.luck} color={STAT_COLORS.luck} />
           </div>
 
-          {/* Divider */}
           <div style={{
+            display: 'flex',
             width: '100%',
             height: 1,
             background: '#2a2a3e',
             marginBottom: 32,
           }} />
 
-          {/* Power section */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -248,31 +236,31 @@ export async function GET(
             marginBottom: 32,
           }}>
             <div style={{
+              display: 'flex',
               fontSize: 20,
               color: '#9ca3af',
               marginBottom: 8,
             }}>
-              Power
+              {'Power'}
             </div>
             <div style={{
+              display: 'flex',
               fontSize: 72,
               fontWeight: 900,
               color: '#f4c430',
-              display: 'flex',
             }}>
               {data.stats.power.toLocaleString()}
             </div>
           </div>
 
-          {/* Divider */}
           <div style={{
+            display: 'flex',
             width: '100%',
             height: 1,
             background: '#2a2a3e',
             marginBottom: 32,
           }} />
 
-          {/* Lore section */}
           <div style={{
             display: 'flex',
             justifyContent: 'center',
@@ -280,6 +268,7 @@ export async function GET(
             padding: '0 20px',
           }}>
             <div style={{
+              display: 'flex',
               fontSize: 22,
               color: '#e8e8ed',
               fontStyle: 'italic',
@@ -289,16 +278,15 @@ export async function GET(
             </div>
           </div>
 
-          {/* Spacer */}
           <div style={{ flex: 1, display: 'flex' }} />
 
-          {/* Bottom branding */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
           }}>
             <div style={{
+              display: 'flex',
               fontSize: 16,
               color: '#6b7280',
               marginBottom: 4,
@@ -306,19 +294,19 @@ export async function GET(
               {shortAddr}
             </div>
             <div style={{
+              display: 'flex',
               fontSize: 18,
               color: '#4a9eff',
               fontWeight: 600,
             }}>
-              Eth·RPG
+              {`Eth\u00B7RPG`}
             </div>
           </div>
         </div>
       ),
       { width: CARD_WIDTH, height: CARD_HEIGHT, headers: SUCCESS_CACHE_HEADERS },
     );
-  } catch (error) {
-    Sentry.captureException(error, { tags: { route: 'card-image-render' } });
+  } catch {
     return new ImageResponse(<ErrorCard />, {
       width: CARD_WIDTH,
       height: CARD_HEIGHT,

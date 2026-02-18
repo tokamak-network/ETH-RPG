@@ -1,11 +1,8 @@
 // GET /api/og/[address] — Dynamic OG image (1200x630)
 import { ImageResponse } from 'next/og';
-import * as Sentry from '@sentry/nextjs';
 import { getCached } from '@/lib/cache';
-import { generateCharacterData } from '@/lib/pipeline';
-import { CLASS_THEMES } from '@/styles/themes';
-import { STAT_MAX_VALUES, STAT_COLORS } from '@/styles/themes';
-import type { CharacterClassId, GenerateResponse } from '@/lib/types';
+import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS } from '@/styles/themes';
+import type { CharacterClassId } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +30,7 @@ function StatBarOG({ label, value, maxValue, color }: StatBarOGProps) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
       <div style={{
+        display: 'flex',
         width: 50,
         fontSize: 14,
         color: '#9ca3af',
@@ -42,16 +40,17 @@ function StatBarOG({ label, value, maxValue, color }: StatBarOGProps) {
         {label}
       </div>
       <div style={{
+        display: 'flex',
         flex: 1,
         height: 14,
         borderRadius: 7,
         background: '#1a1a2e',
         overflow: 'hidden',
-        display: 'flex',
         marginLeft: 8,
         marginRight: 8,
       }}>
         <div style={{
+          display: 'flex',
           width: `${percentage}%`,
           height: '100%',
           background: color,
@@ -59,6 +58,7 @@ function StatBarOG({ label, value, maxValue, color }: StatBarOGProps) {
         }} />
       </div>
       <div style={{
+        display: 'flex',
         width: 40,
         fontSize: 14,
         color: '#e8e8ed',
@@ -83,40 +83,25 @@ function DefaultOG() {
       color: '#e8e8ed',
     }}>
       <div style={{
+        display: 'flex',
         fontSize: 48,
         fontWeight: 900,
         color: '#f4c430',
         marginBottom: 16,
       }}>
-        {'Eth\u00B7RPG'}
+        {'\u0045\u0074\u0068\u00B7\u0052\u0050\u0047'}
       </div>
-      <div style={{ fontSize: 24, color: '#9ca3af' }}>
+      <div style={{ display: 'flex', fontSize: 24, color: '#9ca3af' }}>
         {'What hero is your wallet?'}
       </div>
     </div>
   );
 }
 
-async function resolveCharacterData(address: string): Promise<GenerateResponse | null> {
-  // Try cache first
-  const cached = getCached(address);
-  if (cached) {
-    return cached;
-  }
-
-  // Self-heal: regenerate data without AI lore (fast fallback templates)
-  try {
-    return await generateCharacterData(address, { skipAiLore: true });
-  } catch (error) {
-    Sentry.captureException(error, { level: 'warning', tags: { route: 'og-image' } });
-    return null;
-  }
-}
-
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ address: string }> },
-): Promise<ImageResponse | Response> {
+): Promise<ImageResponse> {
   const { address } = await params;
 
   if (!ETH_ADDRESS_REGEX.test(address)) {
@@ -129,7 +114,7 @@ export async function GET(
   }
 
   try {
-    const data = await resolveCharacterData(address);
+    const data = getCached(address);
 
     if (!data) {
       return new ImageResponse(<DefaultOG />, {
@@ -152,7 +137,6 @@ export async function GET(
           background: '#0a0a0f',
           padding: 40,
         }}>
-          {/* Left side: Character info */}
           <div style={{
             flex: 1,
             display: 'flex',
@@ -161,31 +145,33 @@ export async function GET(
             paddingRight: 40,
           }}>
             <div style={{
+              display: 'flex',
               fontSize: 40,
               color: theme.primary,
               fontWeight: 700,
               marginBottom: 4,
-              display: 'flex',
             }}>
-              {theme.icon} {data.class.name}
+              {`${theme.icon} ${data.class.name}`}
             </div>
             <div style={{
+              display: 'flex',
               fontSize: 22,
               color: '#9ca3af',
               marginBottom: 20,
             }}>
-              Lv. {data.stats.level} | {displayName}
+              {`Lv. ${data.stats.level} | ${displayName}`}
             </div>
             <div style={{
+              display: 'flex',
               fontSize: 56,
               color: '#f4c430',
               fontWeight: 900,
               marginBottom: 20,
-              display: 'flex',
             }}>
               {data.stats.power.toLocaleString()}
             </div>
             <div style={{
+              display: 'flex',
               fontSize: 18,
               color: '#e8e8ed',
               fontStyle: 'italic',
@@ -195,7 +181,6 @@ export async function GET(
             </div>
           </div>
 
-          {/* Right side: Stat bars */}
           <div style={{
             width: 360,
             display: 'flex',
@@ -209,22 +194,21 @@ export async function GET(
             <StatBarOG label="LUCK" value={data.stats.luck} maxValue={STAT_MAX_VALUES.luck} color={STAT_COLORS.luck} />
           </div>
 
-          {/* Bottom branding */}
           <div style={{
+            display: 'flex',
             position: 'absolute',
             bottom: 20,
             right: 40,
             fontSize: 16,
             color: '#6b7280',
           }}>
-            Eth·RPG
+            {`Eth\u00B7RPG`}
           </div>
         </div>
       ),
       { width: CARD_WIDTH, height: CARD_HEIGHT, headers: SUCCESS_CACHE_HEADERS },
     );
-  } catch (error) {
-    Sentry.captureException(error, { tags: { route: 'og-image-render' } });
+  } catch {
     return new ImageResponse(<DefaultOG />, {
       width: CARD_WIDTH,
       height: CARD_HEIGHT,
