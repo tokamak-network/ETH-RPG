@@ -1,5 +1,5 @@
 // GET /api/card/[address] — Share card image (1080x1350)
-import { ImageResponse } from '@vercel/og';
+import { ImageResponse } from 'next/og';
 import * as Sentry from '@sentry/nextjs';
 import { getCached } from '@/lib/cache';
 import { generateCharacterData } from '@/lib/pipeline';
