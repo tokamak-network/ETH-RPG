@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import Image from 'next/image';
 import type { CharacterClassId, CharacterStats } from '@/lib/types';
+import { getSpriteUrl } from '@/lib/sprite-tier';
 import StatVisualEffects from './StatVisualEffects';
 
 interface PixelCharacterProps {
@@ -10,14 +11,23 @@ interface PixelCharacterProps {
 }
 
 function PixelCharacterInner({ classId, size = 128, stats }: PixelCharacterProps) {
+  const fallbackUrl = `/sprites/${classId}.png`;
+  const tieredUrl = stats ? getSpriteUrl(classId, stats.level) : null;
+  const [useFallback, setUseFallback] = useState(false);
+
+  const handleError = useCallback(() => setUseFallback(true), []);
+
+  const spriteUrl = tieredUrl && !useFallback ? tieredUrl : fallbackUrl;
+
   const image = (
     <Image
-      src={`/sprites/${classId}.png`}
+      src={spriteUrl}
       alt={`${classId.replace(/_/g, ' ')} pixel character`}
       width={size}
       height={size}
       style={{ imageRendering: 'pixelated', objectFit: 'contain' }}
       unoptimized
+      onError={tieredUrl ? handleError : undefined}
     />
   );
 
