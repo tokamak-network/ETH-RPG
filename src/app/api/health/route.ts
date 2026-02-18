@@ -9,9 +9,10 @@ interface EnvCheckResult {
 }
 
 function checkEnvVars(): readonly EnvCheckResult[] {
+  const hasAiKey = !!(process.env.LITELLM_API_KEY || process.env.ANTHROPIC_API_KEY);
   return [
     { name: 'ALCHEMY_API_KEY', present: !!process.env.ALCHEMY_API_KEY, required: true },
-    { name: 'ANTHROPIC_API_KEY', present: !!process.env.ANTHROPIC_API_KEY, required: true },
+    { name: 'AI_PROVIDER_KEY', present: hasAiKey, required: true },
     { name: 'NEXT_PUBLIC_SITE_URL', present: !!process.env.NEXT_PUBLIC_SITE_URL, required: true },
     { name: 'SENTRY_DSN', present: !!process.env.SENTRY_DSN, required: false },
     { name: 'NEXT_PUBLIC_SENTRY_DSN', present: !!process.env.NEXT_PUBLIC_SENTRY_DSN, required: false },

@@ -2,16 +2,21 @@
 
 const REQUIRED_ENV_VARS = [
   'ALCHEMY_API_KEY',
-  'ANTHROPIC_API_KEY',
   'NEXT_PUBLIC_SITE_URL',
 ] as const;
 
 function validateEnvironment(): void {
-  const missingRequired = REQUIRED_ENV_VARS.filter((v) => !process.env[v]);
+  const missing: string[] = REQUIRED_ENV_VARS.filter((v) => !process.env[v]);
 
-  if (missingRequired.length > 0 && process.env.NODE_ENV === 'production') {
+  // At least one AI provider key must be present
+  const hasAiKey = !!(process.env.LITELLM_API_KEY || process.env.ANTHROPIC_API_KEY);
+  if (!hasAiKey) {
+    missing.push('LITELLM_API_KEY or ANTHROPIC_API_KEY');
+  }
+
+  if (missing.length > 0 && process.env.NODE_ENV === 'production') {
     throw new Error(
-      `[instrumentation] Missing required env vars: ${missingRequired.join(', ')}`,
+      `[instrumentation] Missing required env vars: ${missing.join(', ')}`,
     );
   }
 }
