@@ -258,19 +258,21 @@ async function callAnthropicDirect(
  * Generates an AI-powered hero lore narrative.
  *
  * Priority:
- * 1. LiteLLM (LITELLM_API_KEY set) — OpenAI-compatible, any model
- * 2. Anthropic direct (ANTHROPIC_API_KEY set) — legacy fallback
- * 3. Template-based fallback
+ * 1. LiteLLM primary model (LITELLM_MODEL, default: deepseek-v3.2)
+ * 2. LiteLLM fallback model (LITELLM_FALLBACK_MODEL, default: gpt-5.2-codex)
+ * 3. Anthropic direct (ANTHROPIC_API_KEY set) — legacy fallback
+ * 4. Template-based fallback
  */
 export async function generateLore(input: LoreInputData): Promise<string> {
   const litellmKey = process.env.LITELLM_API_KEY;
   const litellmBaseUrl = process.env.LITELLM_BASE_URL ?? DEFAULT_BASE_URL;
   const litellmModel = process.env.LITELLM_MODEL ?? DEFAULT_MODEL;
+  const litellmFallbackModel = process.env.LITELLM_FALLBACK_MODEL;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
   const userPrompt = buildLoreUserPrompt(input);
 
-  // 1. Try LiteLLM (OpenAI-compatible)
+  // 1. Try LiteLLM primary model
   if (litellmKey) {
     try {
       const result = await callLiteLLM(litellmKey, litellmBaseUrl, litellmModel, userPrompt);
@@ -278,11 +280,23 @@ export async function generateLore(input: LoreInputData): Promise<string> {
         return validateLore(result);
       }
     } catch (error) {
-      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-short' } });
+      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-short', model: litellmModel } });
+    }
+
+    // 2. Try LiteLLM fallback model
+    if (litellmFallbackModel) {
+      try {
+        const result = await callLiteLLM(litellmKey, litellmBaseUrl, litellmFallbackModel, userPrompt);
+        if (result) {
+          return validateLore(result);
+        }
+      } catch (error) {
+        Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-fallback-short', model: litellmFallbackModel } });
+      }
     }
   }
 
-  // 2. Try Anthropic direct (legacy)
+  // 3. Try Anthropic direct (legacy)
   if (anthropicKey) {
     try {
       const result = await callAnthropicDirect(anthropicKey, userPrompt);
@@ -294,7 +308,7 @@ export async function generateLore(input: LoreInputData): Promise<string> {
     }
   }
 
-  // 3. Template fallback
+  // 4. Template fallback
   return generateFallbackLore(input);
 }
 
@@ -386,17 +400,18 @@ export function generateLongFallbackLore(input: LoreInputData): string {
 /**
  * Generates a longer AI-powered hero narrative (3-5 sentences) for the card back.
  *
- * Priority: LiteLLM → Anthropic direct → template fallback.
+ * Priority: LiteLLM primary → LiteLLM fallback → Anthropic direct → template fallback.
  */
 export async function generateLongLore(input: LoreInputData): Promise<string> {
   const litellmKey = process.env.LITELLM_API_KEY;
   const litellmBaseUrl = process.env.LITELLM_BASE_URL ?? DEFAULT_BASE_URL;
   const litellmModel = process.env.LITELLM_MODEL ?? DEFAULT_MODEL;
+  const litellmFallbackModel = process.env.LITELLM_FALLBACK_MODEL;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
   const userPrompt = buildLongLoreUserPrompt(input);
 
-  // 1. Try LiteLLM (OpenAI-compatible)
+  // 1. Try LiteLLM primary model
   if (litellmKey) {
     try {
       const result = await callLiteLLM(
@@ -407,11 +422,26 @@ export async function generateLongLore(input: LoreInputData): Promise<string> {
         return validateLongLore(result);
       }
     } catch (error) {
-      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-long' } });
+      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-long', model: litellmModel } });
+    }
+
+    // 2. Try LiteLLM fallback model
+    if (litellmFallbackModel) {
+      try {
+        const result = await callLiteLLM(
+          litellmKey, litellmBaseUrl, litellmFallbackModel, userPrompt,
+          LONG_LORE_SYSTEM_PROMPT, MAX_LONG_TOKENS,
+        );
+        if (result) {
+          return validateLongLore(result);
+        }
+      } catch (error) {
+        Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-fallback-long', model: litellmFallbackModel } });
+      }
     }
   }
 
-  // 2. Try Anthropic direct
+  // 3. Try Anthropic direct
   if (anthropicKey) {
     try {
       const result = await callAnthropicDirect(
@@ -426,6 +456,6 @@ export async function generateLongLore(input: LoreInputData): Promise<string> {
     }
   }
 
-  // 3. Template fallback
+  // 4. Template fallback
   return generateLongFallbackLore(input);
 }

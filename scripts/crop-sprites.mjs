@@ -165,10 +165,12 @@ async function cropAndSave(srcPath, region, outName) {
 async function tintAndSave(warriorFile, outName) {
   const outPath = join(OUT_DIR, outName);
   await sharp(warriorFile)
-    .tint({ r: 249, g: 115, b: 22 })
+    .flop()
+    .tint({ r: 255, g: 200, b: 50 })
+    .modulate({ brightness: 1.4, saturation: 2.0 })
     .png()
     .toFile(outPath);
-  console.log(`  ✓ ${outName} (tinted)`);
+  console.log(`  ✓ ${outName} (flipped + gold tint)`);
 }
 
 // ──────────────────────────────────────────────────────────
