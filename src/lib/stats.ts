@@ -1,5 +1,5 @@
 // Stats calculation engine for Eth-RPG character generation
-import type { WalletRawData, TxClassification, CharacterStats } from '@/lib/types';
+import type { WalletRawData, TxClassification, CharacterStats, CharacterClassId } from '@/lib/types';
 import { getRelevantEvents } from '@/lib/crypto-events';
 import { toBalanceEth, toWalletAgeYears } from '@/lib/conversions';
 
@@ -35,6 +35,18 @@ export const POWER_INT_WEIGHT = 30;
 export const POWER_HP_WEIGHT = 10;
 export const POWER_MP_WEIGHT = 10;
 export const POWER_LUCK_WEIGHT = 20;
+
+// --- Class power bonus (flat bonus to compensate low-level classes) ---
+export const CLASS_POWER_BONUS: Readonly<Record<CharacterClassId, number>> = {
+  hunter: 0,
+  rogue: 0,
+  summoner: 2000,
+  merchant: 0,
+  priest: 0,
+  elder_wizard: 8000,
+  guardian: 6000,
+  warrior: 3000,
+};
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -86,7 +98,8 @@ function calculatePower(
 
 export function calculateStats(
   raw: WalletRawData,
-  classification: TxClassification
+  classification: TxClassification,
+  classId: CharacterClassId = 'warrior'
 ): CharacterStats {
   const balanceEth = toBalanceEth(raw.balance);
   const walletAgeYears = toWalletAgeYears(raw.firstTxTimestamp);
@@ -98,7 +111,8 @@ export function calculateStats(
   const int = calculateINT(classification.uniqueContracts);
   const relevantEventCount = getRelevantEvents(raw.firstTxTimestamp, raw.lastTxTimestamp).length;
   const luck = calculateLUCK(relevantEventCount, walletAgeYears);
-  const power = calculatePower(level, str, int, hp, mp, luck);
+  const basePower = calculatePower(level, str, int, hp, mp, luck);
+  const power = basePower + CLASS_POWER_BONUS[classId];
 
   return { level, hp, mp, str, int, luck, power };
 }

@@ -8,6 +8,7 @@ vi.mock('@/lib/alchemy', () => ({
 
 vi.mock('@/lib/lore', () => ({
   generateLore: vi.fn(),
+  generateLongLore: vi.fn(),
 }));
 
 vi.mock('@/lib/cache', () => ({
@@ -38,7 +39,7 @@ vi.mock('@/lib/crypto-events', () => ({
 }));
 
 import { fetchWalletData } from '@/lib/alchemy';
-import { generateLore } from '@/lib/lore';
+import { generateLore, generateLongLore } from '@/lib/lore';
 import { getCached, setCache } from '@/lib/cache';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { classifyTransactions } from '@/lib/classifier';
@@ -47,6 +48,7 @@ import { determineClass } from '@/lib/class';
 
 const mockFetchWalletData = vi.mocked(fetchWalletData);
 const mockGenerateLore = vi.mocked(generateLore);
+const mockGenerateLongLore = vi.mocked(generateLongLore);
 const mockGetCached = vi.mocked(getCached);
 const mockSetCache = vi.mocked(setCache);
 const mockCheckRateLimit = vi.mocked(checkRateLimit);
@@ -92,6 +94,7 @@ function setupSuccessfulMocks() {
   mockCalculateStats.mockReturnValue(stats);
   mockDetermineClass.mockReturnValue(classResult);
   mockGenerateLore.mockResolvedValue('전설의 전사가 나타났다.');
+  mockGenerateLongLore.mockResolvedValue('특별한 마법도, 전설적인 무기도 없다.');
 
   return { walletData, classification, stats, classResult };
 }

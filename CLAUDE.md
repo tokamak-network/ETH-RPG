@@ -40,8 +40,8 @@
 3. **Summoner** — Bridge tx ≥ 5회 또는 비중 ≥ 10%
 4. **Merchant** — 스테이블코인 전송 비중 ≥ 35%
 5. **Priest** — 가스 소모 높고 컨트랙트 상호작용 多
-6. **Elder Wizard** — 첫 tx 2년+ 전 & 최근 활동 낮음
-7. **Guardian** — 거래 적지만 잔고 큼 (보유형)
+6. **Elder Wizard** — 첫 tx 3년+ 전 & 연간 tx 50건 미만
+7. **Guardian** — 거래 100건 미만 & 잔고 1ETH+ (보유형)
 8. **Warrior** — 위 조건 미해당 시 기본 클래스
 
 ## 스탯 공식
@@ -52,7 +52,10 @@ MP    = round(80 + 220 × log10(1 + gas_spent_eth))
 STR   = round(50 + 180 × log10(1 + dex_swap_count + bridge_count))
 INT   = round(50 + 180 × log10(1 + unique_contracts))
 LUCK  = round(50 + 120 × log10(1 + rare_events))
-Power = Level×1000 + STR×30 + INT×30 + HP×10 + MP×10 + LUCK×20
+Power = Level×1000 + STR×30 + INT×30 + HP×10 + MP×10 + LUCK×20 + ClassBonus
+
+ClassBonus = { hunter:0, rogue:0, summoner:2000, merchant:0, priest:0,
+               elder_wizard:8000, guardian:6000, warrior:3000 }
 ```
 
 ---

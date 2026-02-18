@@ -118,11 +118,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // 3. Classify transactions
     const classification = classifyTransactions(rawData.transfers);
 
-    // 4. Calculate stats
-    const stats = calculateStats(rawData, classification);
-
-    // 5. Determine class
+    // 4. Determine class (before stats, so classId can feed power bonus)
     const characterClass = determineClass(rawData, classification);
+
+    // 5. Calculate stats (with class-specific power bonus)
+    const stats = calculateStats(rawData, classification, characterClass.id);
 
     // 6. Prepare lore input data
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';

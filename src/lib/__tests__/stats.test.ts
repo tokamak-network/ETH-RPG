@@ -20,6 +20,7 @@ import {
   POWER_HP_WEIGHT,
   POWER_MP_WEIGHT,
   POWER_LUCK_WEIGHT,
+  CLASS_POWER_BONUS,
 } from '@/lib/stats';
 import { makeWalletRawData, makeClassification } from './fixtures';
 
@@ -278,7 +279,7 @@ describe('LUCK calculation', () => {
 // 7. Power composite formula
 // ---------------------------------------------------------------------------
 describe('Power calculation', () => {
-  it('computes power as the correct weighted sum of all stats', () => {
+  it('computes power as the correct weighted sum of all stats plus class bonus', () => {
     const raw = makeWalletRawData({
       txCount: 100,
       balance: BigInt(10) * BigInt(10) ** BigInt(18),
@@ -291,7 +292,7 @@ describe('Power calculation', () => {
     });
     mockGetRelevantEvents.mockReturnValue([]);
 
-    const stats = calculateStats(raw, classification);
+    const stats = calculateStats(raw, classification, 'hunter');
 
     const expectedPower =
       stats.level * POWER_LEVEL_WEIGHT +
@@ -299,7 +300,8 @@ describe('Power calculation', () => {
       stats.int * POWER_INT_WEIGHT +
       stats.hp * POWER_HP_WEIGHT +
       stats.mp * POWER_MP_WEIGHT +
-      stats.luck * POWER_LUCK_WEIGHT;
+      stats.luck * POWER_LUCK_WEIGHT +
+      CLASS_POWER_BONUS['hunter'];
 
     expect(stats.power).toBe(expectedPower);
   });
@@ -318,8 +320,8 @@ describe('Power calculation', () => {
       uniqueContracts: 150,
     });
 
-    const lowStats = calculateStats(lowRaw, lowClassification);
-    const highStats = calculateStats(highRaw, highClassification);
+    const lowStats = calculateStats(lowRaw, lowClassification, 'warrior');
+    const highStats = calculateStats(highRaw, highClassification, 'warrior');
 
     expect(highStats.power).toBeGreaterThan(lowStats.power);
   });
@@ -438,14 +440,15 @@ describe('Full integration with realistic wallet data', () => {
     const expectedLUCK = Math.round(LUCK_BASE + LUCK_LOG_MULTIPLIER * Math.log10(1 + 2 + 3));
     expect(stats.luck).toBe(expectedLUCK);
 
-    // Power: weighted sum
+    // Power: weighted sum + default warrior bonus
     const expectedPower =
       expectedLevel * POWER_LEVEL_WEIGHT +
       expectedSTR * POWER_STR_WEIGHT +
       expectedINT * POWER_INT_WEIGHT +
       expectedHP * POWER_HP_WEIGHT +
       expectedMP * POWER_MP_WEIGHT +
-      expectedLUCK * POWER_LUCK_WEIGHT;
+      expectedLUCK * POWER_LUCK_WEIGHT +
+      CLASS_POWER_BONUS['warrior'];
     expect(stats.power).toBe(expectedPower);
 
     // Verify all stats are positive integers
@@ -479,14 +482,83 @@ describe('Full integration with realistic wallet data', () => {
     expect(stats.int).toBe(INT_BASE);
     expect(stats.luck).toBe(LUCK_BASE);
 
-    // Minimum power: 1*1000 + 50*30 + 50*30 + 100*10 + 80*10 + 50*20
+    // Minimum power: 1*1000 + 50*30 + 50*30 + 100*10 + 80*10 + 50*20 + warrior bonus
     const minPower =
       LEVEL_MIN * POWER_LEVEL_WEIGHT +
       STR_BASE * POWER_STR_WEIGHT +
       INT_BASE * POWER_INT_WEIGHT +
       HP_BASE * POWER_HP_WEIGHT +
       MP_BASE * POWER_MP_WEIGHT +
-      LUCK_BASE * POWER_LUCK_WEIGHT;
+      LUCK_BASE * POWER_LUCK_WEIGHT +
+      CLASS_POWER_BONUS['warrior'];
     expect(stats.power).toBe(minPower);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 11. Class power bonus
+// ---------------------------------------------------------------------------
+describe('Class power bonus', () => {
+  it('applies elder_wizard bonus of 8000', () => {
+    const raw = makeWalletRawData({ txCount: 10 });
+    const classification = makeClassification();
+    mockGetRelevantEvents.mockReturnValue([]);
+
+    const withBonus = calculateStats(raw, classification, 'elder_wizard');
+    const withoutBonus = calculateStats(raw, classification, 'hunter');
+
+    expect(withBonus.power - withoutBonus.power).toBe(
+      CLASS_POWER_BONUS['elder_wizard'] - CLASS_POWER_BONUS['hunter']
+    );
+    expect(withBonus.power - withoutBonus.power).toBe(8000);
+  });
+
+  it('applies guardian bonus of 6000', () => {
+    const raw = makeWalletRawData({ txCount: 10 });
+    const classification = makeClassification();
+    mockGetRelevantEvents.mockReturnValue([]);
+
+    const guardian = calculateStats(raw, classification, 'guardian');
+    const hunter = calculateStats(raw, classification, 'hunter');
+
+    expect(guardian.power - hunter.power).toBe(6000);
+  });
+
+  it('applies warrior bonus of 3000', () => {
+    const raw = makeWalletRawData({ txCount: 10 });
+    const classification = makeClassification();
+    mockGetRelevantEvents.mockReturnValue([]);
+
+    const warrior = calculateStats(raw, classification, 'warrior');
+    const hunter = calculateStats(raw, classification, 'hunter');
+
+    expect(warrior.power - hunter.power).toBe(3000);
+  });
+
+  it('applies summoner bonus of 2000', () => {
+    const raw = makeWalletRawData({ txCount: 10 });
+    const classification = makeClassification();
+    mockGetRelevantEvents.mockReturnValue([]);
+
+    const summoner = calculateStats(raw, classification, 'summoner');
+    const hunter = calculateStats(raw, classification, 'hunter');
+
+    expect(summoner.power - hunter.power).toBe(2000);
+  });
+
+  it('does not change non-power stats when classId differs', () => {
+    const raw = makeWalletRawData({ txCount: 100 });
+    const classification = makeClassification();
+    mockGetRelevantEvents.mockReturnValue([]);
+
+    const elderWizard = calculateStats(raw, classification, 'elder_wizard');
+    const hunter = calculateStats(raw, classification, 'hunter');
+
+    expect(elderWizard.level).toBe(hunter.level);
+    expect(elderWizard.hp).toBe(hunter.hp);
+    expect(elderWizard.mp).toBe(hunter.mp);
+    expect(elderWizard.str).toBe(hunter.str);
+    expect(elderWizard.int).toBe(hunter.int);
+    expect(elderWizard.luck).toBe(hunter.luck);
   });
 });

@@ -8,11 +8,11 @@ export const ROGUE_DEX_RATIO_THRESHOLD = 0.25;
 export const SUMMONER_BRIDGE_COUNT_THRESHOLD = 5;
 export const SUMMONER_BRIDGE_RATIO_THRESHOLD = 0.10;
 export const MERCHANT_STABLE_RATIO_THRESHOLD = 0.35;
-export const PRIEST_GAS_SPENT_THRESHOLD = 1.0;
+export const PRIEST_GAS_SPENT_THRESHOLD = 0.5;
 export const PRIEST_CONTRACT_INTERACTION_THRESHOLD = 50;
-export const ELDER_WIZARD_AGE_YEARS_THRESHOLD = 2;
-export const ELDER_WIZARD_TX_COUNT_THRESHOLD = 50;
-export const GUARDIAN_TX_COUNT_THRESHOLD = 20;
+export const ELDER_WIZARD_AGE_YEARS_THRESHOLD = 3;
+export const ELDER_WIZARD_TX_PER_YEAR_THRESHOLD = 50;
+export const GUARDIAN_TX_COUNT_THRESHOLD = 100;
 export const GUARDIAN_BALANCE_ETH_THRESHOLD = 1.0;
 
 // --- Class definitions ---
@@ -59,14 +59,15 @@ const classMatchers: readonly ClassMatcher[] = [
       ? PRIEST
       : null,
 
-  // 6. Elder Wizard -- wallet age >= 2 years AND low tx count
+  // 6. Elder Wizard -- wallet age >= 3 years AND low tx-per-year rate
   (raw, _classification, _balanceEth, walletAgeYears) =>
     walletAgeYears >= ELDER_WIZARD_AGE_YEARS_THRESHOLD &&
-    raw.txCount < ELDER_WIZARD_TX_COUNT_THRESHOLD
+    walletAgeYears > 0 &&
+    (raw.txCount / walletAgeYears) < ELDER_WIZARD_TX_PER_YEAR_THRESHOLD
       ? ELDER_WIZARD
       : null,
 
-  // 7. Guardian -- few transactions AND high balance
+  // 7. Guardian -- fewer than 100 transactions AND high balance
   (raw, _classification, balanceEth) =>
     raw.txCount < GUARDIAN_TX_COUNT_THRESHOLD &&
     balanceEth > GUARDIAN_BALANCE_ETH_THRESHOLD

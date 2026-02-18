@@ -106,7 +106,7 @@ describe('determineClass', () => {
   });
 
   // -------------------------------------------------------
-  // 5. Priest -- gasSpentEth > 1.0 AND contractInteractions > 50
+  // 5. Priest -- gasSpentEth > 0.5 AND contractInteractions > 50
   // -------------------------------------------------------
   describe('Priest', () => {
     it('returns priest when both gas and contract interaction conditions are met', () => {
@@ -129,7 +129,7 @@ describe('determineClass', () => {
     });
 
     it('does NOT return priest when only contractInteractions condition is met', () => {
-      const raw = makeWalletRawData({ gasSpentEth: 1.0 });
+      const raw = makeWalletRawData({ gasSpentEth: 0.5 });
       const classification = makeClassification({ contractInteractions: 51 });
 
       const result = determineClass(raw, classification);
@@ -139,17 +139,17 @@ describe('determineClass', () => {
   });
 
   // -------------------------------------------------------
-  // 6. Elder Wizard -- walletAge >= 2 years AND txCount < 50
+  // 6. Elder Wizard -- walletAge >= 3 years AND (txCount / walletAgeYears) < 50
   // -------------------------------------------------------
   describe('Elder Wizard', () => {
-    it('returns elder_wizard when wallet is 2+ years old and txCount < 50', () => {
+    it('returns elder_wizard when wallet is 3+ years old and tx-per-year < 50', () => {
       const fixedNow = Date.UTC(2025, 0, 1); // 2025-01-01
       vi.spyOn(Date, 'now').mockReturnValue(fixedNow);
 
-      const twoYearsAgo = fixedNow - 2 * MS_PER_YEAR;
+      const threeYearsAgo = fixedNow - 3 * MS_PER_YEAR;
       const raw = makeWalletRawData({
-        firstTxTimestamp: twoYearsAgo,
-        txCount: 49,
+        firstTxTimestamp: threeYearsAgo,
+        txCount: 149, // 149 / 3 ≈ 49.67 < 50
       });
       const classification = makeClassification();
 
@@ -159,14 +159,46 @@ describe('determineClass', () => {
       expect(result.nameEn).toBe('Elder Wizard');
     });
 
-    it('does NOT return elder_wizard when txCount equals threshold (50)', () => {
+    it('returns elder_wizard for 5-year wallet with 249 tx (49.8 tx/yr)', () => {
+      const fixedNow = Date.UTC(2025, 0, 1);
+      vi.spyOn(Date, 'now').mockReturnValue(fixedNow);
+
+      const fiveYearsAgo = fixedNow - 5 * MS_PER_YEAR;
+      const raw = makeWalletRawData({
+        firstTxTimestamp: fiveYearsAgo,
+        txCount: 249, // 249 / 5 = 49.8 < 50
+      });
+      const classification = makeClassification();
+
+      const result = determineClass(raw, classification);
+
+      expect(result.id).toBe('elder_wizard');
+    });
+
+    it('does NOT return elder_wizard when tx-per-year equals threshold (50)', () => {
+      const fixedNow = Date.UTC(2025, 0, 1);
+      vi.spyOn(Date, 'now').mockReturnValue(fixedNow);
+
+      const threeYearsAgo = fixedNow - 3 * MS_PER_YEAR;
+      const raw = makeWalletRawData({
+        firstTxTimestamp: threeYearsAgo,
+        txCount: 150, // 150 / 3 = 50, NOT < 50
+      });
+      const classification = makeClassification();
+
+      const result = determineClass(raw, classification);
+
+      expect(result.id).not.toBe('elder_wizard');
+    });
+
+    it('does NOT return elder_wizard when wallet is only 2 years old', () => {
       const fixedNow = Date.UTC(2025, 0, 1);
       vi.spyOn(Date, 'now').mockReturnValue(fixedNow);
 
       const twoYearsAgo = fixedNow - 2 * MS_PER_YEAR;
       const raw = makeWalletRawData({
         firstTxTimestamp: twoYearsAgo,
-        txCount: 50,
+        txCount: 10, // low tx/yr but wallet too young
       });
       const classification = makeClassification();
 
@@ -177,12 +209,12 @@ describe('determineClass', () => {
   });
 
   // -------------------------------------------------------
-  // 7. Guardian -- txCount < 20 AND balanceEth > 1.0
+  // 7. Guardian -- txCount < 100 AND balanceEth > 1.0
   // -------------------------------------------------------
   describe('Guardian', () => {
-    it('returns guardian when txCount < 20 and balance > 1 ETH', () => {
+    it('returns guardian when txCount < 100 and balance > 1 ETH', () => {
       const raw = makeWalletRawData({
-        txCount: 19,
+        txCount: 99,
         balance: BigInt(2) * BigInt(10) ** BigInt(18), // 2 ETH
       });
       const classification = makeClassification();
@@ -191,6 +223,30 @@ describe('determineClass', () => {
 
       expect(result.id).toBe('guardian');
       expect(result.nameEn).toBe('Guardian');
+    });
+
+    it('does NOT return guardian when txCount equals threshold (100)', () => {
+      const raw = makeWalletRawData({
+        txCount: 100,
+        balance: BigInt(2) * BigInt(10) ** BigInt(18), // 2 ETH
+      });
+      const classification = makeClassification();
+
+      const result = determineClass(raw, classification);
+
+      expect(result.id).not.toBe('guardian');
+    });
+
+    it('does NOT return guardian when balance is below threshold', () => {
+      const raw = makeWalletRawData({
+        txCount: 50,
+        balance: BigInt(1) * BigInt(10) ** BigInt(18), // exactly 1 ETH (not > 1.0)
+      });
+      const classification = makeClassification();
+
+      const result = determineClass(raw, classification);
+
+      expect(result.id).not.toBe('guardian');
     });
   });
 
@@ -232,8 +288,8 @@ describe('determineClass', () => {
       const threeYearsAgo = fixedNow - 3 * MS_PER_YEAR;
       const raw = makeWalletRawData({
         firstTxTimestamp: threeYearsAgo,
-        txCount: 49,        // qualifies for Elder Wizard (< 50)
-        gasSpentEth: 1.5,   // qualifies for Priest (> 1.0)
+        txCount: 100,       // qualifies for Elder Wizard (100/3 ≈ 33.3 < 50)
+        gasSpentEth: 1.5,   // qualifies for Priest (> 0.5)
       });
       const classification = makeClassification({
         contractInteractions: 51, // qualifies for Priest (> 50)
