@@ -116,7 +116,7 @@ async function resolveCharacterData(address: string): Promise<GenerateResponse |
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ address: string }> },
-): Promise<ImageResponse> {
+): Promise<ImageResponse | Response> {
   const { address } = await params;
 
   if (!ETH_ADDRESS_REGEX.test(address)) {
@@ -128,97 +128,107 @@ export async function GET(
     });
   }
 
-  const data = await resolveCharacterData(address);
+  try {
+    const data = await resolveCharacterData(address);
 
-  if (!data) {
-    // Failure fallback — do NOT cache at CDN level
+    if (!data) {
+      return new ImageResponse(<DefaultOG />, {
+        width: CARD_WIDTH,
+        height: CARD_HEIGHT,
+        headers: ERROR_CACHE_HEADERS,
+      });
+    }
+
+    const theme = CLASS_THEMES[data.class.id as CharacterClassId];
+    const shortAddr = shortenAddress(data.address);
+    const displayName = data.ensName ?? shortAddr;
+
+    return new ImageResponse(
+      (
+        <div style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          background: '#0a0a0f',
+          padding: 40,
+        }}>
+          {/* Left side: Character info */}
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            paddingRight: 40,
+          }}>
+            <div style={{
+              fontSize: 40,
+              color: theme.primary,
+              fontWeight: 700,
+              marginBottom: 4,
+              display: 'flex',
+            }}>
+              {theme.icon} {data.class.name}
+            </div>
+            <div style={{
+              fontSize: 22,
+              color: '#9ca3af',
+              marginBottom: 20,
+            }}>
+              Lv. {data.stats.level} | {displayName}
+            </div>
+            <div style={{
+              fontSize: 56,
+              color: '#f4c430',
+              fontWeight: 900,
+              marginBottom: 20,
+              display: 'flex',
+            }}>
+              {data.stats.power.toLocaleString()}
+            </div>
+            <div style={{
+              fontSize: 18,
+              color: '#e8e8ed',
+              fontStyle: 'italic',
+              lineHeight: 1.5,
+            }}>
+              {data.lore}
+            </div>
+          </div>
+
+          {/* Right side: Stat bars */}
+          <div style={{
+            width: 360,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}>
+            <StatBarOG label="HP" value={data.stats.hp} maxValue={STAT_MAX_VALUES.hp} color={STAT_COLORS.hp} />
+            <StatBarOG label="MP" value={data.stats.mp} maxValue={STAT_MAX_VALUES.mp} color={STAT_COLORS.mp} />
+            <StatBarOG label="STR" value={data.stats.str} maxValue={STAT_MAX_VALUES.str} color={STAT_COLORS.str} />
+            <StatBarOG label="INT" value={data.stats.int} maxValue={STAT_MAX_VALUES.int} color={STAT_COLORS.int} />
+            <StatBarOG label="LUCK" value={data.stats.luck} maxValue={STAT_MAX_VALUES.luck} color={STAT_COLORS.luck} />
+          </div>
+
+          {/* Bottom branding */}
+          <div style={{
+            position: 'absolute',
+            bottom: 20,
+            right: 40,
+            fontSize: 16,
+            color: '#6b7280',
+          }}>
+            Eth·RPG
+          </div>
+        </div>
+      ),
+      { width: CARD_WIDTH, height: CARD_HEIGHT, headers: SUCCESS_CACHE_HEADERS },
+    );
+  } catch (error) {
+    Sentry.captureException(error, { tags: { route: 'og-image-render' } });
     return new ImageResponse(<DefaultOG />, {
       width: CARD_WIDTH,
       height: CARD_HEIGHT,
       headers: ERROR_CACHE_HEADERS,
     });
   }
-
-  const theme = CLASS_THEMES[data.class.id as CharacterClassId];
-  const shortAddr = shortenAddress(data.address);
-  const displayName = data.ensName ?? shortAddr;
-
-  return new ImageResponse(
-    (
-      <div style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        background: '#0a0a0f',
-        padding: 40,
-      }}>
-        {/* Left side: Character info */}
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column' as const,
-          justifyContent: 'center',
-          paddingRight: 40,
-        }}>
-          <div style={{
-            fontSize: 40,
-            color: theme.primary,
-            fontWeight: 700,
-            marginBottom: 4,
-          }}>
-            {theme.icon} {data.class.name}
-          </div>
-          <div style={{
-            fontSize: 22,
-            color: '#9ca3af',
-            marginBottom: 20,
-          }}>
-            Lv. {data.stats.level} | {displayName}
-          </div>
-          <div style={{
-            fontSize: 56,
-            color: '#f4c430',
-            fontWeight: 900,
-            marginBottom: 20,
-          }}>
-            {'\u2694\uFE0F'} {data.stats.power.toLocaleString()}
-          </div>
-          <div style={{
-            fontSize: 18,
-            color: '#e8e8ed',
-            fontStyle: 'italic',
-            lineHeight: 1.5,
-          }}>
-            {`"${data.lore}"`}
-          </div>
-        </div>
-
-        {/* Right side: Stat bars */}
-        <div style={{
-          width: 360,
-          display: 'flex',
-          flexDirection: 'column' as const,
-          justifyContent: 'center',
-        }}>
-          <StatBarOG label="HP" value={data.stats.hp} maxValue={STAT_MAX_VALUES.hp} color={STAT_COLORS.hp} />
-          <StatBarOG label="MP" value={data.stats.mp} maxValue={STAT_MAX_VALUES.mp} color={STAT_COLORS.mp} />
-          <StatBarOG label="STR" value={data.stats.str} maxValue={STAT_MAX_VALUES.str} color={STAT_COLORS.str} />
-          <StatBarOG label="INT" value={data.stats.int} maxValue={STAT_MAX_VALUES.int} color={STAT_COLORS.int} />
-          <StatBarOG label="LUCK" value={data.stats.luck} maxValue={STAT_MAX_VALUES.luck} color={STAT_COLORS.luck} />
-        </div>
-
-        {/* Bottom branding */}
-        <div style={{
-          position: 'absolute',
-          bottom: 20,
-          right: 40,
-          fontSize: 16,
-          color: '#6b7280',
-        }}>
-          {'Eth\u00B7RPG'}
-        </div>
-      </div>
-    ),
-    { width: CARD_WIDTH, height: CARD_HEIGHT, headers: SUCCESS_CACHE_HEADERS },
-  );
 }
