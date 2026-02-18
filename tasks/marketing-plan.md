@@ -18,7 +18,7 @@
 | Card download | ✅ Complete | Gold "Save Card" button with blob download |
 | Cache resilience | ✅ Complete | Self-healing on cache miss via pipeline.ts |
 | Event tracking | ❌ Not implemented | Cannot measure funnel |
-| Deployment | ❌ Incomplete | Vercel deploy and domain not connected |
+| Deployment | ✅ Complete | Vercel deployed |
 
 ### Viral Loop Check
 ```
@@ -411,7 +411,7 @@ Must-generate targets:
 [1] CRITICAL — Fix OG metadata                    ✅ DONE (8982d81)
 [2] CRITICAL — Add card download button            ✅ DONE (8982d81)
 [3] HIGH     — Cache resilience (self-healing)     ✅ DONE (1ff80b6)
-[4] HIGH     — Vercel deploy + domain connection   ⬜ NEXT
+[4] HIGH     — Vercel deploy + domain connection   ✅ DONE
 [5] HIGH     — Generate 5 sample cards             ⬜ TODO
 [6] HIGH     — OG preview testing                  ⬜ TODO (after deploy)
 [7] MEDIUM   — Vercel Analytics integration        ⬜ TODO

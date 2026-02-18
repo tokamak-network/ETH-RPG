@@ -19,6 +19,8 @@
   - Implemented in `1ff80b6` via `lib/pipeline.ts` shared pipeline
   - CDN cache: `no-store` on failures, `max-age` only on success
 
+- [x] **Vercel deploy** — Production deployment complete
+
 ## MEDIUM
 
 - [ ] **Include pixel art sprites in card/OG images** — Improve shared image quality
