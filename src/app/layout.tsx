@@ -5,23 +5,23 @@ import './globals.css';
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
   title: {
-    default: 'Eth\u00B7RPG \u2014 당신의 지갑은 어떤 영웅입니까?',
+    default: 'Eth\u00B7RPG \u2014 What hero is your wallet?',
     template: '%s | Eth\u00B7RPG',
   },
   description:
-    '이더리움 지갑 주소를 입력하면 온체인 트랜잭션을 분석해 RPG 캐릭터 카드를 생성합니다. 스탯, 직업, AI 영웅 서사까지.',
+    'Enter an Ethereum wallet address to analyze on-chain transactions and generate an RPG character card. Stats, class, and AI hero lore included.',
   openGraph: {
     type: 'website',
     siteName: 'Eth\u00B7RPG',
-    title: 'Eth\u00B7RPG \u2014 당신의 지갑은 어떤 영웅입니까?',
+    title: 'Eth\u00B7RPG \u2014 What hero is your wallet?',
     description:
-      '이더리움 지갑 주소를 입력하면 온체인 트랜잭션을 분석해 RPG 캐릭터 카드를 생성합니다.',
+      'Enter an Ethereum wallet address to analyze on-chain transactions and generate an RPG character card.',
     images: ['/api/og/default'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Eth\u00B7RPG',
-    description: '당신의 지갑은 어떤 영웅입니까?',
+    description: 'What hero is your wallet?',
   },
   robots: {
     index: true,
@@ -35,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="en">
       <body className="antialiased">
         <ErrorBoundary>
           {children}

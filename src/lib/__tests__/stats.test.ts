@@ -408,8 +408,8 @@ describe('Full integration with realistic wallet data', () => {
 
     // Simulate some relevant crypto events
     mockGetRelevantEvents.mockReturnValue([
-      '대통합의 의식에 참여했다',
-      '거래소 왕국의 배신을 겪었다',
+      'Participated in the Ritual of the Great Merge',
+      'Endured the betrayal of the Exchange Kingdom',
     ]);
 
     const stats = calculateStats(raw, classification);

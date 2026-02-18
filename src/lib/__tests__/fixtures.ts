@@ -132,16 +132,16 @@ export function makeLoreInput(
   overrides?: Partial<LoreInputData>,
 ): LoreInputData {
   return {
-    className: '전사(Warrior)',
+    className: 'Warrior',
     classNameEn: 'Warrior',
     level: 10,
     power: 15000,
     txCount: 100,
-    walletAgeDescription: '2년 3개월',
+    walletAgeDescription: '2 years 3 months',
     firstTxDate: '2022-01-01',
     lastTxDate: '2024-06-01',
     relevantEvents: [],
-    activityPattern: '일반적인 트랜잭션 활동',
+    activityPattern: 'General transaction activity',
     ...overrides,
   };
 }
@@ -160,9 +160,9 @@ export function makeGenerateResponse(
       luck: 100,
       power: 35400,
     },
-    class: { id: 'warrior', name: '전사(Warrior)', nameEn: 'Warrior' },
-    lore: '평범한 검 하나로 블록체인의 전장을 걸어온 전사.',
-    longLore: '특별한 마법도, 전설적인 무기도 없다. 이 전사가 가진 것은 꾸준함과 의지뿐이다. 매일 전장에 나서며 한 걸음씩 전진해온 이 전사의 여정은, 그 자체로 하나의 서사시다.',
+    class: { id: 'warrior', name: 'Warrior', nameEn: 'Warrior' },
+    lore: 'A warrior who walked the blockchain battlefield with a single ordinary sword.',
+    longLore: 'No special magic, no legendary weapons. All this warrior has is perseverance and will. The journey of this warrior, who marched to battle every day taking one step at a time, is an epic saga in itself.',
     cardImageUrl: 'http://localhost:3000/api/card/0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
     ogImageUrl: 'http://localhost:3000/api/og/0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
     cached: false,

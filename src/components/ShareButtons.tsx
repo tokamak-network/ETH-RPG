@@ -8,7 +8,7 @@ interface ShareButtonsProps {
 }
 
 function buildShareText(data: GenerateResponse): string {
-  return `\uB0B4 \uC9C0\uAC11 \uC804\uD22C\uB825 ${data.stats.power.toLocaleString()}\u2026 \uB108\uB294 \uBA87\uC774\uB0D0 \uD83D\uDDE1\uFE0F\n${data.class.name} | Lv.${data.stats.level}`;
+  return `My wallet power ${data.stats.power.toLocaleString()}\u2026 What\u2019s yours? \uD83D\uDDE1\uFE0F\n${data.class.name} | Lv.${data.stats.level}`;
 }
 
 function buildShareUrl(address: string): string {
@@ -106,7 +106,7 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
           }}
         >
           <span aria-hidden="true">{'\u2B07\uFE0F'}</span>
-          <span>{downloading ? '저장 중...' : '카드 저장'}</span>
+          <span>{downloading ? 'Saving...' : 'Save Card'}</span>
         </button>
 
         <button
@@ -133,12 +133,12 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary"
         >
           <span aria-hidden="true">&#x1F4CB;</span>
-          <span>{copied ? '\uBCF5\uC0AC\uB428!' : '\uB9C1\uD06C \uBCF5\uC0AC'}</span>
+          <span>{copied ? 'Copied!' : 'Copy Link'}</span>
         </button>
       </div>
       {downloadError && (
         <p className="text-sm" style={{ color: 'var(--color-accent-red)' }}>
-          카드 저장에 실패했습니다. 잠시 후 다시 시도해주세요.
+          Failed to save card. Please try again later.
         </p>
       )}
       {/* Hidden anchor for programmatic download */}

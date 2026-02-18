@@ -109,7 +109,7 @@ function ErrorCard() {
         textAlign: 'center' as const,
         padding: '0 60px',
       }}>
-        {'캐릭터를 생성해주세요'}
+        {'Please generate a character'}
       </div>
       <div style={{
         fontSize: 16,
@@ -251,7 +251,7 @@ export async function GET(
             color: '#9ca3af',
             marginBottom: 8,
           }}>
-            {'\u2694\uFE0F'} {'전투력'}
+            {'\u2694\uFE0F'} {'Power'}
           </div>
           <div style={{
             fontSize: 72,

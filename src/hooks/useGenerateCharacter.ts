@@ -14,10 +14,10 @@ interface GenerateState {
 }
 
 const LOADING_STEPS: readonly string[] = [
-  '\uD2B8\uB79C\uC7AD\uC158 \uBD84\uC11D \uC911...',
-  '\uC2A4\uD0EF \uACC4\uC0B0 \uC911...',
-  '\uC9C1\uC5C5 \uD310\uC815 \uC911...',
-  '\uC601\uC6C5 \uC11C\uC0AC \uC791\uC131 \uC911...',
+  'Analyzing transactions...',
+  'Calculating stats...',
+  'Determining class...',
+  'Writing hero lore...',
 ] as const;
 
 const STEP_INTERVAL_MS = 1500;

@@ -34,8 +34,8 @@ vi.mock('@/lib/class', () => ({
 
 vi.mock('@/lib/crypto-events', () => ({
   getRelevantEvents: vi.fn(() => []),
-  describeActivityPattern: vi.fn(() => '일반적인 트랜잭션 활동'),
-  formatWalletAge: vi.fn(() => '신규'),
+  describeActivityPattern: vi.fn(() => 'General transaction activity'),
+  formatWalletAge: vi.fn(() => 'New'),
 }));
 
 import { fetchWalletData } from '@/lib/alchemy';
@@ -85,7 +85,7 @@ function setupSuccessfulMocks() {
     luck: 100,
     power: 35400,
   };
-  const classResult = { id: 'warrior' as const, name: '전사(Warrior)', nameEn: 'Warrior' };
+  const classResult = { id: 'warrior' as const, name: 'Warrior', nameEn: 'Warrior' };
 
   mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
   mockGetCached.mockReturnValue(null);
@@ -93,8 +93,8 @@ function setupSuccessfulMocks() {
   mockClassifyTransactions.mockReturnValue(classification);
   mockCalculateStats.mockReturnValue(stats);
   mockDetermineClass.mockReturnValue(classResult);
-  mockGenerateLore.mockResolvedValue('전설의 전사가 나타났다.');
-  mockGenerateLongLore.mockResolvedValue('특별한 마법도, 전설적인 무기도 없다.');
+  mockGenerateLore.mockResolvedValue('A legendary warrior has appeared.');
+  mockGenerateLongLore.mockResolvedValue('No special magic, no legendary weapons.');
 
   return { walletData, classification, stats, classResult };
 }

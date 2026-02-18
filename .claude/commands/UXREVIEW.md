@@ -1,192 +1,192 @@
 # 👁️ UXREVIEW (UX/UI/SEO Reviewer) Agent
 
-## 역할 정의
-Wallet RPG의 사용자 경험을 유저 입장에서 검토하는 리뷰어.
-버튼 위치, 폰트 가독성, 인터랙션 흐름, SEO 최적화를 평가하고 개선을 제안한다.
+## Role Definition
+Reviewer evaluating Wallet RPG's user experience from the user's perspective.
+Assesses and suggests improvements for button placement, font readability, interaction flow, and SEO optimization.
 
 ---
 
-## 리뷰 실행 방법
-매 주요 UI 변경 후, 아래 체크리스트를 순서대로 실행한다.
-각 항목은 ✅ (통과) / ⚠️ (개선 권장) / ❌ (수정 필수)로 평가.
+## Review Execution Method
+After each major UI change, execute the checklist below in order.
+Each item is rated as: ✅ (Pass) / ⚠️ (Improvement Recommended) / ❌ (Fix Required).
 
 ---
 
-## 1. 첫인상 & 신뢰 검사 (3초 테스트)
+## 1. First Impression & Trust Check (3-Second Test)
 
-### 첫 3초 내 확인 가능해야 하는 것
-- [ ] 이 서비스가 무엇인지 알 수 있는가?
-- [ ] "안전하다"는 느낌을 받는가? (Trust 문구 가시성)
-- [ ] 무엇을 해야 하는지 명확한가? (CTA 가시성)
-- [ ] 시각적으로 프로페셔널/재미있어 보이는가?
+### Must be identifiable within first 3 seconds
+- [ ] Can you tell what this service does?
+- [ ] Does it feel "safe"? (Trust message visibility)
+- [ ] Is it clear what you should do? (CTA visibility)
+- [ ] Does it look visually professional/fun?
 
-### Trust 문구 체크
-- [ ] "주소만 조회 · 키/서명/연결 없음" 문구가 스크롤 없이 보이는가?
-- [ ] 문구 폰트 사이즈 ≥ 12px
-- [ ] 문구 위치: 상단 고정 (sticky) 또는 입력 필드 직하
-- [ ] 색상 대비: 배경과 충분한 명도 차이 (WCAG AA 기준 4.5:1 이상)
-
----
-
-## 2. 타이포그래피 & 가독성
-
-### 폰트 사이즈 기준
-| 요소 | 최소 사이즈 | 권장 사이즈 | 비고 |
-|------|-----------|-----------|------|
-| 본문 텍스트 | 14px | 16px | 모바일에서 14px 미만 금지 |
-| 보조 텍스트 | 12px | 14px | muted 색상 시 14px 이상 권장 |
-| 버튼 텍스트 | 14px | 16px | bold 필수 |
-| 입력 필드 | 16px | 16px | iOS 줌 방지 (16px 미만 시 자동 줌) |
-| 스탯 수치 | 18px | 24px | 카드 내 핵심 정보 |
-| 전투력 | 24px | 36px | 가장 눈에 띄어야 함 |
-| 직업명 | 20px | 30px | display 폰트 |
-| 지갑 주소 | 12px | 14px | mono 폰트, 축약 표시 |
-
-### 줄간격 (Line Height)
-- 본문: 1.5~1.6
-- 제목: 1.2~1.3
-- 카드 내 스탯: 1.4
-
-### 폰트 배열 체크
-- [ ] 제목과 본문 폰트가 구분되는가? (display vs body)
-- [ ] 숫자 전용 구간에 monospace/tabular 폰트를 사용하는가?
-- [ ] 한국어/영문 혼용 시 baseline이 맞는가?
-- [ ] 지갑 주소가 mono 폰트로 표시되는가?
-- [ ] 긴 텍스트가 잘리지 않고 ellipsis 처리되는가?
+### Trust Message Check
+- [ ] Is "Address lookup only · No keys/signatures/connections" visible without scrolling?
+- [ ] Message font size >= 12px
+- [ ] Message position: Top-fixed (sticky) or directly below input field
+- [ ] Color contrast: Sufficient brightness difference from background (WCAG AA 4.5:1 or above)
 
 ---
 
-## 3. 버튼 & 인터랙션 검사
+## 2. Typography & Readability
 
-### 버튼 사이즈
-| 디바이스 | 최소 터치 영역 | 권장 |
-|---------|-------------|------|
-| 모바일 | 44x44px | 48x48px |
-| 데스크탑 | 32x32px | 40x40px |
+### Font Size Standards
+| Element | Minimum Size | Recommended Size | Notes |
+|---------|-------------|-----------------|-------|
+| Body text | 14px | 16px | Below 14px forbidden on mobile |
+| Secondary text | 12px | 14px | 14px+ recommended with muted colors |
+| Button text | 14px | 16px | Bold required |
+| Input field | 16px | 16px | iOS zoom prevention (auto-zooms below 16px) |
+| Stat values | 18px | 24px | Key info within card |
+| Power | 24px | 36px | Must be most eye-catching |
+| Class name | 20px | 30px | Display font |
+| Wallet address | 12px | 14px | Mono font, abbreviated display |
 
-### CTA 버튼 체크
-- [ ] "영웅 소환하기" 버튼이 화면 중앙에 위치하는가?
-- [ ] 버튼 색상이 배경과 충분히 대비되는가?
-- [ ] hover 상태가 구분되는가? (커서, 색상 변화)
-- [ ] 로딩 중 버튼이 disabled 되는가?
-- [ ] disabled 상태가 시각적으로 구분되는가?
-- [ ] 버튼 텍스트가 행동을 명확히 표현하는가?
+### Line Height
+- Body: 1.5~1.6
+- Headings: 1.2~1.3
+- In-card stats: 1.4
 
-### 공유 버튼 체크
-- [ ] 결과 카드 직하에 위치하는가? (스크롤 필요 없이)
-- [ ] 트위터/Farcaster/복사 3개 버튼이 구분되는가?
-- [ ] 각 버튼에 아이콘 + 텍스트 라벨이 있는가?
-- [ ] 복사 성공 시 피드백 (✓ 복사됨) 이 표시되는가?
-- [ ] "친구 지갑 도전" CTA가 공유 버튼과 같은 영역에 있는가?
-
-### 입력 필드 체크
-- [ ] placeholder 텍스트: "0x... 또는 ENS 이름 입력"
-- [ ] 포커스 시 아웃라인/보더 변화가 있는가?
-- [ ] 엔터 키로 제출 가능한가?
-- [ ] 잘못된 입력 시 에러 메시지가 필드 하단에 표시되는가?
-- [ ] 에러 메시지 색상이 빨간색/주황색으로 구분되는가?
-- [ ] 클립보드 붙여넣기가 정상 작동하는가?
+### Font Layout Check
+- [ ] Are heading and body fonts distinguishable? (display vs body)
+- [ ] Are monospace/tabular fonts used in number-only sections?
+- [ ] Do Korean/English mixed baselines align?
+- [ ] Are wallet addresses displayed in mono font?
+- [ ] Is long text properly truncated with ellipsis?
 
 ---
 
-## 4. 페이지 플로우 검사
+## 3. Button & Interaction Check
 
-### 유저 저니 (Happy Path)
+### Button Sizes
+| Device | Minimum Touch Area | Recommended |
+|--------|-------------------|-------------|
+| Mobile | 44x44px | 48x48px |
+| Desktop | 32x32px | 40x40px |
+
+### CTA Button Check
+- [ ] Is the "Summon Hero" button centered on screen?
+- [ ] Does button color contrast sufficiently with background?
+- [ ] Is hover state distinguishable? (cursor, color change)
+- [ ] Is button disabled during loading?
+- [ ] Is disabled state visually distinguishable?
+- [ ] Does button text clearly express the action?
+
+### Share Button Check
+- [ ] Located directly below result card? (no scrolling needed)
+- [ ] Are Twitter/Farcaster/Copy 3 buttons distinguishable?
+- [ ] Does each button have icon + text label?
+- [ ] Is copy success feedback displayed ("Copied!")?
+- [ ] Is "Challenge a friend's wallet" CTA in the same area as share buttons?
+
+### Input Field Check
+- [ ] Placeholder text: "0x... or ENS name"
+- [ ] Is there an outline/border change on focus?
+- [ ] Can you submit with Enter key?
+- [ ] Is error message displayed below the field on invalid input?
+- [ ] Is error message color distinguishable (red/orange)?
+- [ ] Does clipboard paste work correctly?
+
+---
+
+## 4. Page Flow Check
+
+### User Journey (Happy Path)
 ```
-랜딩 → 주소 입력 → [로딩] → 결과 카드 → 공유 → (친구가) 랜딩 → 반복
+Landing → Address Input → [Loading] → Result Card → Share → (Friend) Landing → Repeat
 ```
 
-각 전환 지점 체크:
-- [ ] 랜딩 → 입력: CTA까지 스크롤 없이 도달 가능 (above the fold)
-- [ ] 입력 → 로딩: 즉각적 피드백 (버튼 상태 변화, 로딩 표시)
-- [ ] 로딩 → 결과: 자연스러운 전환 (깜빡임 없음)
-- [ ] 결과 → 공유: 공유 버튼까지 스크롤 1회 이내
-- [ ] 공유 링크 → 결과: 직접 결과 페이지 도달 (랜딩 거치지 않음)
-- [ ] 결과 → 재입력: "다른 지갑 소환하기" 버튼 존재 및 작동
+Check each transition point:
+- [ ] Landing → Input: CTA reachable without scrolling (above the fold)
+- [ ] Input → Loading: Immediate feedback (button state change, loading indicator)
+- [ ] Loading → Result: Smooth transition (no flickering)
+- [ ] Result → Share: Share buttons within 1 scroll
+- [ ] Share link → Result: Direct result page access (no landing page detour)
+- [ ] Result → Re-input: "Summon Another Wallet" button exists and works
 
-### 에러 플로우
-- [ ] 잘못된 주소 → 인라인 에러 메시지 (페이지 이동 없음)
-- [ ] 트랜잭션 0 → 전용 결과 화면 ("이 영웅은 아직 여정을 시작하지 않았습니다")
-- [ ] 서버 에러 → "잠시 후 다시 시도" + 재시도 버튼
-- [ ] 레이트리밋 → 남은 대기 시간 표시
-
----
-
-## 5. 반응형 & 기기별 검사
-
-### 필수 테스트 뷰포트
-| 기기 | 해상도 | 확인 사항 |
-|------|--------|---------|
-| iPhone SE | 375x667 | 최소 모바일 |
-| iPhone 14 | 390x844 | 주력 모바일 |
-| iPad | 768x1024 | 태블릿 |
-| MacBook | 1440x900 | 데스크탑 |
-| 와이드 | 1920x1080 | 풀HD |
-
-### 모바일 전용 체크
-- [ ] 카드가 화면 너비에 맞게 리사이즈되는가?
-- [ ] 입력 필드 터치 시 키보드가 UI를 가리지 않는가?
-- [ ] 스크롤 시 상단 Trust 문구가 유지되는가?
-- [ ] 가로 스크롤이 발생하지 않는가?
-- [ ] 텍스트가 잘리지 않는가?
+### Error Flow
+- [ ] Invalid address → Inline error message (no page navigation)
+- [ ] Zero transactions → Dedicated result screen ("This hero has not yet begun their journey")
+- [ ] Server error → "Please try again shortly" + retry button
+- [ ] Rate limit → Remaining wait time displayed
 
 ---
 
-## 6. 카드 이미지 품질 검사
-- [ ] 카드 텍스트가 선명하게 보이는가? (저해상도 기기 포함)
-- [ ] 직업별 색상 테마가 적용되었는가?
-- [ ] 스탯 바의 비율이 시각적으로 정확한가?
-- [ ] 축약 주소가 정상 표시되는가?
-- [ ] 서사 텍스트가 카드 내에서 줄바꿈 정상 처리되는가?
-- [ ] OG 미리보기에서 카드가 잘려 보이지 않는가?
+## 5. Responsive & Device-Specific Check
+
+### Required Test Viewports
+| Device | Resolution | Check Items |
+|--------|-----------|-------------|
+| iPhone SE | 375x667 | Minimum mobile |
+| iPhone 14 | 390x844 | Primary mobile |
+| iPad | 768x1024 | Tablet |
+| MacBook | 1440x900 | Desktop |
+| Widescreen | 1920x1080 | Full HD |
+
+### Mobile-Specific Check
+- [ ] Does card resize to fit screen width?
+- [ ] Does keyboard not cover UI when input field is touched?
+- [ ] Does top Trust message persist on scroll?
+- [ ] No horizontal scrolling?
+- [ ] Text not clipped?
 
 ---
 
-## 7. SEO 체크리스트
+## 6. Card Image Quality Check
+- [ ] Is card text crisp? (including low-resolution devices)
+- [ ] Are class-specific color themes applied?
+- [ ] Are stat bar proportions visually accurate?
+- [ ] Is abbreviated address displayed correctly?
+- [ ] Does lore text wrap properly within card?
+- [ ] Does card not appear cropped in OG preview?
 
-### 메타 태그
-- [ ] `<title>`: "Eth·RPG — 당신의 지갑은 어떤 영웅입니까?"
-- [ ] `<meta description>`: 80자 이내 서비스 설명
-- [ ] `og:title`, `og:description`, `og:image` 모두 설정
+---
+
+## 7. SEO Checklist
+
+### Meta Tags
+- [ ] `<title>`: "Eth·RPG — What Hero Is Your Wallet?"
+- [ ] `<meta description>`: Service description under 80 chars
+- [ ] `og:title`, `og:description`, `og:image` all set
 - [ ] `twitter:card`: summary_large_image
-- [ ] 결과 페이지: 동적 메타 (직업명/전투력 포함)
+- [ ] Result page: Dynamic meta (including class name/power)
 
-### 기술 SEO
-- [ ] robots.txt 정상
-- [ ] sitemap.xml 존재
-- [ ] canonical URL 설정
-- [ ] 모바일 친화 (Lighthouse Mobile score ≥ 80)
+### Technical SEO
+- [ ] robots.txt normal
+- [ ] sitemap.xml exists
+- [ ] canonical URL set
+- [ ] Mobile-friendly (Lighthouse Mobile score >= 80)
 - [ ] Core Web Vitals: LCP < 2.5s, CLS < 0.1
 
-### 구조화 데이터
-- [ ] JSON-LD: WebApplication 스키마 적용 (선택)
+### Structured Data
+- [ ] JSON-LD: WebApplication schema applied (optional)
 
 ---
 
-## 8. 접근성 최소 기준
-- [ ] 모든 이미지에 alt 텍스트
-- [ ] 키보드만으로 전체 플로우 완료 가능
-- [ ] 색상만으로 정보를 전달하지 않음 (색약 고려)
-- [ ] 포커스 표시기 (outline) 제거하지 않음
-- [ ] 스크린 리더 기본 호환 (시맨틱 HTML)
+## 8. Accessibility Minimum Standards
+- [ ] All images have alt text
+- [ ] Entire flow completable with keyboard only
+- [ ] Information not conveyed by color alone (color blindness consideration)
+- [ ] Focus indicators (outline) not removed
+- [ ] Screen reader basic compatibility (semantic HTML)
 
 ---
 
-## 리뷰 보고 형식
+## Review Report Format
 ```
-## UXREVIEW Report — {날짜}
+## UXREVIEW Report — {date}
 
-### 요약
-- ✅ 통과: {n}개
-- ⚠️ 개선 권장: {n}개
-- ❌ 수정 필수: {n}개
+### Summary
+- ✅ Pass: {n} items
+- ⚠️ Improvement Recommended: {n} items
+- ❌ Fix Required: {n} items
 
-### ❌ 수정 필수 항목
-1. {항목}: {현재 상태} → {권장 변경}
+### ❌ Fix Required Items
+1. {item}: {current state} → {recommended change}
 
-### ⚠️ 개선 권장 항목
-1. {항목}: {현재 상태} → {권장 변경}
+### ⚠️ Improvement Recommended Items
+1. {item}: {current state} → {recommended change}
 
-### 스크린샷
-- (해당 시 첨부)
+### Screenshots
+- (attach if applicable)
 ```

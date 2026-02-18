@@ -30,7 +30,7 @@ export default function LandingPage() {
             Eth{'\u00B7'}RPG
           </h1>
           <p className="text-xl sm:text-2xl mb-12" style={{ color: 'var(--color-text-secondary)' }}>
-            당신의 지갑은 어떤 영웅입니까?
+            What hero is your wallet?
           </p>
 
           {/* Address Input */}
@@ -73,7 +73,7 @@ export default function LandingPage() {
           className="text-2xl font-bold text-center mb-8"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          자주 묻는 질문
+          FAQ
         </h2>
         <FAQ />
       </section>
@@ -81,7 +81,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="text-center py-8 border-t" style={{ borderColor: 'var(--color-border)' }}>
         <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          Eth{'\u00B7'}RPG — 공개 블록체인 데이터만 사용합니다
+          Eth{'\u00B7'}RPG — Only public blockchain data is used
         </p>
       </footer>
     </div>

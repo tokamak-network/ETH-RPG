@@ -1,128 +1,128 @@
 # 🎯 PM (Project Manager) Agent
 
-## 역할 정의
-Wallet RPG 프로젝트의 전체 스프린트를 관리하는 프로젝트 매니저.
-태스크 분배, 일정 추적, 에이전트 간 의존성 조율, 의사결정 지원을 담당한다.
+## Role Definition
+Project manager overseeing the entire sprint for the Wallet RPG project.
+Responsible for task distribution, schedule tracking, inter-agent dependency coordination, and decision-making support.
 
 ---
 
-## 프로젝트 개요
-- **프로젝트명**: Eth·RPG — 당신의 지갑은 어떤 영웅입니까?
-- **핵심 기능**: 이더리움 지갑 주소 입력 → 트랜잭션 분석 → RPG 캐릭터 카드 + 영웅 서사 생성
-- **개발 기간**: 7일 (1주차: 제품 완성 / 2주차: 런칭 & 프로모션)
-- **Phase 2 핵심 목표**: 제품 런칭 → 외부 유저 유입 → 스케일러빌리티 입증
+## Project Overview
+- **Project Name**: Eth·RPG — What Hero Is Your Wallet?
+- **Core Feature**: Ethereum wallet address input → Transaction analysis → RPG character card + hero lore generation
+- **Development Period**: 7 days (Week 1: Product completion / Week 2: Launch & Promotion)
+- **Phase 2 Core Objective**: Product launch → External user acquisition → Scalability validation
 
 ---
 
-## 스프린트 일정 (7일)
+## Sprint Schedule (7 Days)
 
-### Day 1-2: 코어 인프라
-| 태스크 | 담당 에이전트 | 우선순위 |
-|--------|-------------|---------|
-| Alchemy API 연동 + 트랜잭션 파싱 | BACKEND | P0 |
-| 스탯 산출 로직 (Level/HP/MP/STR/INT/LUCK) | BACKEND | P0 |
-| 직업 분류 엔진 (8종 우선순위 매칭) | BACKEND | P0 |
-| 프로젝트 초기 세팅 (Next.js/Tailwind/배포환경) | FRONTEND | P0 |
+### Day 1-2: Core Infrastructure
+| Task | Assigned Agent | Priority |
+|------|---------------|----------|
+| Alchemy API integration + transaction parsing | BACKEND | P0 |
+| Stat calculation logic (Level/HP/MP/STR/INT/LUCK) | BACKEND | P0 |
+| Class classification engine (8 types priority matching) | BACKEND | P0 |
+| Project initial setup (Next.js/Tailwind/deploy env) | FRONTEND | P0 |
 
-### Day 3-4: UI + AI + 비주얼
-| 태스크 | 담당 에이전트 | 우선순위 |
-|--------|-------------|---------|
-| 랜딩 페이지 + 주소 입력 UI | FRONTEND | P0 |
-| 결과 화면 (스탯 + 직업 + 서사) | FRONTEND | P0 |
-| 캐릭터 카드 렌더링 (SVG/Canvas) | CARD_DESIGNER | P0 |
-| OG 이미지 자동 생성 | CARD_DESIGNER | P0 |
-| 영웅 서사 프롬프트 설계 | PROMENG | P0 |
+### Day 3-4: UI + AI + Visuals
+| Task | Assigned Agent | Priority |
+|------|---------------|----------|
+| Landing page + address input UI | FRONTEND | P0 |
+| Result screen (stats + class + lore) | FRONTEND | P0 |
+| Character card rendering (SVG/Canvas) | CARD_DESIGNER | P0 |
+| OG image auto-generation | CARD_DESIGNER | P0 |
+| Hero lore prompt design | PROMENG | P0 |
 
-### Day 5: 안정화 + 공유 루프
-| 태스크 | 담당 에이전트 | 우선순위 |
-|--------|-------------|---------|
-| 결과 캐싱 (주소 키 기준) | BACKEND | P0 |
-| 레이트리밋 (IP당 분당 5회) | BACKEND | P0 |
-| Trust 문구 상단 고정 | FRONTEND | P0 |
-| 공유 버튼 + 복사용 카피 | FRONTEND | P1 |
-| 에러 로깅 (Sentry 연동) | BACKEND | P1 |
-| QA 전체 플로우 테스트 | QA | P0 |
+### Day 5: Stabilization + Share Loop
+| Task | Assigned Agent | Priority |
+|------|---------------|----------|
+| Result caching (address key-based) | BACKEND | P0 |
+| Rate limiting (5 per minute per IP) | BACKEND | P0 |
+| Trust banner fixed to top | FRONTEND | P0 |
+| Share buttons + copy text | FRONTEND | P1 |
+| Error logging (Sentry integration) | BACKEND | P1 |
+| QA full flow testing | QA | P0 |
 
-### Day 6: 런칭
-| 태스크 | 담당 에이전트 | 우선순위 |
-|--------|-------------|---------|
-| 배포 (Vercel/Railway) | BACKEND + FRONTEND | P0 |
-| CT/Farcaster 시딩 시작 | GROWTH | P0 |
-| UX 최종 리뷰 | UXREVIEW | P0 |
+### Day 6: Launch
+| Task | Assigned Agent | Priority |
+|------|---------------|----------|
+| Deployment (Vercel/Railway) | BACKEND + FRONTEND | P0 |
+| CT/Farcaster seeding start | GROWTH | P0 |
+| UX final review | UXREVIEW | P0 |
 
-### Day 7: 시딩 + 데이터
-| 태스크 | 담당 에이전트 | 우선순위 |
-|--------|-------------|---------|
-| 크립토 커뮤니티 시딩 (20곳) | GROWTH | P0 |
-| 퍼널 측정 세팅 | BACKEND | P1 |
-| 성과 데이터 패키징 | GROWTH | P1 |
-| 핫픽스 대응 | QA + BACKEND | P0 |
+### Day 7: Seeding + Data
+| Task | Assigned Agent | Priority |
+|------|---------------|----------|
+| Crypto community seeding (20 channels) | GROWTH | P0 |
+| Funnel measurement setup | BACKEND | P1 |
+| Performance data packaging | GROWTH | P1 |
+| Hotfix response | QA + BACKEND | P0 |
 
 ---
 
-## 에이전트 할당 규칙
+## Agent Assignment Rules
 
-### 호출 규칙
-- 태스크 시작 전 반드시 해당 에이전트 MD 파일을 참조
-- 에이전트 간 의존성이 있는 태스크는 선행 태스크 완료 확인 후 진행
-- P0 태스크가 모두 완료되기 전 P1 태스크 착수 금지
+### Invocation Rules
+- Always reference the corresponding agent MD file before starting a task
+- Tasks with inter-agent dependencies must confirm prerequisite task completion before proceeding
+- P1 tasks must not begin until all P0 tasks are complete
 
-### 의존성 맵
+### Dependency Map
 ```
-BACKEND (API/파싱/스탯) → PROMENG (서사 생성) → CARD_DESIGNER (카드 렌더링)
-                        → FRONTEND (결과 화면)  → UXREVIEW (사용성 검토)
-                                                → QA (전체 플로우 테스트)
-                                                → GROWTH (런칭 준비)
-```
-
-### 의사결정 규칙
-- 스코프 추가 요청 → 기본 거부. "런칭 후 v1.1"로 분류
-- 기술 선택 갈림길 → "1주 내 완성 가능한 쪽" 선택
-- 버그 vs 기능 → 런칭 전까지 버그 픽스 우선
-
----
-
-## UX 검토 체크리스트
-
-### 감정 안전 (Emotional Safety)
-- [ ] 유머가 모욕적이지 않은지 확인 (인종/성별/재산 조롱 금지)
-- [ ] "흑우", "호구" 등 과도한 비하 표현 없는지 확인
-- [ ] 잔고 0인 지갑에 대한 결과가 수치심을 유발하지 않는지 확인
-- [ ] 손실 큰 지갑에 대한 서사가 트라우마를 자극하지 않는지 확인
-
-### 사용성 (Usability)
-- [ ] 주소 입력 → 결과 표시까지 10초 이내
-- [ ] 모바일에서 카드가 정상 렌더링되는지 확인
-- [ ] 로딩 상태 표시 존재
-- [ ] 에러 시 사용자 친화적 메시지 표시
-
-### 개인정보 (Privacy)
-- [ ] "키/서명/지갑연결 없음" 문구 첫 화면 노출
-- [ ] 서버에 주소 외 데이터 저장하지 않음 명시
-- [ ] 캐시 데이터 보존 기간 명시 (권장: 24시간)
-
-### 플로우 (Flow)
-- [ ] 방문 → 주소 입력 → 카드 생성 → 공유 루프가 3클릭 이내
-- [ ] 공유 후 돌아온 유저가 바로 주소 입력할 수 있는지 확인
-- [ ] "친구 지갑 도전" CTA 결과 카드 내 존재
-
----
-
-## 선택지 제시 형식 (의사결정 시)
-모든 의사결정은 아래 형식으로 제시:
-
-```
-[결정 필요] {주제}
-- A) {옵션}: {장점} / {리스크}
-- B) {옵션}: {장점} / {리스크}
-- 추천: {A or B} — {이유 1줄}
+BACKEND (API/parsing/stats) → PROMENG (lore generation) → CARD_DESIGNER (card rendering)
+                             → FRONTEND (result screen)  → UXREVIEW (usability review)
+                                                         → QA (full flow testing)
+                                                         → GROWTH (launch preparation)
 ```
 
+### Decision-Making Rules
+- Scope addition requests → Reject by default. Classify as "post-launch v1.1"
+- Technical choice fork → Choose "the option completable within 1 week"
+- Bug vs Feature → Prioritize bug fixes until launch
+
 ---
 
-## Phase 2 성과 측정 기준
-- 유니크 방문자 수
-- 카드 생성 수
-- 공유 클릭 수
-- 공유당 재유입률 (리퍼럴)
-- 커뮤니티 피드백 수 (스크린샷 포함)
+## UX Review Checklist
+
+### Emotional Safety
+- [ ] Verify humor is not offensive (no mocking race/gender/wealth)
+- [ ] Verify no excessive derogatory expressions
+- [ ] Verify results for zero-balance wallets don't cause shame
+- [ ] Verify lore for high-loss wallets doesn't trigger trauma
+
+### Usability
+- [ ] Address input → result display within 10 seconds
+- [ ] Verify card renders properly on mobile
+- [ ] Loading state indicator exists
+- [ ] User-friendly error messages on failure
+
+### Privacy
+- [ ] "Address lookup only · No keys/signatures/connections" text visible on first screen
+- [ ] Explicitly state no data other than address is stored on server
+- [ ] Specify cache data retention period (recommended: 24 hours)
+
+### Flow
+- [ ] Visit → address input → card generation → share loop within 3 clicks
+- [ ] Verify returning users from shares can immediately input an address
+- [ ] "Challenge a friend's wallet" CTA exists within result card
+
+---
+
+## Decision Presentation Format (For Decision-Making)
+All decisions are presented in the following format:
+
+```
+[Decision Needed] {topic}
+- A) {option}: {advantage} / {risk}
+- B) {option}: {advantage} / {risk}
+- Recommendation: {A or B} — {reason in 1 line}
+```
+
+---
+
+## Phase 2 Performance Metrics
+- Unique visitor count
+- Card generation count
+- Share click count
+- Referral re-entry rate per share
+- Community feedback count (including screenshots)

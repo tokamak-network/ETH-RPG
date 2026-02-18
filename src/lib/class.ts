@@ -16,14 +16,14 @@ export const GUARDIAN_TX_COUNT_THRESHOLD = 100;
 export const GUARDIAN_BALANCE_ETH_THRESHOLD = 1.0;
 
 // --- Class definitions ---
-const HUNTER: ClassResult = { id: 'hunter', name: '헌터(Hunter)', nameEn: 'Hunter' };
-const ROGUE: ClassResult = { id: 'rogue', name: '로그(Rogue)', nameEn: 'Rogue' };
-const SUMMONER: ClassResult = { id: 'summoner', name: '소환사(Summoner)', nameEn: 'Summoner' };
-const MERCHANT: ClassResult = { id: 'merchant', name: '상인(Merchant)', nameEn: 'Merchant' };
-const PRIEST: ClassResult = { id: 'priest', name: '성직자(Priest)', nameEn: 'Priest' };
-const ELDER_WIZARD: ClassResult = { id: 'elder_wizard', name: '고대 마법사(Elder Wizard)', nameEn: 'Elder Wizard' };
-const GUARDIAN: ClassResult = { id: 'guardian', name: '수호자(Guardian)', nameEn: 'Guardian' };
-const WARRIOR: ClassResult = { id: 'warrior', name: '전사(Warrior)', nameEn: 'Warrior' };
+const HUNTER: ClassResult = { id: 'hunter', name: 'Hunter', nameEn: 'Hunter' };
+const ROGUE: ClassResult = { id: 'rogue', name: 'Rogue', nameEn: 'Rogue' };
+const SUMMONER: ClassResult = { id: 'summoner', name: 'Summoner', nameEn: 'Summoner' };
+const MERCHANT: ClassResult = { id: 'merchant', name: 'Merchant', nameEn: 'Merchant' };
+const PRIEST: ClassResult = { id: 'priest', name: 'Priest', nameEn: 'Priest' };
+const ELDER_WIZARD: ClassResult = { id: 'elder_wizard', name: 'Elder Wizard', nameEn: 'Elder Wizard' };
+const GUARDIAN: ClassResult = { id: 'guardian', name: 'Guardian', nameEn: 'Guardian' };
+const WARRIOR: ClassResult = { id: 'warrior', name: 'Warrior', nameEn: 'Warrior' };
 
 type ClassMatcher = (
   raw: WalletRawData,

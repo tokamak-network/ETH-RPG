@@ -48,7 +48,7 @@ export default function AddressInput({ onSubmit, isLoading }: AddressInputProps)
             type="text"
             value={address}
             onChange={(e) => handleChange(e.target.value)}
-            placeholder="0x... 또는 ENS 이름 입력"
+            placeholder="0x... or ENS name"
             disabled={isLoading}
             spellCheck={false}
             autoComplete="off"
@@ -59,12 +59,12 @@ export default function AddressInput({ onSubmit, isLoading }: AddressInputProps)
             disabled={isSubmitDisabled}
             className="px-6 py-3 rounded-lg bg-accent-gold text-black font-semibold text-sm whitespace-nowrap transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            {isLoading ? '소환 중...' : '영웅 소환하기'}
+            {isLoading ? 'Summoning...' : 'Summon Hero'}
           </button>
         </div>
         {showError && (
           <p className="text-accent-red text-xs pl-1">
-            올바른 이더리움 주소(0x...) 또는 ENS 이름(.eth)을 입력해주세요.
+            Please enter a valid Ethereum address (0x...) or ENS name (.eth).
           </p>
         )}
       </div>

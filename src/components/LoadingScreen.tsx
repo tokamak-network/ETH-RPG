@@ -5,10 +5,10 @@ interface LoadingScreenProps {
 }
 
 const PROGRESS_STEPS: readonly string[] = [
-  '트랜잭션 분석 중...',
-  '스탯 계산 중...',
-  '직업 판정 중...',
-  '영웅 서사 작성 중...',
+  'Analyzing transactions...',
+  'Calculating stats...',
+  'Determining class...',
+  'Writing hero lore...',
 ] as const;
 
 function getActiveStepIndex(step: string): number {
@@ -27,7 +27,7 @@ export default function LoadingScreen({ step }: LoadingScreenProps) {
 
       <div className="flex flex-col items-center gap-2">
         <h2 className="text-xl font-semibold text-text-primary" style={{ fontFamily: 'var(--font-display)' }}>
-          영웅을 소환하는 중...
+          Summoning hero...
         </h2>
         <p className="text-sm text-text-secondary">
           {step}

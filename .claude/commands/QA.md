@@ -1,170 +1,170 @@
 # 🔍 QA (Quality Assurance) Agent
 
-## 역할 정의
-Wallet RPG의 전체 품질을 보증하는 QA 에이전트.
-버그 심각도 분류, 개인정보 보호 검사, 위기 대응, 정기 점검을 수행한다.
+## Role Definition
+QA agent ensuring overall quality of Wallet RPG.
+Performs bug severity classification, privacy protection checks, crisis response, and periodic inspections.
 
 ---
 
-## P0~P3 심각도 분류
+## P0~P3 Severity Classification
 
-### P0 — 크리티컬 (즉시 수정, 배포 차단)
-서비스 자체가 사용 불가하거나 보안/개인정보 사고 발생.
-- 메인 페이지 접근 불가 (500 에러, 빈 화면)
-- 주소 입력 후 결과가 전혀 생성되지 않음
-- 개인정보 노출 (지갑 주소 외 데이터 유출)
-- API 키 노출 (Alchemy/Anthropic/OpenAI)
-- XSS/인젝션 취약점 발견
-- 다른 유저의 캐시 데이터가 반환됨
-- OG 이미지에 잘못된 주소의 정보 표시
+### P0 — Critical (Fix immediately, blocks deployment)
+Service is completely unusable or security/privacy incident occurred.
+- Main page inaccessible (500 error, blank screen)
+- No result generated after address input
+- Personal data exposure (data leakage beyond wallet address)
+- API key exposure (Alchemy/Anthropic/OpenAI)
+- XSS/injection vulnerability discovered
+- Another user's cached data returned
+- OG image displays wrong address information
 
-### P1 — 높음 (24시간 이내 수정)
-핵심 기능이 부분적으로 작동하지 않음.
-- 특정 직업이 전혀 매칭되지 않음
-- AI 서사가 빈 문자열로 반환
-- 카드 이미지 렌더링 실패 (일부 브라우저)
-- 레이트리밋이 작동하지 않음
-- 공유 링크 클릭 시 404
-- OG 이미지가 생성되지 않음
-- 모바일에서 카드가 잘려서 표시됨
+### P1 — High (Fix within 24 hours)
+Core functionality partially non-functional.
+- Specific class never matches
+- AI lore returns empty string
+- Card image rendering failure (certain browsers)
+- Rate limiting not working
+- Share link returns 404
+- OG image not generating
+- Card truncated on mobile display
 
-### P2 — 중간 (Sprint 내 수정)
-사용에는 지장 없지만 경험 품질 저하.
-- 스탯 수치가 비정상적 (레벨 0, 전투력 음수 등)
-- 서사 내용이 직업과 불일치
-- 로딩 시간 10초 초과 (타임아웃 아님)
-- 공유 카피 복사 버튼 미작동
-- 폰트 깨짐 (일부 기기)
-- 다크모드/라이트모드 전환 시 UI 깨짐
+### P2 — Medium (Fix within sprint)
+No usage impact but experience quality degraded.
+- Abnormal stat values (level 0, negative power, etc.)
+- Lore content mismatches class
+- Loading time exceeds 10 seconds (not timeout)
+- Share copy button not working
+- Font corruption (certain devices)
+- UI breaks on dark/light mode toggle
 
-### P3 — 낮음 (백로그)
-미관/편의성 이슈.
-- 스탯 바 애니메이션 끊김
-- 미세한 정렬 어긋남
-- 특정 해상도에서 여백 불일치
-- 로딩 메시지 오타
-- 콘솔 경고 메시지
-
----
-
-## 개인정보 노출 검사 7항목
-
-모든 배포 전 아래 7항목을 반드시 검증한다.
-
-### 1. 입력 데이터 범위 검사
-- [ ] 서버가 수신하는 데이터가 지갑 주소(string) 단일 필드인지 확인
-- [ ] 추가 개인 정보 (이메일, 이름, IP 외) 수집하지 않는지 확인
-- [ ] Request body에 예상 외 필드가 포함될 때 무시하는지 확인
-
-### 2. 저장 데이터 범위 검사
-- [ ] 캐시에 저장되는 데이터: 주소 + 결과만
-- [ ] 캐시 TTL 24시간 후 자동 삭제 확인
-- [ ] 서버 로그에 full 주소가 기록되는지 확인 (마스킹 필요: 0x1234...abcd)
-
-### 3. API 키 보안 검사
-- [ ] Alchemy API 키가 클라이언트 번들에 포함되지 않는지 확인
-- [ ] Anthropic/OpenAI API 키가 서버 사이드에서만 사용되는지 확인
-- [ ] `.env` 파일이 `.gitignore`에 포함되어 있는지 확인
-- [ ] Vercel 환경 변수가 `NEXT_PUBLIC_` 접두사 없이 설정되었는지 확인
-
-### 4. 응답 데이터 검사
-- [ ] API 응답에 raw 트랜잭션 데이터가 포함되지 않는지 확인
-- [ ] 응답에 다른 지갑 주소가 노출되지 않는지 확인
-- [ ] AI 서사에 실제 금액이 포함되지 않는지 확인
-
-### 5. OG 이미지 검사
-- [ ] OG 이미지에 full 주소가 아닌 축약 주소(0x1234...abcd)만 표시
-- [ ] OG 이미지에 잔고 등 민감 정보 미포함 확인
-
-### 6. 에러 메시지 검사
-- [ ] 에러 응답에 서버 내부 정보 (스택 트레이스, DB 구조 등) 미포함
-- [ ] Sentry 전송 데이터에 유저 IP 해싱 또는 미포함 확인
-
-### 7. 서드파티 데이터 전송 검사
-- [ ] AI API 호출 시 전송되는 데이터에 raw 주소만 포함 (트랜잭션 상세 미전송)
-- [ ] Analytics 이벤트에 지갑 주소 미포함 (있다면 해싱)
+### P3 — Low (Backlog)
+Cosmetic/convenience issues.
+- Stat bar animation stuttering
+- Subtle alignment mismatches
+- Margin inconsistencies at specific resolutions
+- Typos in loading messages
+- Console warning messages
 
 ---
 
-## 위기 대응 테스트 4시나리오
+## Privacy Exposure Check — 7 Items
 
-### 시나리오 1: API 쿼터 초과
+All 7 items must be verified before every deployment.
+
+### 1. Input Data Scope Check
+- [ ] Verify server receives only a single wallet address (string) field
+- [ ] Verify no additional personal info (email, name, beyond IP) is collected
+- [ ] Verify unexpected fields in request body are ignored
+
+### 2. Stored Data Scope Check
+- [ ] Cache stores only address + result
+- [ ] Verify cache auto-deletes after 24h TTL
+- [ ] Check if full address is recorded in server logs (masking needed: 0x1234...abcd)
+
+### 3. API Key Security Check
+- [ ] Verify Alchemy API key is not included in client bundle
+- [ ] Verify Anthropic/OpenAI API keys are used server-side only
+- [ ] Verify `.env` file is included in `.gitignore`
+- [ ] Verify Vercel environment variables are set without `NEXT_PUBLIC_` prefix
+
+### 4. Response Data Check
+- [ ] Verify API response doesn't include raw transaction data
+- [ ] Verify response doesn't expose other wallet addresses
+- [ ] Verify AI lore doesn't contain actual amounts
+
+### 5. OG Image Check
+- [ ] OG image displays abbreviated address only (0x1234...abcd), not full address
+- [ ] Verify OG image doesn't include sensitive info like balance
+
+### 6. Error Message Check
+- [ ] Verify error responses don't include server internals (stack traces, DB structure, etc.)
+- [ ] Verify Sentry transmission data hashes or excludes user IP
+
+### 7. Third-Party Data Transmission Check
+- [ ] Verify AI API calls transmit only raw address (no transaction details)
+- [ ] Verify analytics events don't include wallet address (hash if present)
+
+---
+
+## Crisis Response Testing — 4 Scenarios
+
+### Scenario 1: API Quota Exceeded
 ```
-상황: Alchemy Free tier 한도 초과 (300 req/s)
-테스트:
-1. 동시 요청 50개 발생 시키기
-2. 429 응답 확인
-3. 유저에게 "잠시 후 다시 시도" 메시지 표시 확인
-4. 캐시된 결과는 정상 반환되는지 확인
-대응: 레이트리밋이 API 쿼터보다 먼저 걸리는지 확인
+Situation: Alchemy Free tier limit exceeded (300 req/s)
+Testing:
+1. Generate 50 simultaneous requests
+2. Verify 429 response
+3. Verify "please try again shortly" message displayed to user
+4. Verify cached results still return correctly
+Response: Confirm rate limit triggers before API quota
 ```
 
-### 시나리오 2: AI 서사 생성 실패
+### Scenario 2: AI Lore Generation Failure
 ```
-상황: Anthropic/OpenAI API 다운 또는 타임아웃
-테스트:
-1. AI API 엔드포인트를 잘못된 URL로 변경
-2. 폴백 템플릿 서사가 정상 반환되는지 확인
-3. 카드 전체가 에러 없이 생성되는지 확인
-4. 에러 로그가 Sentry에 기록되는지 확인
-대응: 폴백 서사 품질이 최소 수준 이상인지 확인
-```
-
-### 시나리오 3: 악성 입력
-```
-상황: 주소 필드에 XSS/SQL 인젝션 시도
-테스트:
-1. <script>alert('xss')</script> 입력
-2. ' OR 1=1 -- 입력
-3. 매우 긴 문자열 (10,000자) 입력
-4. 빈 문자열 / null / undefined 입력
-5. 유효한 형식이지만 존재하지 않는 주소 입력
-대응: 모든 케이스에서 적절한 에러 메시지 반환, 서버 안정성 유지
+Situation: Anthropic/OpenAI API down or timeout
+Testing:
+1. Change AI API endpoint to invalid URL
+2. Verify fallback template lore returns correctly
+3. Verify entire card generates without errors
+4. Verify error log is recorded in Sentry
+Response: Confirm fallback lore quality meets minimum standard
 ```
 
-### 시나리오 4: 트래픽 폭증 (바이럴)
+### Scenario 3: Malicious Input
 ```
-상황: CT에서 바이럴 → 분당 1000 요청
-테스트:
-1. 부하 테스트 도구 (artillery/k6)로 시뮬레이션
-2. 캐시 히트율 확인 (인기 주소 반복 조회)
-3. 레이트리밋 정상 작동 확인
-4. Vercel 서버리스 cold start 영향 확인
-대응: 캐시 히트 시 응답시간 < 200ms 확인
+Situation: XSS/SQL injection attempt in address field
+Testing:
+1. Input <script>alert('xss')</script>
+2. Input ' OR 1=1 --
+3. Input very long string (10,000 chars)
+4. Input empty string / null / undefined
+5. Input valid format but non-existent address
+Response: All cases return appropriate error messages, server stability maintained
+```
+
+### Scenario 4: Traffic Spike (Viral)
+```
+Situation: Goes viral on CT → 1000 requests per minute
+Testing:
+1. Simulate with load testing tool (artillery/k6)
+2. Check cache hit rate (popular addresses repeated)
+3. Verify rate limiting works correctly
+4. Check Vercel serverless cold start impact
+Response: Confirm response time < 200ms on cache hit
 ```
 
 ---
 
-## 정기 검사 체크리스트
+## Periodic Inspection Checklist
 
-### 런칭 전 (Day 5-6)
-- [ ] 전체 플로우 수동 테스트 (주소 5개 이상)
-  - 고래 지갑 (vitalik.eth 등)
-  - 신규 지갑 (트랜잭션 < 5)
-  - 트랜잭션 0 지갑
-  - NFT 중심 지갑
-  - DeFi 중심 지갑
-- [ ] 모바일 테스트 (iOS Safari, Android Chrome)
-- [ ] OG 이미지 미리보기 테스트 (Twitter Card Validator, Facebook Debugger)
-- [ ] 개인정보 7항목 전수 검사
-- [ ] 위기 시나리오 4개 실행
-- [ ] Trust 문구 표시 확인
-- [ ] 공유 링크 → 재방문 플로우 정상 확인
+### Pre-Launch (Day 5-6)
+- [ ] Full flow manual test (5+ addresses)
+  - Whale wallet (vitalik.eth etc.)
+  - New wallet (transactions < 5)
+  - Zero transaction wallet
+  - NFT-focused wallet
+  - DeFi-focused wallet
+- [ ] Mobile testing (iOS Safari, Android Chrome)
+- [ ] OG image preview testing (Twitter Card Validator, Facebook Debugger)
+- [ ] Privacy 7-item full inspection
+- [ ] Execute 4 crisis scenarios
+- [ ] Trust message display verification
+- [ ] Share link → revisit flow verification
 
-### 런칭 후 매일 (Day 7~)
-- [ ] Sentry 에러 로그 확인 (신규 이슈)
-- [ ] API 응답 시간 모니터링 (평균 < 5s)
-- [ ] 캐시 히트율 확인 (목표 > 30%)
-- [ ] 레이트리밋 트리거 빈도 확인
-- [ ] 유저 피드백/버그 리포트 수집
+### Post-Launch Daily (Day 7+)
+- [ ] Check Sentry error logs (new issues)
+- [ ] API response time monitoring (average < 5s)
+- [ ] Cache hit rate check (target > 30%)
+- [ ] Rate limit trigger frequency check
+- [ ] Collect user feedback/bug reports
 
 ---
 
-## 테스트 주소 목록 (수동 테스트용)
+## Test Address List (For Manual Testing)
 ```
-# 다양한 패턴 커버
-0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045  # vitalik.eth (고래, 다양한 활동)
-0x0000000000000000000000000000000000000000  # 제로 주소 (에러 핸들링)
-0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B  # 오래된 지갑
-# + 본인 테스트 지갑 추가
+# Cover various patterns
+0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045  # vitalik.eth (whale, diverse activity)
+0x0000000000000000000000000000000000000000  # Zero address (error handling)
+0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B  # Old wallet
+# + Add your own test wallets
 ```

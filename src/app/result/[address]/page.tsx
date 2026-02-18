@@ -47,7 +47,7 @@ export default function ResultPage() {
                 className="text-2xl font-bold mb-4"
                 style={{ color: 'var(--color-accent-red)' }}
               >
-                소환 실패
+                Summoning Failed
               </h2>
               <p
                 className="mb-8 text-base"
@@ -63,7 +63,7 @@ export default function ResultPage() {
                   color: '#000',
                 }}
               >
-                다시 시도하기
+                Try Again
               </button>
             </div>
           </div>
@@ -94,13 +94,13 @@ export default function ResultPage() {
                 className="text-lg font-bold mb-2"
                 style={{ color: 'var(--color-accent-gold)' }}
               >
-                {'\u2694\uFE0F'} 전투력 {data.stats.power.toLocaleString()}… 너는 몇이냐
+                {'\u2694\uFE0F'} Power {data.stats.power.toLocaleString()}... What{'\''}s yours?
               </p>
               <p
                 className="text-sm"
                 style={{ color: 'var(--color-text-muted)' }}
               >
-                친구에게 공유하고 전투력을 비교해보세요
+                Share with friends and compare your power
               </p>
             </div>
 
@@ -115,7 +115,7 @@ export default function ResultPage() {
                   border: '1px solid var(--color-border)',
                 }}
               >
-                다른 지갑 소환하기
+                Summon Another Wallet
               </button>
             </div>
           </div>

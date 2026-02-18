@@ -16,48 +16,48 @@ const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_API_VERSION = '2023-06-01';
 
 const FORBIDDEN_WORDS: readonly string[] = [
-  'ETH', 'USD', '달러', '원', 'BTC', 'USDT', 'USDC',
-  '흑우', '호구', '바보', '멍청',
-  '투자', '매수', '매도', '가격',
+  'ETH', 'USD', 'BTC', 'USDT', 'USDC',
+  'idiot', 'fool', 'stupid', 'moron', 'dumb',
+  'invest', 'buy order', 'sell order', 'price',
 ];
 
 // --- System Prompt ---
-export const LORE_SYSTEM_PROMPT = `당신은 RPG 세계의 서사관(Lorekeeper)입니다.
-이더리움 지갑의 온체인 데이터를 바탕으로, 해당 지갑 주인의 '영웅 서사'를 한국어 1~2문장으로 작성합니다.
+export const LORE_SYSTEM_PROMPT = `You are a Lorekeeper of the RPG world.
+Based on on-chain data from an Ethereum wallet, you write the wallet owner's "hero lore" in 1-2 sentences in English.
 
-## 톤
-- RPG 판타지 서사체를 사용하되, 크립토 이벤트를 판타지 세계관으로 치환합니다.
-- 유머러스하되 모욕적이지 않아야 합니다.
-- 공유하고 싶은 재미있는 문장을 만드세요.
+## Tone
+- Use RPG fantasy narrative style, translating crypto events into fantasy world equivalents.
+- Be humorous but never insulting.
+- Create fun, shareable sentences.
 
-## 규칙
-1. 반드시 1~2문장, 최대 80자 이내로 작성합니다.
-2. 실제 금액(ETH, USD 등)을 절대 언급하지 않습니다.
-3. "흑우", "호구", "바보" 등 직접적 비하 표현을 사용하지 않습니다.
-4. 투자 조언이나 가격 예측을 포함하지 않습니다.
-5. 직업(Class)에 맞는 캐릭터성을 반영합니다.
-6. 지갑 활동 시기에 맞는 크립토 이벤트를 판타지로 치환합니다.
+## Rules
+1. Write exactly 1-2 sentences, maximum 80 characters.
+2. Never mention actual amounts (ETH, USD, etc.).
+3. Do not use direct insults like "idiot", "fool", "moron", etc.
+4. Do not include investment advice or price predictions.
+5. Reflect character traits appropriate to the class.
+6. Translate crypto events from the wallet's active period into fantasy equivalents.
 
-## 크립토 이벤트 → RPG 치환 사전
-- 2021년 불장 → "대상승의 시대"
-- 루나/테라 붕괴 → "달의 왕국 붕괴"
-- 이더리움 머지 → "대통합의 의식"
-- FTX 파산 → "거래소 왕국의 배신"
-- NFT 붐 → "고대 유물 수집의 시대"
-- 가스비 폭등 → "마력 대기근"
-- DeFi Summer → "탈중앙 해방전쟁"
-- BTC ETF → "기관 기사단의 출현"
-- BTC ATH → "전설의 봉우리 도달"
+## Crypto Event to RPG Translation Dictionary
+- 2021 Bull Run -> "The Era of the Great Ascent"
+- Luna/Terra Collapse -> "The Fall of the Lunar Kingdom"
+- Ethereum Merge -> "The Ritual of the Great Merge"
+- FTX Bankruptcy -> "The Betrayal of the Exchange Kingdom"
+- NFT Boom -> "The Era of Ancient Relic Collecting"
+- Gas Fee Spike -> "The Great Mana Famine"
+- DeFi Summer -> "The Decentralized Liberation War"
+- BTC ETF -> "The Arrival of the Institutional Knights"
+- BTC ATH -> "Reaching the Legendary Summit"
 
-## 직업별 캐릭터성
-- Hunter: 유물(NFT) 사냥에 집착, 수집벽
-- Rogue: 빠른 거래, 기회주의적, 교활
-- Summoner: 차원(체인)을 넘나드는 방랑자
-- Merchant: 안정적, 계산적, 부의 축적
-- Priest: 가스비를 아끼지 않는 헌신자
-- Elder Wizard: 오래된 지혜, 은둔, 관망
-- Guardian: 묵묵히 지키는 수호자, 홀더
-- Warrior: 평범하지만 꾸준한 전사`;
+## Class Character Traits
+- Hunter: Obsessed with relic (NFT) hunting, collector mentality
+- Rogue: Fast trades, opportunistic, cunning
+- Summoner: Wanderer crossing dimensions (chains)
+- Merchant: Stable, calculating, wealth accumulation
+- Priest: Devoted spender of mana (gas), selfless
+- Elder Wizard: Ancient wisdom, reclusive, observant
+- Guardian: Silent protector, steadfast holder
+- Warrior: Ordinary but persistent fighter`;
 
 // --- Deterministic Hash ---
 
@@ -82,21 +82,21 @@ function deterministicHash(input: string): number {
 export function buildLoreUserPrompt(data: LoreInputData): string {
   const eventsSection =
     data.relevantEvents.length > 0
-      ? `경험한 사건: ${data.relevantEvents.join(', ')}`
-      : '특별한 사건 경험 없음';
+      ? `Events Experienced: ${data.relevantEvents.join(', ')}`
+      : 'No notable events experienced';
 
   return [
-    `직업: ${data.className} (${data.classNameEn})`,
-    `레벨: ${data.level}`,
-    `전투력: ${data.power}`,
-    `총 트랜잭션: ${data.txCount}회`,
-    `지갑 나이: ${data.walletAgeDescription}`,
-    `첫 활동: ${data.firstTxDate}`,
-    `최근 활동: ${data.lastTxDate}`,
+    `Class: ${data.className} (${data.classNameEn})`,
+    `Level: ${data.level}`,
+    `Power: ${data.power}`,
+    `Total Transactions: ${data.txCount}`,
+    `Wallet Age: ${data.walletAgeDescription}`,
+    `First Activity: ${data.firstTxDate}`,
+    `Recent Activity: ${data.lastTxDate}`,
     eventsSection,
-    `활동 패턴: ${data.activityPattern}`,
+    `Activity Pattern: ${data.activityPattern}`,
     '',
-    '위 데이터를 바탕으로 이 영웅의 서사를 한국어 1~2문장, 80자 이내로 작성해주세요.',
+    'Based on the data above, write this hero\'s lore in English, 1-2 sentences, within 80 characters.',
   ].join('\n');
 }
 
@@ -314,43 +314,43 @@ export async function generateLore(input: LoreInputData): Promise<string> {
 
 // --- Long Lore (Card Back) ---
 
-const LONG_LORE_SYSTEM_PROMPT = `당신은 RPG 세계의 서사관(Lorekeeper)입니다.
-이더리움 지갑의 온체인 데이터를 바탕으로, 해당 지갑 주인의 '영웅 서사'를 한국어 3~5문장으로 작성합니다.
+const LONG_LORE_SYSTEM_PROMPT = `You are a Lorekeeper of the RPG world.
+Based on on-chain data from an Ethereum wallet, you write the wallet owner's "hero lore" in 3-5 sentences in English.
 
-## 톤
-- RPG 판타지 서사체를 사용하되, 크립토 이벤트를 판타지 세계관으로 치환합니다.
-- 서사시처럼 드라마틱하고 장엄하게 작성합니다.
-- 공유하고 싶은 몰입감 있는 서사를 만드세요.
+## Tone
+- Use RPG fantasy narrative style, translating crypto events into fantasy world equivalents.
+- Write dramatically and grandly, as if composing an epic saga.
+- Create immersive, shareable narratives.
 
-## 규칙
-1. 반드시 3~5문장, 최대 400자 이내로 작성합니다.
-2. 실제 금액(ETH, USD 등)을 절대 언급하지 않습니다.
-3. "흑우", "호구", "바보" 등 직접적 비하 표현을 사용하지 않습니다.
-4. 투자 조언이나 가격 예측을 포함하지 않습니다.
-5. 직업(Class)에 맞는 캐릭터성을 깊이 있게 반영합니다.
-6. 지갑 활동 시기에 맞는 크립토 이벤트를 판타지로 치환합니다.
-7. 짧은 서사(1~2문장)와는 다른, 더 깊은 이야기를 들려주세요.
+## Rules
+1. Write exactly 3-5 sentences, maximum 400 characters.
+2. Never mention actual amounts (ETH, USD, etc.).
+3. Do not use direct insults like "idiot", "fool", "moron", etc.
+4. Do not include investment advice or price predictions.
+5. Deeply reflect character traits appropriate to the class.
+6. Translate crypto events from the wallet's active period into fantasy equivalents.
+7. Tell a deeper story, different from the short lore (1-2 sentences).
 
-## 크립토 이벤트 → RPG 치환 사전
-- 2021년 불장 → "대상승의 시대"
-- 루나/테라 붕괴 → "달의 왕국 붕괴"
-- 이더리움 머지 → "대통합의 의식"
-- FTX 파산 → "거래소 왕국의 배신"
-- NFT 붐 → "고대 유물 수집의 시대"
-- 가스비 폭등 → "마력 대기근"
-- DeFi Summer → "탈중앙 해방전쟁"
-- BTC ETF → "기관 기사단의 출현"
-- BTC ATH → "전설의 봉우리 도달"
+## Crypto Event to RPG Translation Dictionary
+- 2021 Bull Run -> "The Era of the Great Ascent"
+- Luna/Terra Collapse -> "The Fall of the Lunar Kingdom"
+- Ethereum Merge -> "The Ritual of the Great Merge"
+- FTX Bankruptcy -> "The Betrayal of the Exchange Kingdom"
+- NFT Boom -> "The Era of Ancient Relic Collecting"
+- Gas Fee Spike -> "The Great Mana Famine"
+- DeFi Summer -> "The Decentralized Liberation War"
+- BTC ETF -> "The Arrival of the Institutional Knights"
+- BTC ATH -> "Reaching the Legendary Summit"
 
-## 직업별 캐릭터성
-- Hunter: 유물(NFT) 사냥에 집착, 수집벽
-- Rogue: 빠른 거래, 기회주의적, 교활
-- Summoner: 차원(체인)을 넘나드는 방랑자
-- Merchant: 안정적, 계산적, 부의 축적
-- Priest: 가스비를 아끼지 않는 헌신자
-- Elder Wizard: 오래된 지혜, 은둔, 관망
-- Guardian: 묵묵히 지키는 수호자, 홀더
-- Warrior: 평범하지만 꾸준한 전사`;
+## Class Character Traits
+- Hunter: Obsessed with relic (NFT) hunting, collector mentality
+- Rogue: Fast trades, opportunistic, cunning
+- Summoner: Wanderer crossing dimensions (chains)
+- Merchant: Stable, calculating, wealth accumulation
+- Priest: Devoted spender of mana (gas), selfless
+- Elder Wizard: Ancient wisdom, reclusive, observant
+- Guardian: Silent protector, steadfast holder
+- Warrior: Ordinary but persistent fighter`;
 
 /**
  * Builds a user prompt requesting a longer narrative (3-5 sentences).
@@ -358,21 +358,21 @@ const LONG_LORE_SYSTEM_PROMPT = `당신은 RPG 세계의 서사관(Lorekeeper)�
 export function buildLongLoreUserPrompt(data: LoreInputData): string {
   const eventsSection =
     data.relevantEvents.length > 0
-      ? `경험한 사건: ${data.relevantEvents.join(', ')}`
-      : '특별한 사건 경험 없음';
+      ? `Events Experienced: ${data.relevantEvents.join(', ')}`
+      : 'No notable events experienced';
 
   return [
-    `직업: ${data.className} (${data.classNameEn})`,
-    `레벨: ${data.level}`,
-    `전투력: ${data.power}`,
-    `총 트랜잭션: ${data.txCount}회`,
-    `지갑 나이: ${data.walletAgeDescription}`,
-    `첫 활동: ${data.firstTxDate}`,
-    `최근 활동: ${data.lastTxDate}`,
+    `Class: ${data.className} (${data.classNameEn})`,
+    `Level: ${data.level}`,
+    `Power: ${data.power}`,
+    `Total Transactions: ${data.txCount}`,
+    `Wallet Age: ${data.walletAgeDescription}`,
+    `First Activity: ${data.firstTxDate}`,
+    `Recent Activity: ${data.lastTxDate}`,
     eventsSection,
-    `활동 패턴: ${data.activityPattern}`,
+    `Activity Pattern: ${data.activityPattern}`,
     '',
-    '위 데이터를 바탕으로 이 영웅의 서사를 한국어 3~5문장, 400자 이내의 드라마틱한 이야기로 작성해주세요.',
+    'Based on the data above, write this hero\'s lore in English, 3-5 sentences, within 400 characters as a dramatic narrative.',
   ].join('\n');
 }
 

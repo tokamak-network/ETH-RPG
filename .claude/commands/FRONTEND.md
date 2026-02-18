@@ -1,47 +1,47 @@
 # 🖥️ FRONTEND Developer Agent
 
-## 역할 정의
-Wallet RPG의 전체 프론트엔드를 구현하는 개발자.
-랜딩 페이지, 주소 입력 UI, 결과 화면, 공유 기능, 반응형 대응을 담당한다.
+## Role Definition
+Developer implementing the entire frontend of Wallet RPG.
+Responsible for landing page, address input UI, result screen, share functionality, and responsive design.
 
 ---
 
-## 기술 스택
+## Tech Stack
 - **Framework**: Next.js 14+ (App Router)
 - **Styling**: Tailwind CSS 3.x
 - **Language**: TypeScript
-- **배포**: Vercel
-- **상태관리**: 최소화 (React useState/useReducer로 충분)
+- **Deployment**: Vercel
+- **State Management**: Minimized (React useState/useReducer is sufficient)
 
 ---
 
-## 디자인 시스템
+## Design System
 
-### 컬러 시스템 (CSS Variables)
+### Color System (CSS Variables)
 ```css
 :root {
-  /* Primary - 다크 판타지 톤 */
-  --color-bg-primary: #0a0a0f;        /* 메인 배경 (거의 블랙) */
-  --color-bg-secondary: #12121a;      /* 카드/섹션 배경 */
-  --color-bg-tertiary: #1a1a2e;       /* 호버/액티브 배경 */
-  
-  /* Accent */
-  --color-accent-gold: #f4c430;       /* 전투력/레벨 강조 */
-  --color-accent-blue: #4a9eff;       /* 링크/CTA */
-  --color-accent-purple: #8b5cf6;     /* 마력(MP) */
-  --color-accent-red: #ef4444;        /* HP/경고 */
-  --color-accent-green: #22c55e;      /* 성공/LUCK */
-  
-  /* Text */
-  --color-text-primary: #e8e8ed;      /* 본문 */
-  --color-text-secondary: #9ca3af;    /* 보조 텍스트 */
-  --color-text-muted: #6b7280;        /* 비활성 */
-  
-  /* Border */
-  --color-border: #2a2a3e;            /* 기본 보더 */
-  --color-border-accent: #f4c430;     /* 강조 보더 */
+  /* Primary - Dark Fantasy Tone */
+  --color-bg-primary: #0a0a0f;        /* Main background (near-black) */
+  --color-bg-secondary: #12121a;      /* Card/section background */
+  --color-bg-tertiary: #1a1a2e;       /* Hover/active background */
 
-  /* 직업별 테마 컬러 */
+  /* Accent */
+  --color-accent-gold: #f4c430;       /* Power/level emphasis */
+  --color-accent-blue: #4a9eff;       /* Links/CTA */
+  --color-accent-purple: #8b5cf6;     /* MP (Mana) */
+  --color-accent-red: #ef4444;        /* HP/warnings */
+  --color-accent-green: #22c55e;      /* Success/LUCK */
+
+  /* Text */
+  --color-text-primary: #e8e8ed;      /* Body text */
+  --color-text-secondary: #9ca3af;    /* Secondary text */
+  --color-text-muted: #6b7280;        /* Inactive */
+
+  /* Border */
+  --color-border: #2a2a3e;            /* Default border */
+  --color-border-accent: #f4c430;     /* Accent border */
+
+  /* Class-specific theme colors */
   --color-class-hunter: #22c55e;
   --color-class-rogue: #ef4444;
   --color-class-summoner: #8b5cf6;
@@ -53,121 +53,122 @@ Wallet RPG의 전체 프론트엔드를 구현하는 개발자.
 }
 ```
 
-### 폰트 설정
+### Font Settings
 ```css
-/* 영문: 판타지/게임 느낌 */
+/* English: Fantasy/game feel */
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap');
-/* 본문/스탯 수치 */
+/* Body/stat values */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-/* 한글 지원 */
+/* Korean support */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
 
 :root {
-  --font-display: 'Cinzel', serif;       /* 제목/캐릭터명/직업명 */
-  --font-body: 'Inter', 'Noto Sans KR', sans-serif;  /* 본문/스탯 */
-  --font-mono: 'JetBrains Mono', monospace;           /* 지갑 주소 */
+  --font-display: 'Cinzel', serif;       /* Titles/character name/class name */
+  --font-body: 'Inter', 'Noto Sans KR', sans-serif;  /* Body/stats */
+  --font-mono: 'JetBrains Mono', monospace;           /* Wallet addresses */
 }
 ```
 
-### 폰트 사이즈 체계
+### Font Size Scale
 ```
---text-xs: 0.75rem (12px)   → 부가 정보, 타임스탬프
---text-sm: 0.875rem (14px)  → 보조 텍스트, 레이블
---text-base: 1rem (16px)    → 본문
---text-lg: 1.125rem (18px)  → 강조 본문
---text-xl: 1.25rem (20px)   → 섹션 제목
---text-2xl: 1.5rem (24px)   → 카드 내 스탯 수치
---text-3xl: 1.875rem (30px) → 직업명
---text-4xl: 2.25rem (36px)  → 전투력 숫자
---text-5xl: 3rem (48px)     → 히어로 타이틀
+--text-xs: 0.75rem (12px)   → Supplementary info, timestamps
+--text-sm: 0.875rem (14px)  → Secondary text, labels
+--text-base: 1rem (16px)    → Body text
+--text-lg: 1.125rem (18px)  → Emphasized body
+--text-xl: 1.25rem (20px)   → Section titles
+--text-2xl: 1.5rem (24px)   → In-card stat values
+--text-3xl: 1.875rem (30px) → Class name
+--text-4xl: 2.25rem (36px)  → Power number
+--text-5xl: 3rem (48px)     → Hero title
 ```
 
 ---
 
-## 페이지별 구현 가이드
+## Page Implementation Guide
 
-### 1. 랜딩 페이지 (`/`)
+### 1. Landing Page (`/`)
 ```
-구조:
+Structure:
 ┌─────────────────────────────────┐
-│ Trust 문구 (상단 고정 배너)         │
-│ "주소만 조회 · 키/서명/연결 없음"     │
+│ Trust message (top fixed banner) │
+│ "Address lookup only · No       │
+│  keys/signatures/connections"    │
 ├─────────────────────────────────┤
 │                                 │
-│    Eth·RPG 로고/타이틀            │
-│    "당신의 지갑은 어떤 영웅입니까?"    │
+│    Eth·RPG Logo/Title           │
+│    "What Hero Is Your Wallet?"  │
 │                                 │
-│    [0x... 주소 입력 필드]          │
-│    [영웅 소환하기] 버튼             │
+│    [0x... address input field]  │
+│    [Summon Hero] button         │
 │                                 │
-│    샘플 카드 3장 (슬라이드)         │
+│    Sample cards 3 (slide)       │
 │                                 │
 ├─────────────────────────────────┤
-│ FAQ 3문항 (아코디언)              │
-│ - 개인정보 안전한가요?              │
-│ - 어떤 데이터를 사용하나요?          │
-│ - 비용이 있나요?                  │
+│ FAQ 3 questions (accordion)     │
+│ - Is my data safe?              │
+│ - What data do you use?         │
+│ - Is there a cost?              │
 └─────────────────────────────────┘
 ```
 
-**핵심 규칙:**
-- Trust 문구는 스크롤해도 상단 고정 (sticky)
-- 주소 입력 필드는 화면 중앙, 뷰포트 높이 40% 지점
-- ENS 이름 입력도 지원 (vitalik.eth → 주소 리졸브)
-- 입력 validation: 0x + 40자 hex 또는 .eth 도메인
+**Key Rules:**
+- Trust message stays fixed at top on scroll (sticky)
+- Address input field centered, at 40% viewport height
+- ENS name input also supported (vitalik.eth → address resolution)
+- Input validation: 0x + 40 hex chars or .eth domain
 
-### 2. 로딩 화면 (`/result/[address]` - 로딩 상태)
+### 2. Loading Screen (`/result/[address]` - loading state)
 ```
-구조:
+Structure:
 ┌─────────────────────────────────┐
 │                                 │
-│    캐릭터 실루엣 애니메이션         │
-│    "영웅을 소환하는 중..."          │
-│    프로그레스 바 (단계별)            │
-│    - 트랜잭션 분석 중...           │
-│    - 스탯 계산 중...              │
-│    - 직업 판정 중...              │
-│    - 영웅 서사 작성 중...          │
+│    Character silhouette anim    │
+│    "Summoning hero..."          │
+│    Progress bar (step-based)    │
+│    - Analyzing transactions...  │
+│    - Calculating stats...       │
+│    - Determining class...       │
+│    - Writing hero lore...       │
 │                                 │
 └─────────────────────────────────┘
 ```
 
-### 3. 결과 페이지 (`/result/[address]`)
+### 3. Result Page (`/result/[address]`)
 ```
-구조:
+Structure:
 ┌─────────────────────────────────┐
 │                                 │
 │  ┌───────────────────────┐      │
-│  │   캐릭터 카드 (메인)    │      │
-│  │   → CARD_DESIGNER 참조 │      │
+│  │   Character Card (main)│      │
+│  │   → See CARD_DESIGNER  │      │
 │  └───────────────────────┘      │
 │                                 │
-│  영웅 서사 (AI 생성 한 줄)         │
+│  Hero Lore (AI-generated line)  │
 │                                 │
-│  스탯 상세 (바 그래프)             │
-│  LV | HP | MP | STR | INT | LUCK │
+│  Stat Details (bar graph)       │
+│  LV | HP | MP | STR | INT | LUCK│
 │                                 │
 │  ┌──────────┬──────────┐        │
-│  │ 공유하기   │ 친구 도전  │        │
+│  │  Share    │ Challenge │        │
 │  └──────────┴──────────┘        │
 │                                 │
-│  "전투력 {power}… 너는 몇이냐"     │
-│  [복사] 버튼                      │
+│  "Power {power}... what's yours"│
+│  [Copy] button                  │
 │                                 │
-│  [다른 지갑 소환하기]               │
+│  [Summon Another Wallet]        │
 │                                 │
 └─────────────────────────────────┘
 ```
 
 ---
 
-## API 호출 패턴
+## API Call Patterns
 
-### 캐릭터 생성 요청
+### Character Generation Request
 ```typescript
 // POST /api/generate
 interface GenerateRequest {
-  address: string;  // 0x... 또는 ENS
+  address: string;  // 0x... or ENS
 }
 
 interface GenerateResponse {
@@ -184,16 +185,16 @@ interface GenerateResponse {
   };
   class: {
     id: string;       // 'hunter' | 'rogue' | 'summoner' | ...
-    name: string;      // '헌터(Hunter)'
+    name: string;      // 'Hunter'
     nameEn: string;    // 'Hunter'
   };
-  lore: string;        // AI 생성 영웅 서사
-  cardImageUrl: string; // 렌더링된 카드 이미지 URL
-  cached: boolean;      // 캐시 히트 여부
+  lore: string;        // AI-generated hero lore
+  cardImageUrl: string; // Rendered card image URL
+  cached: boolean;      // Cache hit flag
 }
 ```
 
-### API 호출 훅
+### API Call Hook
 ```typescript
 // hooks/useGenerateCharacter.ts
 const useGenerateCharacter = () => {
@@ -201,11 +202,11 @@ const useGenerateCharacter = () => {
     status: 'idle' | 'loading' | 'success' | 'error';
     data: GenerateResponse | null;
     error: string | null;
-    step: string;  // 로딩 단계 표시용
+    step: string;  // Loading step display
   }>({ status: 'idle', data: null, error: null, step: '' });
 
   const generate = async (address: string) => {
-    setState({ status: 'loading', data: null, error: null, step: '트랜잭션 분석 중...' });
+    setState({ status: 'loading', data: null, error: null, step: 'Analyzing transactions...' });
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -227,23 +228,23 @@ const useGenerateCharacter = () => {
 };
 ```
 
-### 에러 핸들링 UI
+### Error Handling UI
 ```typescript
-// 에러 메시지 매핑
+// Error message mapping
 const ERROR_MESSAGES: Record<string, string> = {
-  'INVALID_ADDRESS': '올바른 이더리움 주소를 입력해주세요.',
-  'NO_TRANSACTIONS': '이 지갑에는 트랜잭션이 없습니다. 활동 이력이 있는 주소를 입력해주세요.',
-  'RATE_LIMITED': '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
-  'API_ERROR': '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
-  'TIMEOUT': '분석에 시간이 오래 걸리고 있습니다. 다시 시도해주세요.',
+  'INVALID_ADDRESS': 'Please enter a valid Ethereum address.',
+  'NO_TRANSACTIONS': 'This wallet has no transactions. Please enter an address with activity history.',
+  'RATE_LIMITED': 'Too many requests. Please try again in a moment.',
+  'API_ERROR': 'A temporary server issue occurred. Please try again shortly.',
+  'TIMEOUT': 'Analysis is taking too long. Please try again.',
 };
 ```
 
 ---
 
-## 공유 기능 구현
+## Share Functionality Implementation
 
-### OG 메타태그 (동적)
+### OG Meta Tags (Dynamic)
 ```typescript
 // app/result/[address]/page.tsx
 export async function generateMetadata({ params }): Promise<Metadata> {
@@ -251,8 +252,8 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     title: `Eth·RPG | ${className} Lv.${level}`,
     description: lore,
     openGraph: {
-      images: [`/api/og/${params.address}`],  // 동적 OG 이미지
-      title: `내 지갑 전투력 ${power} — 너는 몇이냐`,
+      images: [`/api/og/${params.address}`],  // Dynamic OG image
+      title: `My wallet Power ${power}... what's yours`,
       description: `${className} | Lv.${level} | Power ${power}`,
     },
     twitter: {
@@ -263,42 +264,42 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 }
 ```
 
-### 공유 버튼
+### Share Buttons
 ```typescript
-// 트위터 공유
+// Twitter share
 const shareToTwitter = (data: GenerateResponse) => {
-  const text = `내 지갑 전투력 ${data.stats.power}… 너는 몇이냐 🗡️\n${data.class.name} | Lv.${data.stats.level}\n\n`;
+  const text = `My wallet Power ${data.stats.power}... what's yours? 🗡️\n${data.class.name} | Lv.${data.stats.level}\n\n`;
   const url = `${SITE_URL}/result/${data.address}`;
   window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`);
 };
 
-// Farcaster 공유
+// Farcaster share
 const shareToFarcaster = (data: GenerateResponse) => {
-  const text = `내 지갑 전투력 ${data.stats.power}… 너는 몇이냐 🗡️`;
+  const text = `My wallet Power ${data.stats.power}... what's yours? 🗡️`;
   const url = `${SITE_URL}/result/${data.address}`;
   window.open(`https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=${encodeURIComponent(url)}`);
 };
 
-// 클립보드 복사
+// Clipboard copy
 const copyShareText = (data: GenerateResponse) => {
-  const text = `내 지갑 전투력 ${data.stats.power}… 너는 몇이냐\n${data.class.name} | Lv.${data.stats.level}\n${SITE_URL}/result/${data.address}`;
+  const text = `My wallet Power ${data.stats.power}... what's yours?\n${data.class.name} | Lv.${data.stats.level}\n${SITE_URL}/result/${data.address}`;
   navigator.clipboard.writeText(text);
 };
 ```
 
 ---
 
-## 반응형 브레이크포인트
+## Responsive Breakpoints
 ```
-모바일: < 640px  → 카드 풀 너비, 스탯 세로 배열
-태블릿: 640-1024px → 카드 중앙 고정, 스탯 그리드
-데스크탑: > 1024px → 카드 좌측 + 스탯 우측 2컬럼
+Mobile: < 640px  → Card full-width, stats vertical layout
+Tablet: 640-1024px → Card centered, stats grid
+Desktop: > 1024px → Card left + stats right 2-column
 ```
 
 ---
 
-## 성능 기준
+## Performance Targets
 - LCP (Largest Contentful Paint): < 2.5s
-- 카드 생성 후 렌더링: < 1s
-- 번들 사이즈: < 200KB (gzipped)
-- 이미지 최적화: Next.js Image 컴포넌트 사용
+- Card render after generation: < 1s
+- Bundle size: < 200KB (gzipped)
+- Image optimization: Use Next.js Image component

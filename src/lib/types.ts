@@ -102,12 +102,12 @@ export interface ApiErrorResponse {
 }
 
 export const ERROR_MESSAGES: Record<ErrorCodeType, string> = {
-  [ErrorCode.INVALID_ADDRESS]: '올바른 이더리움 주소를 입력해주세요.',
-  [ErrorCode.NO_TRANSACTIONS]: '이 지갑에는 트랜잭션이 없습니다. 활동 이력이 있는 주소를 입력해주세요.',
-  [ErrorCode.RATE_LIMITED]: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
-  [ErrorCode.API_ERROR]: '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
-  [ErrorCode.TIMEOUT]: '분석에 시간이 오래 걸리고 있습니다. 다시 시도해주세요.',
-  [ErrorCode.LLM_ERROR]: 'AI 서사 생성에 실패했습니다. 기본 서사가 적용됩니다.',
+  [ErrorCode.INVALID_ADDRESS]: 'Please enter a valid Ethereum address.',
+  [ErrorCode.NO_TRANSACTIONS]: 'This wallet has no transactions. Please enter an address with activity history.',
+  [ErrorCode.RATE_LIMITED]: 'Too many requests. Please try again later.',
+  [ErrorCode.API_ERROR]: 'A temporary server error occurred. Please try again later.',
+  [ErrorCode.TIMEOUT]: 'Analysis is taking too long. Please try again.',
+  [ErrorCode.LLM_ERROR]: 'AI lore generation failed. Default lore will be applied.',
 };
 
 export interface CryptoEvent {

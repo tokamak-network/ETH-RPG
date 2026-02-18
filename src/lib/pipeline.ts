@@ -25,7 +25,7 @@ interface PipelineOptions {
 
 function formatTimestamp(ts: number | null): string {
   if (ts === null) {
-    return '기록 없음';
+    return 'No record';
   }
   return new Date(ts).toISOString().split('T')[0];
 }

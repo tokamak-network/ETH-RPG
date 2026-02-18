@@ -72,7 +72,7 @@ const MOCK_CLASSIFICATION: TxClassification = {
   dexSwapCount: 10,
 };
 
-const MOCK_CLASS: ClassResult = { id: 'warrior', name: '전사(Warrior)', nameEn: 'Warrior' };
+const MOCK_CLASS: ClassResult = { id: 'warrior', name: 'Warrior', nameEn: 'Warrior' };
 
 const MOCK_STATS: CharacterStats = {
   level: 18,
@@ -89,14 +89,14 @@ function setupDefaultMocks(): void {
   mockClassifyTransactions.mockReturnValue(MOCK_CLASSIFICATION);
   mockDetermineClass.mockReturnValue(MOCK_CLASS);
   mockCalculateStats.mockReturnValue(MOCK_STATS);
-  mockGenerateLore.mockResolvedValue('전사의 서사');
-  mockGenerateLongLore.mockResolvedValue('긴 전사의 서사입니다.');
-  mockGenerateFallbackLore.mockReturnValue('폴백 서사');
-  mockGenerateLongFallbackLore.mockReturnValue('긴 폴백 서사');
+  mockGenerateLore.mockResolvedValue('The warrior\'s lore');
+  mockGenerateLongLore.mockResolvedValue('The long warrior\'s lore.');
+  mockGenerateFallbackLore.mockReturnValue('Fallback lore');
+  mockGenerateLongFallbackLore.mockReturnValue('Long fallback lore');
   mockGetCached.mockReturnValue(null);
-  mockGetRelevantEvents.mockReturnValue(['대통합의 의식에 참여했다']);
-  mockDescribeActivityPattern.mockReturnValue('일반적인 트랜잭션 활동');
-  mockFormatWalletAge.mockReturnValue('2년');
+  mockGetRelevantEvents.mockReturnValue(['Participated in the Ritual of the Great Merge']);
+  mockDescribeActivityPattern.mockReturnValue('General transaction activity');
+  mockFormatWalletAge.mockReturnValue('2 years');
 }
 
 describe('generateCharacterData', () => {
@@ -117,8 +117,8 @@ describe('generateCharacterData', () => {
       address: TEST_ADDRESS,
       stats: MOCK_STATS,
       class: MOCK_CLASS,
-      lore: '캐시된 서사',
-      longLore: '캐시된 긴 서사',
+      lore: 'Cached lore',
+      longLore: 'Cached long lore',
       cardImageUrl: `https://ethrpg.com/api/card/${TEST_ADDRESS}`,
       ogImageUrl: `https://ethrpg.com/api/og/${TEST_ADDRESS}`,
       cached: false,
@@ -128,7 +128,7 @@ describe('generateCharacterData', () => {
     const result = await generateCharacterData(TEST_ADDRESS);
 
     expect(result.cached).toBe(true);
-    expect(result.lore).toBe('캐시된 서사');
+    expect(result.lore).toBe('Cached lore');
     expect(mockFetchWalletData).not.toHaveBeenCalled();
   });
 
@@ -138,8 +138,8 @@ describe('generateCharacterData', () => {
     expect(result.address).toBe(TEST_ADDRESS);
     expect(result.stats).toEqual(MOCK_STATS);
     expect(result.class).toEqual(MOCK_CLASS);
-    expect(result.lore).toBe('전사의 서사');
-    expect(result.longLore).toBe('긴 전사의 서사입니다.');
+    expect(result.lore).toBe('The warrior\'s lore');
+    expect(result.longLore).toBe('The long warrior\'s lore.');
     expect(result.cached).toBe(false);
     expect(mockGenerateLore).toHaveBeenCalledOnce();
     expect(mockGenerateLongLore).toHaveBeenCalledOnce();
@@ -149,8 +149,8 @@ describe('generateCharacterData', () => {
   it('uses fallback lore when skipAiLore is true', async () => {
     const result = await generateCharacterData(TEST_ADDRESS, { skipAiLore: true });
 
-    expect(result.lore).toBe('폴백 서사');
-    expect(result.longLore).toBe('긴 폴백 서사');
+    expect(result.lore).toBe('Fallback lore');
+    expect(result.longLore).toBe('Long fallback lore');
     expect(mockGenerateLore).not.toHaveBeenCalled();
     expect(mockGenerateLongLore).not.toHaveBeenCalled();
     expect(mockGenerateFallbackLore).toHaveBeenCalledOnce();

@@ -11,11 +11,10 @@ import { makeLoreInput } from './fixtures';
 // 1. buildLoreUserPrompt
 // ---------------------------------------------------------------------------
 describe('buildLoreUserPrompt', () => {
-  it('contains the class name in Korean and English', () => {
-    const input = makeLoreInput({ className: '사냥꾼(Hunter)', classNameEn: 'Hunter' });
+  it('contains the class name', () => {
+    const input = makeLoreInput({ className: 'Hunter', classNameEn: 'Hunter' });
     const prompt = buildLoreUserPrompt(input);
 
-    expect(prompt).toContain('사냥꾼(Hunter)');
     expect(prompt).toContain('Hunter');
   });
 
@@ -23,31 +22,31 @@ describe('buildLoreUserPrompt', () => {
     const input = makeLoreInput({ level: 25, power: 42000 });
     const prompt = buildLoreUserPrompt(input);
 
-    expect(prompt).toContain('레벨: 25');
-    expect(prompt).toContain('전투력: 42000');
+    expect(prompt).toContain('Level: 25');
+    expect(prompt).toContain('Power: 42000');
   });
 
   it('contains transaction count', () => {
     const input = makeLoreInput({ txCount: 500 });
     const prompt = buildLoreUserPrompt(input);
 
-    expect(prompt).toContain('총 트랜잭션: 500회');
+    expect(prompt).toContain('Total Transactions: 500');
   });
 
   it('shows fallback text when no relevant events exist', () => {
     const input = makeLoreInput({ relevantEvents: [] });
     const prompt = buildLoreUserPrompt(input);
 
-    expect(prompt).toContain('특별한 사건 경험 없음');
+    expect(prompt).toContain('No notable events experienced');
   });
 
   it('lists relevant events when they exist', () => {
     const input = makeLoreInput({
-      relevantEvents: ['대통합의 의식', '달의 왕국 붕괴'],
+      relevantEvents: ['Ritual of the Great Merge', 'Fall of the Lunar Kingdom'],
     });
     const prompt = buildLoreUserPrompt(input);
 
-    expect(prompt).toContain('경험한 사건: 대통합의 의식, 달의 왕국 붕괴');
+    expect(prompt).toContain('Events Experienced: Ritual of the Great Merge, Fall of the Lunar Kingdom');
   });
 });
 
@@ -56,40 +55,40 @@ describe('buildLoreUserPrompt', () => {
 // ---------------------------------------------------------------------------
 describe('validateLore', () => {
   it('returns trimmed text', () => {
-    const result = validateLore('  전설의 전사가 나타났다.  ');
+    const result = validateLore('  A legendary warrior has appeared.  ');
 
-    expect(result).toBe('전설의 전사가 나타났다.');
+    expect(result).toBe('A legendary warrior has appeared.');
   });
 
   it('replaces forbidden word ETH with ***', () => {
-    const result = validateLore('이 전사는 100 ETH를 보유하고 있다.');
+    const result = validateLore('This warrior holds 100 ETH in reserves.');
 
     expect(result).toContain('***');
     expect(result).not.toContain('ETH');
   });
 
   it('replaces multiple forbidden words', () => {
-    const result = validateLore('ETH 투자로 USD를 벌었다.');
+    const result = validateLore('ETH invest USD gains.');
 
     expect(result).not.toContain('ETH');
-    expect(result).not.toContain('투자');
+    expect(result).not.toContain('invest');
     expect(result).not.toContain('USD');
     // Each forbidden word replaced with ***
     expect(result.match(/\*\*\*/g)?.length).toBe(3);
   });
 
   it('truncates text exceeding 80 characters to 77 chars + ellipsis', () => {
-    // Create a string that is exactly 90 characters long (Korean chars)
-    const longText = '가'.repeat(90);
+    // Create a string that is exactly 90 characters long
+    const longText = 'a'.repeat(90);
     const result = validateLore(longText);
 
     expect(result.length).toBe(80);
     expect(result.endsWith('...')).toBe(true);
-    expect(result.slice(0, 77)).toBe('가'.repeat(77));
+    expect(result.slice(0, 77)).toBe('a'.repeat(77));
   });
 
   it('passes through short text unchanged', () => {
-    const shortText = '짧은 서사.';
+    const shortText = 'A short lore.';
     const result = validateLore(shortText);
 
     expect(result).toBe(shortText);
@@ -97,7 +96,7 @@ describe('validateLore', () => {
 
   it('handles text with both forbidden words and overlength', () => {
     // Build a long string containing a forbidden word
-    const text = 'ETH' + '가'.repeat(100);
+    const text = 'ETH' + 'a'.repeat(100);
     const result = validateLore(text);
 
     // ETH -> ***, then truncated
@@ -112,18 +111,18 @@ describe('validateLore', () => {
 // ---------------------------------------------------------------------------
 describe('generateFallbackLore', () => {
   const WARRIOR_TEMPLATES = [
-    '특별한 힘은 없지만 꾸준히 전장에 나서는 전사.',
-    '평범한 검 하나로 블록체인의 전장을 걸어온 전사.',
+    'No special powers, but a warrior who steadily marches to battle.',
+    'A warrior who walked the blockchain battlefield with a single ordinary sword.',
   ];
 
   const HUNTER_TEMPLATES = [
-    '이 사냥꾼은 수많은 유물을 수집하며 전장을 누볐다.',
-    '고대 유물의 부름에 이끌려 끝없는 사냥을 이어가는 자.',
+    'This hunter roamed the battlefield, collecting countless relics.',
+    'Drawn by the call of ancient relics, an endless hunt continues.',
   ];
 
   const ELDER_WIZARD_TEMPLATES = [
-    '오랜 세월을 관망하며 지혜를 쌓아온 고대 마법사.',
-    '오래전 각성했으나, 지금은 은둔하며 때를 기다리는 자.',
+    'An ancient wizard who watched for ages, accumulating wisdom.',
+    'Awakened long ago, now in seclusion, waiting for the right moment.',
   ];
 
   it('returns one of the warrior templates for Warrior class', () => {
@@ -135,7 +134,7 @@ describe('generateFallbackLore', () => {
 
   it('returns one of the hunter templates for Hunter class', () => {
     const input = makeLoreInput({
-      className: '사냥꾼(Hunter)',
+      className: 'Hunter',
       classNameEn: 'Hunter',
     });
     const result = generateFallbackLore(input);
@@ -145,7 +144,7 @@ describe('generateFallbackLore', () => {
 
   it('converts Elder Wizard classNameEn to elder_wizard key', () => {
     const input = makeLoreInput({
-      className: '고대 마법사(Elder Wizard)',
+      className: 'Elder Wizard',
       classNameEn: 'Elder Wizard',
     });
     const result = generateFallbackLore(input);
@@ -194,8 +193,8 @@ describe('generateLore', () => {
     expect(result).toBeTruthy();
     // Should be one of the warrior fallback templates
     expect([
-      '특별한 힘은 없지만 꾸준히 전장에 나서는 전사.',
-      '평범한 검 하나로 블록체인의 전장을 걸어온 전사.',
+      'No special powers, but a warrior who steadily marches to battle.',
+      'A warrior who walked the blockchain battlefield with a single ordinary sword.',
     ]).toContain(result);
   });
 
@@ -204,14 +203,14 @@ describe('generateLore', () => {
     const mockResponse = {
       ok: true,
       json: async () => ({
-        content: [{ type: 'text', text: '전설의 전사가 나타났다.' }],
+        content: [{ type: 'text', text: 'A legendary warrior has appeared.' }],
       }),
     };
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse));
 
     const result = await generateLore(makeLoreInput());
 
-    expect(result).toBe('전설의 전사가 나타났다.');
+    expect(result).toBe('A legendary warrior has appeared.');
   });
 
   it('returns fallback lore when API returns non-ok status', async () => {
@@ -226,8 +225,8 @@ describe('generateLore', () => {
     const result = await generateLore(makeLoreInput());
 
     expect([
-      '특별한 힘은 없지만 꾸준히 전장에 나서는 전사.',
-      '평범한 검 하나로 블록체인의 전장을 걸어온 전사.',
+      'No special powers, but a warrior who steadily marches to battle.',
+      'A warrior who walked the blockchain battlefield with a single ordinary sword.',
     ]).toContain(result);
   });
 
@@ -244,8 +243,8 @@ describe('generateLore', () => {
     const result = await generateLore(makeLoreInput());
 
     expect([
-      '특별한 힘은 없지만 꾸준히 전장에 나서는 전사.',
-      '평범한 검 하나로 블록체인의 전장을 걸어온 전사.',
+      'No special powers, but a warrior who steadily marches to battle.',
+      'A warrior who walked the blockchain battlefield with a single ordinary sword.',
     ]).toContain(result);
   });
 
@@ -256,8 +255,8 @@ describe('generateLore', () => {
     const result = await generateLore(makeLoreInput());
 
     expect([
-      '특별한 힘은 없지만 꾸준히 전장에 나서는 전사.',
-      '평범한 검 하나로 블록체인의 전장을 걸어온 전사.',
+      'No special powers, but a warrior who steadily marches to battle.',
+      'A warrior who walked the blockchain battlefield with a single ordinary sword.',
     ]).toContain(result);
   });
 });

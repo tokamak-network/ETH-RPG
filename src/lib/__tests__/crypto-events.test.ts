@@ -57,7 +57,7 @@ describe('getRelevantEvents', () => {
     const result = getRelevantEvents(mergeDate, mergeDate);
 
     expect(result).toHaveLength(1);
-    expect(result[0]).toBe('대통합의 의식에 참여했다');
+    expect(result[0]).toBe('Participated in the Ritual of the Great Merge');
   });
 
   it('returns 3 events when range covers 2021 only', () => {
@@ -67,9 +67,9 @@ describe('getRelevantEvents', () => {
     const result = getRelevantEvents(first, last);
 
     expect(result).toHaveLength(3);
-    expect(result).toContain('고대 유물 수집의 시대를 열었다');
-    expect(result).toContain('대폭락의 전장에서 살아남았다');
-    expect(result).toContain('전설의 첫 번째 봉우리에 도달했다');
+    expect(result).toContain('Ushered in the Era of Ancient Relic Collecting');
+    expect(result).toContain('Survived the battlefield of the Great Collapse');
+    expect(result).toContain('Reached the first Legendary Summit');
   });
 
   it('includes events when firstTx and lastTx are exact event dates', () => {
@@ -79,8 +79,8 @@ describe('getRelevantEvents', () => {
     const result = getRelevantEvents(first, last);
 
     expect(result).toHaveLength(2);
-    expect(result).toContain('검은 백조의 습격을 견뎌냈다');
-    expect(result).toContain('탈중앙 해방전쟁에 참전했다');
+    expect(result).toContain('Survived the attack of the Black Swan');
+    expect(result).toContain('Fought in the Decentralized Liberation War');
   });
 });
 
@@ -93,7 +93,7 @@ describe('describeActivityPattern', () => {
 
     const result = describeActivityPattern(classification);
 
-    expect(result).toBe('일반적인 트랜잭션 활동');
+    expect(result).toBe('General transaction activity');
   });
 
   it('includes NFT pattern when nftRatio exceeds threshold', () => {
@@ -101,7 +101,7 @@ describe('describeActivityPattern', () => {
 
     const result = describeActivityPattern(classification);
 
-    expect(result).toContain('NFT 수집/민팅 활발');
+    expect(result).toContain('Active NFT collecting/minting');
   });
 
   it('includes DEX pattern when dexRatio exceeds threshold', () => {
@@ -109,7 +109,7 @@ describe('describeActivityPattern', () => {
 
     const result = describeActivityPattern(classification);
 
-    expect(result).toContain('DEX 스왑 빈번');
+    expect(result).toContain('Frequent DEX swaps');
   });
 
   it('includes bridge pattern when bridgeCount exceeds threshold', () => {
@@ -117,7 +117,7 @@ describe('describeActivityPattern', () => {
 
     const result = describeActivityPattern(classification);
 
-    expect(result).toContain('크로스체인 이동 경험');
+    expect(result).toContain('Cross-chain bridging experience');
   });
 
   it('includes stable pattern when stableRatio exceeds threshold', () => {
@@ -125,7 +125,7 @@ describe('describeActivityPattern', () => {
 
     const result = describeActivityPattern(classification);
 
-    expect(result).toContain('스테이블코인 중심 활동');
+    expect(result).toContain('Stablecoin-focused activity');
   });
 
   it('includes contract pattern when contractInteractions exceeds threshold', () => {
@@ -133,7 +133,7 @@ describe('describeActivityPattern', () => {
 
     const result = describeActivityPattern(classification);
 
-    expect(result).toContain('컨트랙트 상호작용 활발');
+    expect(result).toContain('Heavy contract interactions');
   });
 
   it('returns comma-separated string when multiple patterns match', () => {
@@ -145,7 +145,7 @@ describe('describeActivityPattern', () => {
 
     const result = describeActivityPattern(classification);
 
-    expect(result).toBe('NFT 수집/민팅 활발, DEX 스왑 빈번, 크로스체인 이동 경험');
+    expect(result).toBe('Active NFT collecting/minting, Frequent DEX swaps, Cross-chain bridging experience');
   });
 
   it('does NOT include patterns when values are exactly at threshold (strictly greater)', () => {
@@ -159,7 +159,7 @@ describe('describeActivityPattern', () => {
 
     const result = describeActivityPattern(classification);
 
-    expect(result).toBe('일반적인 트랜잭션 활동');
+    expect(result).toBe('General transaction activity');
   });
 });
 
@@ -171,13 +171,13 @@ describe('formatWalletAge', () => {
     vi.restoreAllMocks();
   });
 
-  it('returns "신규" when firstTxTimestamp is null', () => {
+  it('returns "New" when firstTxTimestamp is null', () => {
     const result = formatWalletAge(null);
 
-    expect(result).toBe('신규');
+    expect(result).toBe('New');
   });
 
-  it('returns "2년 3개월" for a wallet that is 27 months old', () => {
+  it('returns "2 years 3 months" for a wallet that is 27 months old', () => {
     const fixedNow = 1_700_000_000_000;
     vi.spyOn(Date, 'now').mockReturnValue(fixedNow);
 
@@ -185,10 +185,10 @@ describe('formatWalletAge', () => {
 
     const result = formatWalletAge(firstTx);
 
-    expect(result).toBe('2년 3개월');
+    expect(result).toBe('2 years 3 months');
   });
 
-  it('returns "1개월 미만" when wallet age is less than one month', () => {
+  it('returns "Less than 1 month" when wallet age is less than one month', () => {
     const fixedNow = 1_700_000_000_000;
     vi.spyOn(Date, 'now').mockReturnValue(fixedNow);
 
@@ -197,10 +197,10 @@ describe('formatWalletAge', () => {
 
     const result = formatWalletAge(firstTx);
 
-    expect(result).toBe('1개월 미만');
+    expect(result).toBe('Less than 1 month');
   });
 
-  it('returns "6개월" for a wallet that is exactly 6 months old', () => {
+  it('returns "6 months" for a wallet that is exactly 6 months old', () => {
     const fixedNow = 1_700_000_000_000;
     vi.spyOn(Date, 'now').mockReturnValue(fixedNow);
 
@@ -208,10 +208,10 @@ describe('formatWalletAge', () => {
 
     const result = formatWalletAge(firstTx);
 
-    expect(result).toBe('6개월');
+    expect(result).toBe('6 months');
   });
 
-  it('returns "1년" for a wallet that is exactly 12 months old', () => {
+  it('returns "1 year" for a wallet that is exactly 12 months old', () => {
     const fixedNow = 1_700_000_000_000;
     vi.spyOn(Date, 'now').mockReturnValue(fixedNow);
 
@@ -219,6 +219,6 @@ describe('formatWalletAge', () => {
 
     const result = formatWalletAge(firstTx);
 
-    expect(result).toBe('1년');
+    expect(result).toBe('1 year');
   });
 });

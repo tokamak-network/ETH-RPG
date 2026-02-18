@@ -46,7 +46,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!rateLimitResult.allowed) {
     return errorResponse(
       ErrorCode.RATE_LIMITED,
-      '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.',
+      'Too many requests. Please try again later.',
       429,
     );
   }
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (typeof body.address !== 'string' || body.address.trim().length === 0) {
       return errorResponse(
         ErrorCode.INVALID_ADDRESS,
-        '올바른 이더리움 주소를 입력해주세요.',
+        'Please enter a valid Ethereum address.',
         400,
       );
     }
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   } catch {
     return errorResponse(
       ErrorCode.INVALID_ADDRESS,
-      '올바른 요청 형식이 아닙니다.',
+      'Invalid request format.',
       400,
     );
   }
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!isValidInput(address)) {
     return errorResponse(
       ErrorCode.INVALID_ADDRESS,
-      '올바른 이더리움 주소를 입력해주세요.',
+      'Please enter a valid Ethereum address.',
       400,
     );
   }
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (error instanceof EmptyWalletError) {
       return errorResponse(
         ErrorCode.NO_TRANSACTIONS,
-        '이 지갑에는 트랜잭션이 없습니다. 활동 이력이 있는 주소를 입력해주세요.',
+        'This wallet has no transactions. Please enter an address with activity history.',
         400,
       );
     }
@@ -103,8 +103,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return errorResponse(
       ErrorCode.API_ERROR,
       process.env.NODE_ENV === 'development'
-        ? `서버 오류: ${message}`
-        : '서버에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        ? `Server error: ${message}`
+        : 'A temporary server error occurred. Please try again later.',
       500,
     );
   }

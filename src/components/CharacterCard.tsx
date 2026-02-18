@@ -50,8 +50,8 @@ export default function CharacterCard({ data }: CharacterCardProps) {
         tabIndex={0}
         aria-label={
           isFlipped
-            ? '카드 앞면 보기 (클릭하여 뒤집기)'
-            : '카드 뒷면 보기 (클릭하여 뒤집기)'
+            ? 'View card front (click to flip)'
+            : 'View card back (click to flip)'
         }
         onClick={handleFlip}
         onKeyDown={handleKeyDown}
@@ -136,7 +136,7 @@ export default function CharacterCard({ data }: CharacterCardProps) {
 
           {/* Flip hint */}
           <p className="text-xs text-text-muted text-center mt-3 opacity-60">
-            탭하여 서사 보기
+            Tap to view lore
           </p>
         </div>
 
@@ -210,7 +210,7 @@ export default function CharacterCard({ data }: CharacterCardProps) {
 
             {/* Flip back hint */}
             <p className="text-xs text-text-muted text-center mt-3 opacity-60">
-              탭하여 돌아가기
+              Tap to go back
             </p>
           </div>
         </div>

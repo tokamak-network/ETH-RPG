@@ -20,7 +20,7 @@ export async function generateMetadata({
   // Validate: must be ETH address or ENS name
   if (!ETH_ADDRESS_REGEX.test(rawAddress) && !ENS_REGEX.test(rawAddress)) {
     return {
-      title: 'Eth\u00B7RPG \u2014 당신의 지갑은 어떤 영웅입니까?',
+      title: 'Eth\u00B7RPG \u2014 What hero is your wallet?',
     };
   }
 
@@ -31,16 +31,16 @@ export async function generateMetadata({
     const encodedAddress = encodeURIComponent(rawAddress);
     const label = ETH_ADDRESS_REGEX.test(rawAddress) ? shortenAddress(rawAddress) : rawAddress;
     return {
-      title: `${label}의 캐릭터 카드 | Eth\u00B7RPG`,
-      description: '이더리움 지갑 주소를 분석해 RPG 캐릭터 카드를 생성합니다.',
+      title: `${label}'s Character Card | Eth\u00B7RPG`,
+      description: 'Analyze Ethereum wallet addresses to generate RPG character cards.',
       openGraph: {
-        title: `${label}의 캐릭터 카드`,
-        description: '나의 온체인 영웅을 확인하세요!',
+        title: `${label}'s Character Card`,
+        description: 'Check out my on-chain hero!',
         images: [`${siteUrl}/api/og/${encodedAddress}`],
       },
       twitter: {
         card: 'summary_large_image',
-        title: `${label}의 캐릭터 카드 | Eth\u00B7RPG`,
+        title: `${label}'s Character Card | Eth\u00B7RPG`,
         images: [`${siteUrl}/api/og/${encodedAddress}`],
       },
     };
@@ -53,7 +53,7 @@ export async function generateMetadata({
   const loreSnippet = data.lore.length > MAX_LORE_LENGTH
     ? `${data.lore.slice(0, MAX_LORE_LENGTH)}...`
     : data.lore;
-  const description = `전투력 ${data.stats.power.toLocaleString()} | ${loreSnippet}`;
+  const description = `Power ${data.stats.power.toLocaleString()} | ${loreSnippet}`;
   const ogAddress = encodeURIComponent(data.address);
 
   return {
@@ -61,20 +61,20 @@ export async function generateMetadata({
     description,
     openGraph: {
       title,
-      description: `${data.class.name} | 전투력 ${data.stats.power.toLocaleString()}`,
+      description: `${data.class.name} | Power ${data.stats.power.toLocaleString()}`,
       images: [
         {
           url: `${siteUrl}/api/og/${ogAddress}`,
           width: 1200,
           height: 630,
-          alt: `${displayName}의 Eth·RPG 캐릭터 카드`,
+          alt: `${displayName}'s Eth\u00B7RPG Character Card`,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${displayName} — ${data.class.name} Lv.${data.stats.level} | Eth\u00B7RPG`,
-      description: `전투력 ${data.stats.power.toLocaleString()} | ${loreSnippet}`,
+      description: `Power ${data.stats.power.toLocaleString()} | ${loreSnippet}`,
       images: [`${siteUrl}/api/og/${ogAddress}`],
     },
   };

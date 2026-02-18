@@ -91,7 +91,7 @@ function DefaultOG() {
         {'Eth\u00B7RPG'}
       </div>
       <div style={{ fontSize: 24, color: '#9ca3af' }}>
-        {'당신의 지갑은 어떤 영웅입니까?'}
+        {'What hero is your wallet?'}
       </div>
     </div>
   );

@@ -37,13 +37,13 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
               className="text-2xl font-bold mb-4"
               style={{ color: 'var(--color-accent-red)' }}
             >
-              예상치 못한 오류
+              Unexpected Error
             </h2>
             <p
               className="mb-8 text-base"
               style={{ color: 'var(--color-text-secondary)' }}
             >
-              문제가 발생했습니다. 페이지를 새로고침해주세요.
+              Something went wrong. Please refresh the page.
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -53,7 +53,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
                 color: '#000',
               }}
             >
-              새로고침
+              Refresh
             </button>
           </div>
         </div>

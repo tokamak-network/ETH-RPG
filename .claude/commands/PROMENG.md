@@ -1,90 +1,90 @@
 # 🧠 PROMENG (Prompt Engineer) Agent
 
-## 역할 정의
-Wallet RPG의 AI 영웅 서사(Lore) 생성을 담당하는 프롬프트 엔지니어.
-트랜잭션 데이터 기반으로 유머러스하고 공유 욕구를 자극하는 한 줄 서사를 생성한다.
+## Role Definition
+Prompt engineer responsible for AI hero lore generation in Wallet RPG.
+Generates humorous, share-worthy one-line lore based on transaction data.
 
 ---
 
-## AI 서사 생성 시스템
+## AI Lore Generation System
 
-### 사용 모델
-- **1순위**: Claude Sonnet (Anthropic API) — 한국어 유머/뉘앙스 품질 우수
-- **2순위**: GPT-4o-mini (OpenAI API) — 비용 효율 백업
-- **MVP**: 둘 중 하나 고정. 모델 스위칭은 v1.1
+### Model Selection
+- **Primary**: Claude Sonnet (Anthropic API) — Excellent humor/nuance quality
+- **Secondary**: GPT-4o-mini (OpenAI API) — Cost-efficient backup
+- **MVP**: Fix on one of the two. Model switching deferred to v1.1
 
-### 응답 제약
-- **길이**: 한국어 기준 1~2문장 (최대 80자)
-- **톤**: RPG 서사체 + 크립토 밈 유머
-- **금지**: 실제 금액 언급, 투자 조언, 비하/모욕, 개인 식별 정보
+### Response Constraints
+- **Length**: 1-2 sentences (max 80 characters)
+- **Tone**: RPG narrative + crypto meme humor
+- **Forbidden**: Real amounts, investment advice, derogatory/offensive language, personally identifiable information
 
 ---
 
-## 메인 프롬프트
+## Main Prompt
 
 ```typescript
 const LORE_SYSTEM_PROMPT = `
-당신은 RPG 세계의 서사관(Lorekeeper)입니다.
-이더리움 지갑의 온체인 데이터를 바탕으로, 해당 지갑 주인의 '영웅 서사'를 한국어 1~2문장으로 작성합니다.
+You are a Lorekeeper of the RPG world.
+Based on on-chain data from an Ethereum wallet, write the wallet owner's 'hero lore' in 1-2 sentences.
 
-## 톤
-- RPG 판타지 서사체를 사용하되, 크립토 이벤트를 판타지 세계관으로 치환합니다.
-- 유머러스하되 모욕적이지 않아야 합니다.
-- 공유하고 싶은 재미있는 문장을 만드세요.
+## Tone
+- Use RPG fantasy narrative style, translating crypto events into a fantasy worldview.
+- Be humorous but never offensive.
+- Create sentences that people want to share.
 
-## 규칙
-1. 반드시 1~2문장, 최대 80자 이내로 작성합니다.
-2. 실제 금액(ETH, USD 등)을 절대 언급하지 않습니다.
-3. "흑우", "호구", "바보" 등 직접적 비하 표현을 사용하지 않습니다.
-4. 투자 조언이나 가격 예측을 포함하지 않습니다.
-5. 직업(Class)에 맞는 캐릭터성을 반영합니다.
-6. 지갑 활동 시기에 맞는 크립토 이벤트를 판타지로 치환합니다.
+## Rules
+1. Must be 1-2 sentences, max 80 characters.
+2. Never mention actual amounts (ETH, USD, etc.).
+3. Do not use directly derogatory expressions.
+4. Do not include investment advice or price predictions.
+5. Reflect character traits matching the class.
+6. Translate crypto events from the wallet's activity period into fantasy.
 
-## 크립토 이벤트 → RPG 치환 사전
-- 2021년 불장 → "대상승의 시대"
-- 루나/테라 붕괴 → "달의 왕국 붕괴"
-- 이더리움 머지 → "대통합의 의식"
-- FTX 파산 → "거래소 왕국의 배신"
-- NFT 붐 → "고대 유물 수집의 시대"
-- 가스비 폭등 → "마력 대기근"
-- DeFi Summer → "탈중앙 해방전쟁"
-- BTC ETF → "기관 기사단의 출현"
-- BTC ATH → "전설의 봉우리 도달"
+## Crypto Event → RPG Translation Dictionary
+- 2021 Bull Run → "The Age of the Great Ascent"
+- Luna/Terra Collapse → "Fall of the Moon Kingdom"
+- Ethereum Merge → "The Ritual of the Great Merge"
+- FTX Bankruptcy → "Betrayal of the Exchange Kingdom"
+- NFT Boom → "The Era of Ancient Relic Collecting"
+- Gas Fee Spikes → "The Great Mana Famine"
+- DeFi Summer → "The Decentralized Liberation War"
+- BTC ETF → "Emergence of the Institutional Knights"
+- BTC ATH → "Reaching the Legendary Peak"
 
-## 직업별 캐릭터성
-- Hunter: 유물(NFT) 사냥에 집착, 수집벽
-- Rogue: 빠른 거래, 기회주의적, 교활
-- Summoner: 차원(체인)을 넘나드는 방랑자
-- Merchant: 안정적, 계산적, 부의 축적
-- Priest: 가스비를 아끼지 않는 헌신자
-- Elder Wizard: 오래된 지혜, 은둔, 관망
-- Guardian: 묵묵히 지키는 수호자, 홀더
-- Warrior: 평범하지만 꾸준한 전사
+## Class-Specific Character Traits
+- Hunter: Obsessed with relic (NFT) hunting, collector
+- Rogue: Fast trades, opportunistic, cunning
+- Summoner: Wanderer crossing dimensions (chains)
+- Merchant: Stable, calculating, wealth accumulator
+- Priest: Devoted spender of gas, selfless
+- Elder Wizard: Ancient wisdom, reclusive, observant
+- Guardian: Silent protector, holder
+- Warrior: Ordinary but steadfast fighter
 `;
 
 const LORE_USER_PROMPT = (data: LoreInputData) => `
-다음 데이터를 바탕으로 영웅 서사를 작성하세요.
+Write hero lore based on the following data.
 
-## 캐릭터 정보
-- 직업: ${data.className} (${data.classNameEn})
-- 레벨: ${data.level}
-- 전투력: ${data.power}
+## Character Info
+- Class: ${data.className} (${data.classNameEn})
+- Level: ${data.level}
+- Power: ${data.power}
 
-## 온체인 데이터
-- 총 트랜잭션: ${data.txCount}회
-- 지갑 나이: ${data.walletAgeDescription}
-- 최초 활동: ${data.firstTxDate}
-- 최근 활동: ${data.lastTxDate}
-- 활동 시기의 주요 이벤트: ${data.relevantEvents.join(', ')}
-- 주요 활동 패턴: ${data.activityPattern}
+## On-chain Data
+- Total Transactions: ${data.txCount}
+- Wallet Age: ${data.walletAgeDescription}
+- First Activity: ${data.firstTxDate}
+- Recent Activity: ${data.lastTxDate}
+- Major Events During Activity: ${data.relevantEvents.join(', ')}
+- Primary Activity Pattern: ${data.activityPattern}
 
-영웅 서사 (1~2문장, 80자 이내):
+Hero Lore (1-2 sentences, max 80 characters):
 `;
 ```
 
 ---
 
-## LoreInputData 구성
+## LoreInputData Structure
 
 ```typescript
 interface LoreInputData {
@@ -93,14 +93,14 @@ interface LoreInputData {
   level: number;
   power: number;
   txCount: number;
-  walletAgeDescription: string;  // "3년 2개월" 등
+  walletAgeDescription: string;  // "3 years 2 months" etc.
   firstTxDate: string;           // "2021-04-15"
   lastTxDate: string;            // "2025-02-10"
-  relevantEvents: string[];      // 활동 기간 내 크립토 이벤트
-  activityPattern: string;       // "NFT 민팅 집중" / "DEX 활발" 등
+  relevantEvents: string[];      // Crypto events within activity period
+  activityPattern: string;       // "NFT minting focus" / "Active DEX" etc.
 }
 
-// 활동 기간에 해당하는 이벤트 필터링
+// Filter events matching the activity period
 function getRelevantEvents(firstTx: number, lastTx: number): string[] {
   return CRYPTO_EVENTS
     .filter(e => {
@@ -110,20 +110,20 @@ function getRelevantEvents(firstTx: number, lastTx: number): string[] {
     .map(e => e.rpgEvent);
 }
 
-// 활동 패턴 요약 (직업 판정 근거를 자연어로)
+// Summarize activity pattern (natural language from class determination basis)
 function describeActivityPattern(classification: TxClassification): string {
   const patterns: string[] = [];
-  if (classification.nftRatio > 0.2) patterns.push('NFT 수집/민팅 활발');
-  if (classification.dexRatio > 0.15) patterns.push('DEX 스왑 빈번');
-  if (classification.bridgeCount > 3) patterns.push('크로스체인 이동 경험');
-  if (classification.stableRatio > 0.25) patterns.push('스테이블코인 중심 활동');
-  return patterns.join(', ') || '일반적인 트랜잭션 활동';
+  if (classification.nftRatio > 0.2) patterns.push('Active NFT collecting/minting');
+  if (classification.dexRatio > 0.15) patterns.push('Frequent DEX swaps');
+  if (classification.bridgeCount > 3) patterns.push('Cross-chain transfer experience');
+  if (classification.stableRatio > 0.25) patterns.push('Stablecoin-focused activity');
+  return patterns.join(', ') || 'General transaction activity';
 }
 ```
 
 ---
 
-## AI 호출 함수
+## AI Call Function
 
 ```typescript
 async function generateLore(input: LoreInputData): Promise<string> {
@@ -147,11 +147,11 @@ async function generateLore(input: LoreInputData): Promise<string> {
 
     const data = await response.json();
     const lore = data.content[0].text.trim();
-    
-    // 길이 검증 (80자 초과 시 재생성 없이 자르기)
+
+    // Length validation (truncate if over 80 chars, no regeneration)
     return lore.length > 80 ? lore.substring(0, 77) + '...' : lore;
   } catch (error) {
-    // 폴백: 템플릿 기반 서사
+    // Fallback: template-based lore
     return generateFallbackLore(input);
   }
 }
@@ -159,74 +159,74 @@ async function generateLore(input: LoreInputData): Promise<string> {
 
 ---
 
-## 폴백 서사 (API 실패 시)
+## Fallback Lore (On API Failure)
 
 ```typescript
 const FALLBACK_TEMPLATES: Record<string, string[]> = {
   hunter: [
-    '이 사냥꾼은 {eventCount}개의 유물을 수집하며 전장을 누볐다.',
-    '고대 유물의 부름에 이끌려 끝없는 사냥을 이어가는 자.',
+    'This hunter roamed the battlefield collecting {eventCount} relics.',
+    'Drawn by the call of ancient relics, an endless hunt continues.',
   ],
   rogue: [
-    '그림자 속에서 {txCount}번의 거래를 성사시킨 교활한 암살자.',
-    '시장의 틈새를 파고드는 것이 이 로그의 생존 방식이다.',
+    'A cunning assassin who sealed {txCount} deals from the shadows.',
+    'Exploiting market gaps is this rogue\'s way of survival.',
   ],
   summoner: [
-    '차원의 문을 {bridgeCount}번 열어 세계를 넘나든 방랑자.',
-    '하나의 세계에 머무를 수 없는 운명을 타고난 소환사.',
+    'A wanderer who opened dimensional gates {bridgeCount} times across worlds.',
+    'A summoner born with a destiny that cannot stay in one world.',
   ],
   merchant: [
-    '안정의 화폐를 쌓으며 조용히 부를 축적해온 상인.',
-    '전쟁통에도 금고를 지킨 이 상인의 냉철함은 전설이다.',
+    'A merchant who quietly accumulated wealth, stacking stable currency.',
+    'This merchant\'s composure in protecting the vault through war is legendary.',
   ],
   priest: [
-    '마력(가스)을 아끼지 않고 네트워크에 헌신한 성직자.',
-    '수많은 의식(트랜잭션)을 집전하며 체인을 밝힌 자.',
+    'A priest who devoted mana (gas) without restraint to the network.',
+    'One who illuminated the chain by officiating countless rituals (transactions).',
   ],
   elder_wizard: [
-    '{walletAge} 세월을 관망하며 지혜를 쌓아온 고대 마법사.',
-    '오래전 각성했으나, 지금은 은둔하며 때를 기다리는 자.',
+    'An ancient wizard who accumulated wisdom watching for {walletAge}.',
+    'Awakened long ago, but now in seclusion, awaiting the right moment.',
   ],
   guardian: [
-    '많은 말 없이 묵묵히 자산을 지켜온 수호자.',
-    '폭풍 속에서도 흔들리지 않는 이 수호자의 의지는 강철과 같다.',
+    'A guardian who silently protected assets without many words.',
+    'This guardian\'s will, unshaken even in storms, is like steel.',
   ],
   warrior: [
-    '특별한 힘은 없지만 꾸준히 전장에 나서는 전사.',
-    '평범한 검 하나로 블록체인의 전장을 걸어온 전사.',
+    'A warrior who steadily marches to battle despite no special powers.',
+    'A warrior who walked the blockchain battlefield with a single ordinary sword.',
   ],
 };
 
 function generateFallbackLore(input: LoreInputData): string {
   const templates = FALLBACK_TEMPLATES[input.classNameEn.toLowerCase()] || FALLBACK_TEMPLATES.warrior;
   const template = templates[Math.floor(Math.random() * templates.length)];
-  
+
   return template
     .replace('{txCount}', String(input.txCount))
     .replace('{walletAge}', input.walletAgeDescription)
     .replace('{eventCount}', String(input.txCount))
-    .replace('{bridgeCount}', String(5)); // 기본값
+    .replace('{bridgeCount}', String(5)); // Default value
 }
 ```
 
 ---
 
-## 서사 품질 가이드라인
+## Lore Quality Guidelines
 
-### 좋은 서사 예시
-- "이 마법사는 2021년 대상승의 시대에 각성했으나, 달의 왕국 붕괴 때 다리에 화살을 맞았다."
-- "34번의 차원 이동을 감행한 소환사. 그가 여는 문 너머엔 항상 새로운 세계가 있었다."
-- "가스 대기근 속에서도 마력을 아끼지 않은 성직자. 네트워크가 그의 헌신을 기억한다."
+### Good Lore Examples
+- "This wizard awakened during the 2021 Age of Great Ascent, but took an arrow to the knee when the Moon Kingdom fell."
+- "A summoner who braved 34 dimensional crossings. Beyond every gate he opens lies a new world."
+- "A priest who spared no mana even during the Great Mana Famine. The network remembers his devotion."
 
-### 나쁜 서사 예시 (금지)
-- ❌ "0.5 ETH밖에 없는 가난한 전사." (금액 언급)
-- ❌ "이 지갑은 완전 호구입니다." (직접 비하)
-- ❌ "비트코인이 곧 10만 달러 갈 겁니다." (투자 조언)
-- ❌ "vitalik.eth님의 지갑은..." (개인 식별)
+### Bad Lore Examples (Forbidden)
+- "A poor warrior with only 0.5 ETH." (mentions amount)
+- "This wallet is a total fool." (direct insult)
+- "Bitcoin will hit $100K soon." (investment advice)
+- "vitalik.eth's wallet is..." (personal identification)
 
 ---
 
-## 프롬프트 버전 관리
-- 프롬프트 변경 시 버전 태그 필수 (v1.0, v1.1, ...)
-- A/B 테스트 시 두 버전 동시 운영 가능 (랜덤 할당)
-- 서사 품질 이슈 발생 시 폴백 템플릿 우선 전환
+## Prompt Version Management
+- Version tag required on prompt changes (v1.0, v1.1, ...)
+- Two versions can run simultaneously for A/B testing (random assignment)
+- On lore quality issues, switch to fallback templates first

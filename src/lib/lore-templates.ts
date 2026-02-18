@@ -3,70 +3,70 @@ import type { CharacterClassId } from '@/lib/types';
 
 export const FALLBACK_TEMPLATES: Record<CharacterClassId, readonly [string, string]> = {
   hunter: [
-    '이 사냥꾼은 수많은 유물을 수집하며 전장을 누볐다.',
-    '고대 유물의 부름에 이끌려 끝없는 사냥을 이어가는 자.',
+    'This hunter roamed the battlefield, collecting countless relics.',
+    'Drawn by the call of ancient relics, an endless hunt continues.',
   ],
   rogue: [
-    '그림자 속에서 수많은 거래를 성사시킨 교활한 암살자.',
-    '시장의 틈새를 파고드는 것이 이 로그의 생존 방식이다.',
+    'A cunning assassin who sealed countless deals from the shadows.',
+    'Exploiting every crack in the market is how this rogue survives.',
   ],
   summoner: [
-    '차원의 문을 열어 세계를 넘나든 방랑자.',
-    '하나의 세계에 머무를 수 없는 운명을 타고난 소환사.',
+    'A wanderer who opened dimensional gates to traverse worlds.',
+    'A summoner born with a destiny that cannot stay in one world.',
   ],
   merchant: [
-    '안정의 화폐를 쌓으며 조용히 부를 축적해온 상인.',
-    '전쟁통에도 금고를 지킨 이 상인의 냉철함은 전설이다.',
+    'A merchant who quietly amassed wealth by hoarding stable coins.',
+    'This merchant\'s cold-blooded composure, guarding the vault even in war, is legendary.',
   ],
   priest: [
-    '마력(가스)을 아끼지 않고 네트워크에 헌신한 성직자.',
-    '수많은 의식(트랜잭션)을 집전하며 체인을 밝힌 자.',
+    'A priest who devoted mana (gas) without hesitation to the network.',
+    'One who illuminated the chain by officiating countless rituals (transactions).',
   ],
   elder_wizard: [
-    '오랜 세월을 관망하며 지혜를 쌓아온 고대 마법사.',
-    '오래전 각성했으나, 지금은 은둔하며 때를 기다리는 자.',
+    'An ancient wizard who watched for ages, accumulating wisdom.',
+    'Awakened long ago, now in seclusion, waiting for the right moment.',
   ],
   guardian: [
-    '많은 말 없이 묵묵히 자산을 지켜온 수호자.',
-    '폭풍 속에서도 흔들리지 않는 이 수호자의 의지는 강철과 같다.',
+    'A guardian who silently protected assets without many words.',
+    'This guardian\'s will, unshaken even in storms, is like steel.',
   ],
   warrior: [
-    '특별한 힘은 없지만 꾸준히 전장에 나서는 전사.',
-    '평범한 검 하나로 블록체인의 전장을 걸어온 전사.',
+    'No special powers, but a warrior who steadily marches to battle.',
+    'A warrior who walked the blockchain battlefield with a single ordinary sword.',
   ],
 } as const;
 
 export const LONG_FALLBACK_TEMPLATES: Record<CharacterClassId, readonly [string, string]> = {
   hunter: [
-    '고대 유물의 전시장은 이 사냥꾼의 기억으로 가득하다. 수많은 경매장과 던전을 누비며 수집한 전리품들은 한 시대를 증언하는 역사서와 같다. 그 어떤 유물도 이 사냥꾼의 눈을 피할 수 없었다.',
-    '유물 수집의 시대가 도래했을 때, 이 사냥꾼은 가장 먼저 전장에 뛰어들었다. 끝없는 사냥을 통해 쌓아올린 컬렉션은 이 세계 어디에서도 찾아볼 수 없는 보물 창고가 되었다. 전설은 아직 끝나지 않았다.',
+    'The gallery of ancient relics is filled with this hunter\'s memories. Spoils collected from countless auction houses and dungeons serve as history books that testify to an entire era. No relic could ever escape this hunter\'s gaze.',
+    'When the Era of Relic Collecting dawned, this hunter was the first to charge into the battlefield. The collection built through endless hunts became a treasure trove found nowhere else in this world. The legend is not yet over.',
   ],
   rogue: [
-    '이 로그는 시장의 혼란 속에서 기회를 포착하는 데 천부적인 재능을 지녔다. 남들이 공포에 떨 때 그림자 속에서 거래를 성사시키고, 남들이 환호할 때 조용히 빠져나가는 것이 이 로그의 방식이다.',
-    '교활함은 이 로그의 무기이자 방패다. 수없이 많은 거래소를 넘나들며 틈새를 파고든 경험은 그 누구도 따라올 수 없는 생존 본능으로 승화되었다. 그림자 속의 전설은 계속된다.',
+    'This rogue possesses an innate talent for seizing opportunities amid market chaos. Closing deals from the shadows when others tremble in fear, and quietly slipping away when others celebrate -- that is the rogue\'s way.',
+    'Cunning is both weapon and shield for this rogue. The experience of exploiting gaps across countless exchanges has been refined into a survival instinct that no one else can match. The legend in the shadows continues.',
   ],
   summoner: [
-    '하나의 세계에 안주하지 않는 것이 소환사의 숙명이다. 차원의 문을 열고 수많은 세계를 넘나든 이 방랑자는, 각 세계의 지혜와 경험을 하나로 엮어 새로운 가능성을 창조해왔다.',
-    '이 소환사가 연 차원의 문은 셀 수 없이 많다. 세계와 세계를 잇는 다리 위에서, 이 방랑자는 어떤 폭풍에도 흔들리지 않는 의지로 자신만의 길을 개척해왔다. 다음 차원의 문이 열리기를 기다린다.',
+    'It is the summoner\'s fate to never settle in a single world. This wanderer, who opened dimensional gates and traversed countless worlds, has woven wisdom and experience from each realm into new possibilities.',
+    'The dimensional gates this summoner has opened are beyond count. On the bridges connecting world to world, this wanderer has forged a path with an unwavering will that no storm can shake. Awaiting the next gate to open.',
   ],
   merchant: [
-    '이 상인의 금고는 어떤 전쟁에도 무너지지 않았다. 안정의 화폐를 쌓으며 조용히 부를 축적해온 이 상인은, 시장의 광풍 속에서도 냉철함을 잃지 않는 전설적인 존재다.',
-    '상인의 길은 인내와 계산의 연속이다. 수많은 폭풍이 시장을 휩쓸어도 이 상인은 금고의 문을 굳게 닫고 때를 기다렸다. 그 결과 쌓아올린 부는 이 세계에서 손꼽히는 전설이 되었다.',
+    'This merchant\'s vault has never fallen in any war. Having quietly accumulated wealth by hoarding stable coins, this merchant is a legendary figure who never loses composure even amid market tempests.',
+    'The merchant\'s path is an endless series of patience and calculation. No matter how many storms swept the market, this merchant sealed the vault tight and waited. The resulting fortune has become one of the most storied legends in this world.',
   ],
   priest: [
-    '마력을 아끼지 않고 네트워크에 헌신한 이 성직자는, 수많은 의식을 집전하며 체인의 불씨를 지켜왔다. 높은 가스비의 시대에도 물러서지 않은 그 헌신은 전설로 기록되어 있다.',
-    '이 성직자의 헌신은 끝이 없다. 마력이 대기근으로 치솟던 시절에도, 네트워크의 안정을 위해 쉬지 않고 의식을 집전했다. 그 희생 위에 오늘의 체인이 존재한다는 것을 아는 이는 많지 않다.',
+    'This priest, who devoted mana without hesitation to the network, has preserved the chain\'s flame by officiating countless rituals. Even in the era of exorbitant gas fees, their steadfast devotion is recorded in legend.',
+    'This priest\'s devotion knows no end. Even when mana costs surged to famine levels, they officiated rituals ceaselessly for the stability of the network. Few know that today\'s chain exists upon that sacrifice.',
   ],
   elder_wizard: [
-    '오래전 각성한 이 고대 마법사는 수많은 시대의 흥망을 관망해왔다. 대상승의 시대도, 달의 왕국 붕괴도 모두 이 마법사의 기억 속에 있다. 지금은 은둔하며 다음 시대를 준비하고 있다.',
-    '이 고대 마법사의 지혜는 오랜 세월의 관찰에서 비롯된다. 첫 각성 이후 수많은 왕국의 탄생과 소멸을 목격했으며, 그 경험은 어떤 마법서에도 기록되지 않은 비밀을 품고 있다.',
+    'Awakened long ago, this ancient wizard has observed the rise and fall of countless eras. The Era of the Great Rise, the Fall of the Lunar Kingdom -- all reside within this wizard\'s memory. Now in seclusion, preparing for the next age.',
+    'This ancient wizard\'s wisdom is born from ages of observation. Since their first awakening, they have witnessed the birth and extinction of countless kingdoms, and that experience holds secrets recorded in no spellbook.',
   ],
   guardian: [
-    '이 수호자는 많은 말을 하지 않는다. 폭풍이 몰아쳐도, 세계가 흔들려도 묵묵히 자신의 자리를 지킨다. 그 강철 같은 의지는 어떤 유혹에도 흔들리지 않는 진정한 수호자의 증거다.',
-    '수호자의 길은 고독하지만 흔들림이 없다. 모두가 도망칠 때도 이 수호자는 자리를 지켰고, 모두가 돌아왔을 때도 같은 자리에 있었다. 진정한 힘은 움직이지 않는 데에서 나온다.',
+    'This guardian does not say much. Even when storms rage and the world trembles, they silently hold their ground. That iron will, unswayed by any temptation, is proof of a true guardian.',
+    'The guardian\'s path is lonely but unwavering. When everyone fled, this guardian held their post, and when everyone returned, they stood in the same place. True strength comes from standing still.',
   ],
   warrior: [
-    '특별한 마법도, 전설적인 무기도 없다. 이 전사가 가진 것은 꾸준함과 의지뿐이다. 매일 전장에 나서며 한 걸음씩 전진해온 이 전사의 여정은, 그 자체로 하나의 서사시다.',
-    '평범한 검 하나로 블록체인의 전장을 걸어온 이 전사는, 화려하진 않지만 꺾이지 않는 의지의 소유자다. 수많은 전투를 거치며 쌓아올린 경험은 어떤 전설의 무기보다 값지다.',
+    'No special magic, no legendary weapons. All this warrior has is perseverance and will. The journey of this warrior, who marched to battle every day taking one step at a time, is an epic saga in itself.',
+    'This warrior, who walked the blockchain battlefield with a single ordinary sword, may not be flashy but possesses an unbreakable will. The experience forged through countless battles is worth more than any legendary weapon.',
   ],
 } as const;
