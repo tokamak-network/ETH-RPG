@@ -163,8 +163,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       cached: false,
     };
 
-    // 9. Cache the result
+    // 9. Cache the result (under resolved address + ENS name if available)
     setCache(resolvedAddress, response);
+    if (rawData.ensName) {
+      setCache(rawData.ensName.toLowerCase(), response);
+    }
 
     return NextResponse.json(response);
   } catch (error) {
