@@ -1,13 +1,26 @@
 import React from 'react';
 import Image from 'next/image';
-import type { CharacterClassId } from '@/lib/types';
+import type { CharacterClassId, CharacterStats } from '@/lib/types';
+import StatVisualEffects from './StatVisualEffects';
 
 interface PixelCharacterProps {
   readonly classId: CharacterClassId;
   readonly size?: number;
+  readonly stats?: CharacterStats;
 }
 
-function PixelCharacterInner({ classId, size = 128 }: PixelCharacterProps) {
+function PixelCharacterInner({ classId, size = 128, stats }: PixelCharacterProps) {
+  const image = (
+    <Image
+      src={`/sprites/${classId}.png`}
+      alt={`${classId.replace(/_/g, ' ')} pixel character`}
+      width={size}
+      height={size}
+      style={{ imageRendering: 'pixelated', objectFit: 'contain' }}
+      unoptimized
+    />
+  );
+
   return (
     <div
       className="pixel-character"
@@ -17,14 +30,11 @@ function PixelCharacterInner({ classId, size = 128 }: PixelCharacterProps) {
         imageRendering: 'pixelated',
       }}
     >
-      <Image
-        src={`/sprites/${classId}.png`}
-        alt={`${classId.replace(/_/g, ' ')} pixel character`}
-        width={size}
-        height={size}
-        style={{ imageRendering: 'pixelated', objectFit: 'contain' }}
-        unoptimized
-      />
+      {stats ? (
+        <StatVisualEffects stats={stats}>{image}</StatVisualEffects>
+      ) : (
+        image
+      )}
     </div>
   );
 }

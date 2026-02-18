@@ -140,6 +140,106 @@ body {
   will-change: transform, opacity;
 }
 
+/* === Stat-based sprite visual effects === */
+
+/* HP heartbeat glow */
+@keyframes hp-heartbeat {
+  0%, 100% { box-shadow: 0 0 0 rgba(239, 68, 68, 0); }
+  50% { box-shadow: 0 0 calc(var(--fx-hp) * 15px) rgba(239, 68, 68, calc(var(--fx-hp) * 0.5)); }
+}
+
+/* MP arcane swirl */
+@keyframes mp-swirl {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* INT wisdom particles drift */
+@keyframes int-drift {
+  0% { background-position: 0% 100%; opacity: 0; }
+  30% { opacity: calc(var(--fx-int) * 0.4); }
+  100% { background-position: 50% -20%; opacity: 0; }
+}
+
+/* LUCK sparkle (shared by A and B, offset via animation-delay) */
+@keyframes luck-twinkle {
+  0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  50% { opacity: calc(var(--fx-luck) * 0.5); transform: translate(-50%, -50%) scale(1); }
+}
+
+.sprite-effects-wrapper {
+  position: relative;
+  display: inline-block;
+  will-change: filter, transform;
+}
+
+/* HP: heartbeat glow around sprite */
+.sprite-fx-hp {
+  animation: hp-heartbeat calc(2.5s - var(--fx-hp) * 1s) ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* MP: rotating conic gradient overlay */
+.sprite-fx-mp::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(139, 92, 246, calc(var(--fx-mp) * 0.35)) 25%,
+    transparent 50%,
+    rgba(139, 92, 246, calc(var(--fx-mp) * 0.2)) 75%,
+    transparent 100%
+  );
+  animation: mp-swirl calc(4s - var(--fx-mp) * 2s) linear infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* INT: rising blue particles */
+.sprite-fx-int::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle 2px, rgba(96, 165, 250, 0.8) 100%, transparent 100%);
+  background-size: 20px 20px;
+  animation: int-drift calc(3.5s - var(--fx-int) * 1.5s) ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* LUCK: sparkle overlay container */
+.sprite-fx-luck-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* LUCK sparkle A (top-right) */
+.sprite-fx-luck-overlay::before {
+  content: '\2726';
+  position: absolute;
+  top: 10%;
+  right: 10%;
+  font-size: 14px;
+  color: #22c55e;
+  animation: luck-twinkle calc(4s - var(--fx-luck) * 2s) ease-in-out infinite;
+}
+
+/* LUCK sparkle B (bottom-left) */
+.sprite-fx-luck-overlay::after {
+  content: '\2726';
+  position: absolute;
+  bottom: 15%;
+  left: 12%;
+  font-size: 10px;
+  color: #22c55e;
+  animation: luck-twinkle calc(4s - var(--fx-luck) * 2s) ease-in-out 1s infinite;
+}
+
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
   .pixel-character {
@@ -159,6 +259,26 @@ body {
     animation: none;
     opacity: 1;
   }
+
+  .sprite-fx-hp {
+    animation: none;
+  }
+
+  .sprite-fx-mp::before {
+    animation: none;
+    opacity: 0.15;
+  }
+
+  .sprite-fx-int::after {
+    animation: none;
+    opacity: 0.15;
+  }
+
+  .sprite-fx-luck-overlay::before,
+  .sprite-fx-luck-overlay::after {
+    animation: none;
+    opacity: 0.3;
+  }
 }
 
 /* Card flip 3D animation */
@@ -168,6 +288,7 @@ body {
 
 .card-flip-inner {
   transition: transform 0.6s ease;
+  -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
 }
 
@@ -175,12 +296,13 @@ body {
   transform: rotateY(180deg);
 }
 
-.card-face {
+.card-face,
+.card-face-back {
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 
 .card-face-back {
-  backface-visibility: hidden;
   transform: rotateY(180deg);
 }
 

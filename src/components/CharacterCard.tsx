@@ -58,7 +58,7 @@ export default function CharacterCard({ data }: CharacterCardProps) {
       >
         {/* Front face */}
         <div
-          className="card-face card-glow w-full rounded-2xl border p-6 sm:p-8"
+          className="card-face card-glow relative w-full rounded-2xl border p-6 sm:p-8"
           style={{
             backgroundColor: 'var(--color-bg-secondary)',
             borderColor: theme.primary,
@@ -107,7 +107,7 @@ export default function CharacterCard({ data }: CharacterCardProps) {
                 background: `radial-gradient(circle, ${theme.primary}08 0%, transparent 70%)`,
               }}
             >
-              <PixelCharacter classId={data.class.id} size={128} />
+              <PixelCharacter classId={data.class.id} size={128} stats={data.stats} />
             </div>
           </div>
 
@@ -131,13 +131,6 @@ export default function CharacterCard({ data }: CharacterCardProps) {
             </p>
             <p className="text-4xl font-bold font-display text-gold-shimmer">
               {data.stats.power.toLocaleString()}
-            </p>
-          </div>
-
-          {/* Lore */}
-          <div className="border-t border-border pt-4">
-            <p className="text-sm text-text-secondary italic text-center leading-relaxed">
-              {data.lore}
             </p>
           </div>
 
