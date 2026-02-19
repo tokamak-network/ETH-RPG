@@ -43,23 +43,36 @@ export default function AddressInput({ onSubmit, isLoading }: AddressInputProps)
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-lg mx-auto">
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col sm:flex-row gap-2">
-          <input
-            type="text"
-            value={address}
-            onChange={(e) => handleChange(e.target.value)}
-            placeholder="0x... or ENS name"
-            disabled={isLoading}
-            spellCheck={false}
-            autoComplete="off"
-            className="flex-1 px-4 py-3 rounded-lg bg-bg-tertiary border border-border text-white placeholder-text-muted font-mono text-sm focus:outline-none focus:border-accent-gold transition-colors disabled:opacity-50"
-          />
+        <div
+          className="flex flex-col sm:flex-row gap-2 p-2 rounded-xl transition-all duration-200"
+          style={{
+            backgroundColor: 'var(--color-bg-tertiary)',
+            border: '1px solid var(--color-border)',
+          }}
+        >
+          <div className="flex-1 flex items-center gap-2 px-2">
+            <span className="text-text-muted text-sm shrink-0" aria-hidden="true">{'\u{1F50D}'}</span>
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => handleChange(e.target.value)}
+              placeholder="0x... or vitalik.eth"
+              disabled={isLoading}
+              spellCheck={false}
+              autoComplete="off"
+              className="flex-1 py-3 bg-transparent text-white placeholder-text-muted font-mono text-base sm:text-sm focus:outline-none disabled:opacity-50"
+            />
+          </div>
           <button
             type="submit"
             disabled={isSubmitDisabled}
-            className="px-6 py-3 rounded-lg bg-accent-gold text-black font-semibold text-sm whitespace-nowrap transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-6 py-3 rounded-lg font-semibold text-sm whitespace-nowrap transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110"
+            style={{
+              backgroundColor: 'var(--color-accent-gold)',
+              color: '#000',
+            }}
           >
-            {isLoading ? 'Summoning...' : 'Summon Hero'}
+            {isLoading ? 'Summoning...' : 'Summon \u2192'}
           </button>
         </div>
         {showError && (

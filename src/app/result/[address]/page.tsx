@@ -27,10 +27,10 @@ export default function ResultPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-atmosphere">
       <TrustBanner />
 
-      <main className="flex-1 flex flex-col items-center px-4 py-8">
+      <main className="relative z-10 flex-1 flex flex-col items-center px-4 py-8">
         {/* Loading State */}
         {status === 'loading' && (
           <div className="flex-1 flex items-center justify-center w-full">
@@ -40,7 +40,7 @@ export default function ResultPage() {
 
         {/* Error State */}
         {status === 'error' && (
-          <div className="flex-1 flex items-center justify-center w-full">
+          <div className="flex-1 flex items-center justify-center w-full animate-fade-in-up">
             <div className="text-center max-w-md">
               <div className="text-6xl mb-6">{'\u{1F6E1}\uFE0F'}</div>
               <h2
@@ -57,7 +57,7 @@ export default function ResultPage() {
               </p>
               <button
                 onClick={handleTryAnother}
-                className="px-6 py-3 rounded-lg font-semibold transition-colors cursor-pointer"
+                className="px-6 py-3 rounded-lg font-semibold transition-all duration-200 cursor-pointer hover:brightness-110"
                 style={{
                   backgroundColor: 'var(--color-accent-gold)',
                   color: '#000',
@@ -71,7 +71,7 @@ export default function ResultPage() {
 
         {/* Success State */}
         {status === 'success' && data && (
-          <div className="w-full max-w-lg mx-auto">
+          <div className="w-full max-w-lg mx-auto animate-card-entrance">
             {/* Character Card */}
             <div className="mb-8">
               <CharacterCard data={data} />
@@ -84,21 +84,22 @@ export default function ResultPage() {
 
             {/* Challenge CTA */}
             <div
-              className="text-center p-6 rounded-xl mb-8"
+              className="text-center p-6 rounded-xl mb-8 transition-all duration-200 hover:scale-[1.01]"
               style={{
                 backgroundColor: 'var(--color-bg-secondary)',
                 border: '1px solid var(--color-border)',
+                boxShadow: '0 0 40px rgba(244, 196, 48, 0.05)',
               }}
             >
               <p
                 className="text-lg font-bold mb-2"
-                style={{ color: 'var(--color-accent-gold)' }}
+                style={{ color: 'var(--color-accent-gold)', fontFamily: 'var(--font-display)' }}
               >
-                {'\u2694\uFE0F'} Power {data.stats.power.toLocaleString()}... What{'\''}s yours?
+                {'\u2694\uFE0F'} Power {data.stats.power.toLocaleString()}
               </p>
               <p
                 className="text-sm"
-                style={{ color: 'var(--color-text-muted)' }}
+                style={{ color: 'var(--color-text-secondary)' }}
               >
                 Share with friends and compare your power
               </p>
@@ -108,7 +109,7 @@ export default function ResultPage() {
             <div className="text-center">
               <button
                 onClick={handleTryAnother}
-                className="px-6 py-3 rounded-lg font-semibold transition-colors cursor-pointer"
+                className="px-6 py-3 rounded-lg font-semibold transition-all duration-200 cursor-pointer hover:-translate-y-0.5"
                 style={{
                   backgroundColor: 'var(--color-bg-tertiary)',
                   color: 'var(--color-text-primary)',

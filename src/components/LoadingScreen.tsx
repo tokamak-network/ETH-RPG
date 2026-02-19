@@ -34,7 +34,7 @@ export default function LoadingScreen({ step }: LoadingScreenProps) {
         </p>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4 sm:gap-3">
         {PROGRESS_STEPS.map((progressStep, index) => {
           const isCompleted = index < activeIndex;
           const isActive = index === activeIndex;
@@ -54,7 +54,7 @@ export default function LoadingScreen({ step }: LoadingScreenProps) {
                 }`}
               />
               <span
-                className={`text-[10px] whitespace-nowrap transition-colors duration-300 ${
+                className={`text-[10px] whitespace-nowrap transition-colors duration-300 hidden sm:block ${
                   isCompleted || isActive ? 'text-text-secondary' : 'text-text-muted'
                 }`}
               >
