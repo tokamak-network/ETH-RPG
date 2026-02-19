@@ -7,6 +7,8 @@ import TrustBanner from '@/components/TrustBanner';
 import LoadingScreen from '@/components/LoadingScreen';
 import CharacterCard from '@/components/CharacterCard';
 import ShareButtons from '@/components/ShareButtons';
+import { usePageView } from '@/hooks/useAnalytics';
+import { trackEvent } from '@/lib/analytics';
 
 export default function ResultPage() {
   const params = useParams<{ address: string }>();
@@ -14,6 +16,7 @@ export default function ResultPage() {
   const { status, data, error, step, generate } = useGenerateCharacter();
 
   const address = params.address ? decodeURIComponent(params.address) : '';
+  usePageView('result');
 
   useEffect(() => {
     if (address) {
@@ -21,6 +24,17 @@ export default function ResultPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
+
+  // Track card generation on success
+  useEffect(() => {
+    if (status === 'success' && data) {
+      trackEvent('card_generated', {
+        class: data.class.id,
+        level: data.stats.level,
+        power: data.stats.power,
+      });
+    }
+  }, [status, data]);
 
   function handleTryAnother() {
     router.push('/');

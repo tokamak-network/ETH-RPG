@@ -117,8 +117,14 @@
 
 ## BACKLOG (v1.1)
 
-- [ ] Implement funnel event tracking (page_view, card_generated, share_click)
-- [ ] Apply UTM parameter system (auto-insert utm_source in share links)
+- [x] Implement funnel event tracking (page_view, card_generated, share_click)
+  - `lib/analytics.ts` — client-side `trackEvent()` (dev: console.debug, prod: sendBeacon → /api/events)
+  - `hooks/useAnalytics.ts` — `usePageView()` hook (captures UTM + fires page_view)
+  - `api/events/route.ts` — POST endpoint (Sentry breadcrumbs for Vercel logs)
+  - Instrumented: landing, result, battle, battle_result pages + all share buttons + address input
+- [x] Apply UTM parameter system (auto-insert utm_source in share links)
+  - `lib/utm.ts` — `captureUtm()` (URL → sessionStorage), `appendUtmToUrl()` (auto-insert per platform)
+  - Share URLs include `utm_source={platform}&utm_medium=social&utm_campaign=viral|battle`
 - [ ] Share copy A/B testing (6 sets in Korean/English)
 - [ ] Product Hunt launch registration
 - [ ] Reddit r/ethereum Show-off post

@@ -5,12 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import TrustBanner from '@/components/TrustBanner';
 import BattleInput from '@/components/BattleInput';
+import { usePageView } from '@/hooks/useAnalytics';
 
 function BattlePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isNavigating, setIsNavigating] = useState(false);
   const challenger = searchParams.get('challenger') ?? '';
+  usePageView('battle');
 
   function handleSubmit(addr1: string, addr2: string) {
     setIsNavigating(true);

@@ -3,6 +3,8 @@
 import { useState, useCallback } from 'react';
 import type { BattleResponse, BattleFighter, MatchupAdvantage } from '@/lib/types';
 import { CLASS_THEMES } from '@/styles/themes';
+import { trackEvent } from '@/lib/analytics';
+import { appendUtmToUrl } from '@/lib/utm';
 import AchievementRow from './AchievementRow';
 import { PixelCharacter } from './pixel-sprites';
 
@@ -150,55 +152,65 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
   const winnerTheme = CLASS_THEMES[winner.class.id];
 
   const shareText = buildBattleShareText(data);
-  const shareUrl = buildBattleShareUrl(data);
+  const baseShareUrl = buildBattleShareUrl(data);
 
   const handleTwitter = useCallback(() => {
-    const params = new URLSearchParams({ text: shareText, url: shareUrl });
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'twitter', utm_medium: 'social', utm_campaign: 'battle' });
+    trackEvent('share_click', { platform: 'twitter', context: 'battle' });
+    const params = new URLSearchParams({ text: shareText, url });
     window.open(
       `https://twitter.com/intent/tweet?${params.toString()}`,
       '_blank',
       'noopener,noreferrer',
     );
-  }, [shareText, shareUrl]);
+  }, [shareText, baseShareUrl]);
 
   const handleFarcaster = useCallback(() => {
-    const fullText = `${shareText}\n${shareUrl}`;
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'farcaster', utm_medium: 'social', utm_campaign: 'battle' });
+    trackEvent('share_click', { platform: 'farcaster', context: 'battle' });
+    const fullText = `${shareText}\n${url}`;
     const params = new URLSearchParams({ text: fullText });
     window.open(
       `https://warpcast.com/~/compose?${params.toString()}`,
       '_blank',
       'noopener,noreferrer',
     );
-  }, [shareText, shareUrl]);
+  }, [shareText, baseShareUrl]);
 
   const handleTelegram = useCallback(() => {
-    const params = new URLSearchParams({ url: shareUrl, text: shareText });
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'telegram', utm_medium: 'social', utm_campaign: 'battle' });
+    trackEvent('share_click', { platform: 'telegram', context: 'battle' });
+    const params = new URLSearchParams({ url, text: shareText });
     window.open(
       `https://t.me/share/url?${params.toString()}`,
       '_blank',
       'noopener,noreferrer',
     );
-  }, [shareText, shareUrl]);
+  }, [shareText, baseShareUrl]);
 
   const handleDiscord = useCallback(async () => {
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'discord', utm_medium: 'social', utm_campaign: 'battle' });
+    trackEvent('share_click', { platform: 'discord', context: 'battle' });
     try {
-      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      await navigator.clipboard.writeText(`${shareText}\n${url}`);
       setDiscordCopied(true);
       setTimeout(() => setDiscordCopied(false), 2000);
     } catch {
       // Clipboard API may fail in some environments
     }
-  }, [shareText, shareUrl]);
+  }, [shareText, baseShareUrl]);
 
   const handleCopy = useCallback(async () => {
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'copy', utm_medium: 'clipboard', utm_campaign: 'battle' });
+    trackEvent('share_click', { platform: 'copy', context: 'battle' });
     try {
-      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      await navigator.clipboard.writeText(`${shareText}\n${url}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Clipboard API may fail in some environments
     }
-  }, [shareText, shareUrl]);
+  }, [shareText, baseShareUrl]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">

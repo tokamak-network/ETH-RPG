@@ -8,6 +8,8 @@ import LoadingScreen from '@/components/LoadingScreen';
 import BattleArena from '@/components/BattleArena';
 import BattleResultDisplay from '@/components/BattleResult';
 import BattleLog from '@/components/BattleLog';
+import { usePageView } from '@/hooks/useAnalytics';
+import { trackEvent } from '@/lib/analytics';
 
 export default function BattleResultPage() {
   const params = useParams<{ addr1: string; addr2: string }>();
@@ -19,6 +21,7 @@ export default function BattleResultPage() {
   const addr1 = params.addr1 ? decodeURIComponent(params.addr1) : '';
   const addr2 = params.addr2 ? decodeURIComponent(params.addr2) : '';
   const nonce = searchParams.get('n') ?? undefined;
+  usePageView('battle_result');
 
   useEffect(() => {
     if (addr1 && addr2) {
@@ -26,6 +29,18 @@ export default function BattleResultPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addr1, addr2, nonce]);
+
+  // Track battle completion
+  useEffect(() => {
+    if (status === 'success' && data) {
+      const winner = data.result.fighters[data.result.winner];
+      trackEvent('battle_completed', {
+        winner_class: winner.class.id,
+        total_turns: data.result.totalTurns,
+        winner_hp_percent: data.result.winnerHpPercent,
+      });
+    }
+  }, [status, data]);
 
   const handleArenaComplete = useCallback(() => {
     setArenaComplete(true);

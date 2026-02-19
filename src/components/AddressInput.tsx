@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, type FormEvent } from 'react';
+import { trackEvent } from '@/lib/analytics';
 
 interface AddressInputProps {
   readonly onSubmit: (address: string) => void;
@@ -18,6 +19,7 @@ function isValidAddressOrEns(value: string): boolean {
 export default function AddressInput({ onSubmit, isLoading }: AddressInputProps) {
   const [address, setAddress] = useState('');
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const hasTrackedInput = useRef(false);
 
   const trimmedAddress = address.trim();
   const isValid = isValidAddressOrEns(trimmedAddress);
@@ -34,6 +36,10 @@ export default function AddressInput({ onSubmit, isLoading }: AddressInputProps)
   }
 
   function handleChange(value: string) {
+    if (!hasTrackedInput.current && value.length > 0) {
+      hasTrackedInput.current = true;
+      trackEvent('address_input_start');
+    }
     setAddress(value);
     if (hasAttemptedSubmit) {
       setHasAttemptedSubmit(false);

@@ -5,10 +5,12 @@ import { useState } from 'react';
 import TrustBanner from '@/components/TrustBanner';
 import AddressInput from '@/components/AddressInput';
 import FAQ from '@/components/FAQ';
+import { usePageView } from '@/hooks/useAnalytics';
 
 export default function LandingPage() {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
+  usePageView('landing');
 
   function handleSubmit(address: string) {
     setIsNavigating(true);

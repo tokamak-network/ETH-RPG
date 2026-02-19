@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useRef } from 'react';
 import type { GenerateResponse } from '@/lib/types';
+import { trackEvent } from '@/lib/analytics';
+import { appendUtmToUrl } from '@/lib/utm';
 
 interface ShareButtonsProps {
   readonly data: GenerateResponse;
@@ -54,44 +56,56 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
   const downloadLinkRef = useRef<HTMLAnchorElement>(null);
 
   const shareText = buildShareText(data);
-  const shareUrl = buildShareUrl(data.address);
+  const baseShareUrl = buildShareUrl(data.address);
+  const power = data.stats.power;
 
   const handleTwitter = useCallback(() => {
-    openTwitterIntent(shareText, shareUrl);
-  }, [shareText, shareUrl]);
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'twitter', utm_medium: 'social' });
+    trackEvent('share_click', { platform: 'twitter', power });
+    openTwitterIntent(shareText, url);
+  }, [shareText, baseShareUrl, power]);
 
   const handleFarcaster = useCallback(() => {
-    openWarpcastCompose(shareText, shareUrl);
-  }, [shareText, shareUrl]);
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'farcaster', utm_medium: 'social' });
+    trackEvent('share_click', { platform: 'farcaster', power });
+    openWarpcastCompose(shareText, url);
+  }, [shareText, baseShareUrl, power]);
 
   const handleTelegram = useCallback(() => {
-    openTelegramShare(shareText, shareUrl);
-  }, [shareText, shareUrl]);
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'telegram', utm_medium: 'social' });
+    trackEvent('share_click', { platform: 'telegram', power });
+    openTelegramShare(shareText, url);
+  }, [shareText, baseShareUrl, power]);
 
   const handleDiscord = useCallback(async () => {
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'discord', utm_medium: 'social' });
+    trackEvent('share_click', { platform: 'discord', power });
     try {
-      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      await navigator.clipboard.writeText(`${shareText}\n${url}`);
       setDiscordCopied(true);
       setTimeout(() => setDiscordCopied(false), 2000);
     } catch {
       // Clipboard API may fail in some environments
     }
-  }, [shareText, shareUrl]);
+  }, [shareText, baseShareUrl, power]);
 
   const handleCopy = useCallback(async () => {
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'copy', utm_medium: 'clipboard' });
+    trackEvent('share_click', { platform: 'copy', power });
     try {
-      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      await navigator.clipboard.writeText(`${shareText}\n${url}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Clipboard API may fail in some environments
     }
-  }, [shareText, shareUrl]);
+  }, [shareText, baseShareUrl, power]);
 
   const handleDownload = useCallback(async () => {
     if (downloading) {
       return;
     }
+    trackEvent('share_click', { platform: 'download', power });
     setDownloading(true);
     try {
       const response = await fetch(`/api/card/${data.address}`);
