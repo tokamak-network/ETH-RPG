@@ -1,0 +1,46 @@
+name: Feedback
+description: Share your experience or report an issue
+title: "[Feedback] "
+labels: ["feedback"]
+body:
+  - type: dropdown
+    id: type
+    attributes:
+      label: Feedback Type
+      options:
+        - Bug / Something broken
+        - UI / Design issue
+        - Stats / Class seems wrong
+        - Performance / Speed
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      placeholder: Describe what you experienced...
+    validations:
+      required: true
+
+  - type: input
+    id: wallet
+    attributes:
+      label: Wallet address (if relevant)
+      placeholder: 0x... or ENS name
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device
+      options:
+        - Desktop
+        - Mobile
+        - Tablet
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot (optional)
+      placeholder: Drag and drop an image here

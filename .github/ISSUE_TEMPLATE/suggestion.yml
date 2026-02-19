@@ -1,0 +1,38 @@
+name: Suggestion
+description: Suggest a new feature or improvement
+title: "[Suggestion] "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - New feature
+        - Improve existing feature
+        - New class / stat idea
+        - Battle system
+        - Visual / Design
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like to see?
+      placeholder: Describe your idea...
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Why would this be useful?
+      placeholder: Explain the problem this solves or the value it adds...
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or references (optional)
+      placeholder: Links, screenshots, or examples from other projects...
