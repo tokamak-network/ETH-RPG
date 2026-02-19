@@ -25,8 +25,9 @@ export default function StatBar({ label, value, maxValue, color }: StatBarProps)
           } as React.CSSProperties}
         />
       </div>
-      <span className="w-12 text-xs font-mono text-white shrink-0 text-right">
-        {safeValue}
+      <span className="w-16 text-xs font-mono shrink-0 text-right">
+        <span className="text-white">{safeValue}</span>
+        <span className="text-text-muted">/{maxValue}</span>
       </span>
     </div>
   );

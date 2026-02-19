@@ -63,12 +63,13 @@ function StatBarOG({ label, value, maxValue, color }: StatBarOGProps) {
       </div>
       <div style={{
         display: 'flex',
-        width: 40,
-        fontSize: 14,
-        color: '#e8e8ed',
+        width: 70,
+        fontSize: 12,
         textAlign: 'right' as const,
+        justifyContent: 'flex-end',
       }}>
-        {safeValue}
+        <span style={{ display: 'flex', color: '#e8e8ed' }}>{safeValue}</span>
+        <span style={{ display: 'flex', color: '#6b7280' }}>/{maxValue}</span>
       </div>
     </div>
   );

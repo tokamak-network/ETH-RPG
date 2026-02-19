@@ -68,13 +68,14 @@ function StatBarCard({ label, value, maxValue, color }: StatBarCardProps) {
       </div>
       <div style={{
         display: 'flex',
-        width: 50,
-        fontSize: 18,
-        color: '#e8e8ed',
+        width: 90,
+        fontSize: 16,
         textAlign: 'right' as const,
         fontWeight: 600,
+        justifyContent: 'flex-end',
       }}>
-        {safeValue}
+        <span style={{ display: 'flex', color: '#e8e8ed' }}>{safeValue}</span>
+        <span style={{ display: 'flex', color: '#6b7280' }}>/{maxValue}</span>
       </div>
     </div>
   );

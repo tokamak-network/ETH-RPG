@@ -83,7 +83,7 @@ export const STAT_COLORS = {
   str: '#f97316',
   int: '#60a5fa',
   dex: '#10b981',
-  luck: '#22c55e',
+  luck: '#eab308',
 } as const;
 
 export const STAT_MAX_VALUES = {

@@ -149,7 +149,7 @@ export default function PreviewPage() {
             { key: 'str' as const, label: 'STR', min: 50, max: 550, color: '#f97316' },
             { key: 'int' as const, label: 'INT', min: 50, max: 500, color: '#60a5fa' },
             { key: 'dex' as const, label: 'DEX', min: 50, max: 550, color: '#10b981' },
-            { key: 'luck' as const, label: 'LUCK', min: 50, max: 300, color: '#22c55e' },
+            { key: 'luck' as const, label: 'LUCK', min: 50, max: 300, color: '#eab308' },
             { key: 'power' as const, label: 'Power', min: 0, max: 100000, color: '#f4c430' },
           ]).map(({ key, label, min, max, color }) => (
             <div key={key}>

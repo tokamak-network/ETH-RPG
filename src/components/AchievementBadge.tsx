@@ -18,21 +18,32 @@ export default function AchievementBadge({ achievement, size = 'md' }: Achieveme
   const fontSize = size === 'sm' ? 12 : size === 'md' ? 18 : 24;
 
   return (
-    <div
-      title={`${achievement.name} — ${achievement.description}`}
-      className="inline-flex items-center justify-center rounded-full shrink-0"
-      style={{
-        width: px,
-        height: px,
-        border: `2px solid ${borderColor}`,
-        backgroundColor: 'rgba(10, 10, 15, 0.8)',
-        fontSize,
-        lineHeight: 1,
-        cursor: 'default',
-      }}
-    >
-      <span aria-hidden="true">{achievement.icon}</span>
+    <div className="achievement-badge-wrapper">
+      <div
+        className="inline-flex items-center justify-center rounded-full shrink-0"
+        style={{
+          width: px,
+          height: px,
+          border: `2px solid ${borderColor}`,
+          backgroundColor: 'rgba(10, 10, 15, 0.8)',
+          fontSize,
+          lineHeight: 1,
+          cursor: 'default',
+        }}
+      >
+        <span aria-hidden="true">{achievement.icon}</span>
+      </div>
+      <div
+        className="achievement-tooltip"
+        role="tooltip"
+        style={{ borderColor }}
+      >
+        <p className="achievement-tooltip-name" style={{ color: borderColor }}>
+          {achievement.icon} {achievement.name}
+        </p>
+        <p className="achievement-tooltip-desc">{achievement.description}</p>
+        <p className="achievement-tooltip-tier">{achievement.tier}</p>
+      </div>
     </div>
   );
 }
-
