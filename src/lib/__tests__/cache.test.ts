@@ -214,4 +214,22 @@ describe('cache', () => {
     expect(getCached('0xabcdef')).toEqual(data);
     expect(getCached('0xAbCdEf')).toEqual(data);
   });
+
+  // 15. Schema version mismatch — stale entries are evicted
+  it('rejects cached entries with mismatched schema version', async () => {
+    const { getCached, setCache, getCacheStats, _testSetSchemaVersion } = await freshCache();
+    const data = makeGenerateResponse();
+
+    setCache('0xabc', data);
+    expect(getCacheStats().size).toBe(1);
+    expect(getCached('0xabc')).toEqual(data);
+
+    // Simulate a stale entry by setting an old schema version
+    _testSetSchemaVersion('0xabc', 1);
+
+    // Stale entry should be rejected and deleted
+    const result = getCached('0xabc');
+    expect(result).toBeNull();
+    expect(getCacheStats().size).toBe(0);
+  });
 });

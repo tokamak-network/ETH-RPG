@@ -5,9 +5,14 @@ const CACHE_TTL = 24 * 60 * 60 * 1000;
 const MAX_CACHE_SIZE = 10_000;
 const EVICTION_BATCH_SIZE = 1_000;
 
+// Bump this version whenever CharacterStats shape changes (e.g. adding DEX).
+// Cached entries with a different version are treated as stale.
+const CACHE_SCHEMA_VERSION = 2;
+
 interface CacheEntry {
   readonly data: GenerateResponse;
   readonly timestamp: number;
+  readonly schemaVersion: number;
 }
 
 interface CacheStats {
@@ -47,7 +52,7 @@ export function getCached(address: string): GenerateResponse | null {
     return null;
   }
 
-  if (isExpired(entry)) {
+  if (isExpired(entry) || entry.schemaVersion !== CACHE_SCHEMA_VERSION) {
     cache.delete(key);
     misses += 1;
     return null;
@@ -67,6 +72,7 @@ export function setCache(address: string, data: GenerateResponse): void {
   const entry: CacheEntry = {
     data,
     timestamp: Date.now(),
+    schemaVersion: CACHE_SCHEMA_VERSION,
   };
 
   cache.set(key, entry);
@@ -79,4 +85,13 @@ export function getCacheStats(): CacheStats {
     size: cache.size,
     hitRate: total === 0 ? 0 : hits / total,
   };
+}
+
+/** @internal Exposed for testing only — do not use in production code. */
+export function _testSetSchemaVersion(address: string, version: number): void {
+  const key = normalizeAddress(address);
+  const entry = cache.get(key);
+  if (entry) {
+    cache.set(key, { ...entry, schemaVersion: version });
+  }
 }

@@ -8,7 +8,8 @@ interface StatBarProps {
 }
 
 export default function StatBar({ label, value, maxValue, color }: StatBarProps) {
-  const fillPercent = Math.min(100, (value / maxValue) * 100);
+  const safeValue = value ?? 0;
+  const fillPercent = Math.min(100, (safeValue / maxValue) * 100);
 
   return (
     <div className="flex items-center gap-3">
@@ -25,7 +26,7 @@ export default function StatBar({ label, value, maxValue, color }: StatBarProps)
         />
       </div>
       <span className="w-12 text-xs font-mono text-white shrink-0 text-right">
-        {value}
+        {safeValue}
       </span>
     </div>
   );

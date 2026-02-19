@@ -28,7 +28,8 @@ interface StatBarOGProps {
 }
 
 function StatBarOG({ label, value, maxValue, color }: StatBarOGProps) {
-  const percentage = Math.min(100, (value / maxValue) * 100);
+  const safeValue = value ?? 0;
+  const percentage = Math.min(100, (safeValue / maxValue) * 100);
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
@@ -67,7 +68,7 @@ function StatBarOG({ label, value, maxValue, color }: StatBarOGProps) {
         color: '#e8e8ed',
         textAlign: 'right' as const,
       }}>
-        {value}
+        {safeValue}
       </div>
     </div>
   );

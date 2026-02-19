@@ -28,7 +28,8 @@ interface StatBarCardProps {
 }
 
 function StatBarCard({ label, value, maxValue, color }: StatBarCardProps) {
-  const percentage = Math.min(100, (value / maxValue) * 100);
+  const safeValue = value ?? 0;
+  const percentage = Math.min(100, (safeValue / maxValue) * 100);
 
   return (
     <div style={{
@@ -73,7 +74,7 @@ function StatBarCard({ label, value, maxValue, color }: StatBarCardProps) {
         textAlign: 'right' as const,
         fontWeight: 600,
       }}>
-        {value}
+        {safeValue}
       </div>
     </div>
   );
