@@ -1,6 +1,7 @@
 // GET /api/card/[address] — Share card image (1080x1350)
 import { ImageResponse } from 'next/og';
 import { getCached } from '@/lib/cache';
+import { getSpriteSrc } from '@/lib/sprite-data';
 import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS, TIER_BORDER_COLORS } from '@/styles/themes';
 import type { CharacterClassId, Achievement } from '@/lib/types';
 
@@ -161,6 +162,7 @@ export async function GET(
     const theme = CLASS_THEMES[data.class.id as CharacterClassId];
     const shortAddr = shortenAddress(data.address);
     const displayName = data.ensName ?? shortAddr;
+    const spriteSrc = getSpriteSrc(data.class.id as CharacterClassId, data.stats.level);
 
     return new ImageResponse(
       (
@@ -180,13 +182,17 @@ export async function GET(
             alignItems: 'center',
             marginBottom: 32,
           }}>
-            <div style={{
-              display: 'flex',
-              fontSize: 80,
-              marginBottom: 12,
-            }}>
-              {theme.icon}
-            </div>
+            {spriteSrc ? (
+              <img src={spriteSrc} width={120} height={120} style={{ imageRendering: 'pixelated' as const, marginBottom: 12 }} />
+            ) : (
+              <div style={{
+                display: 'flex',
+                fontSize: 80,
+                marginBottom: 12,
+              }}>
+                {theme.icon}
+              </div>
+            )}
             <div style={{
               display: 'flex',
               fontSize: 44,

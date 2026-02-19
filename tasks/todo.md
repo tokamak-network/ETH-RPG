@@ -62,55 +62,58 @@
 - [x] **Update OG/Card image routes** — Render badge icons in shared images
   - OG: 28px badges, Card: 32px badges, max 6 per image
 
-### Phase 2: PvP Battle System (~15h)
-> Spec: `tasks/spec-pvp-battle.md`
+### Phase 2: PvP Battle System (~15h) ✅
+> Spec: `tasks/spec-pvp-battle.md` | Commit: `9e06fa8`
 
-- [ ] **Create battle engine**
-  - `lib/skills.ts` — 8 class skills + 8 passives
-  - `lib/battle.ts` — Turn-based simulation (deterministic PRNG, max 20 turns)
-  - `lib/battle-narrative.ts` — Turn → RPG text descriptions
-  - Full test coverage for battle engine + skills
+- [x] **Create battle engine**
+  - `lib/matchups.ts` — Class advantage rings (Ring A + Ring B), 63 tests
+  - `lib/skills.ts` — 8 class skills + 8 passives, 53 tests
+  - `lib/battle.ts` — Turn-based simulation (mulberry32 PRNG + FNV-1a hash, max 20 turns), 18 tests
+  - `lib/battle-narrative.ts` — Template-based turn narratives
+  - `lib/battle-cache.ts` — Battle result cache (TTL 24h, max 5000)
 
-- [ ] **Create battle API**
+- [x] **Create battle API**
   - `api/battle/route.ts` — POST: accept 2 addresses, return BattleResult
-  - Reuse existing `generateCharacterData` pipeline for both fighters
-  - Cache battle results (key = sorted address pair)
+  - Parallel `generateCharacterData` with `skipAiLore: true`
+  - Nonce-based deterministic battles via `crypto.randomUUID()`
 
-- [ ] **Create battle pages**
-  - `app/battle/page.tsx` — Dual address input form
-  - `app/battle/[addr1]/[addr2]/page.tsx` — Battle result with animation
+- [x] **Create battle pages**
+  - `app/battle/page.tsx` — Dual address input + Famous Duels shortcuts
+  - `app/battle/[addr1]/[addr2]/page.tsx` — Battle result with arena animation
   - `app/battle/[addr1]/[addr2]/layout.tsx` — OG metadata
   - `hooks/useBattle.ts` — API call + loading state
 
-- [ ] **Create battle UI components**
+- [x] **Create battle UI components**
   - `components/BattleInput.tsx` — Two address fields with VS divider
-  - `components/BattleArena.tsx` — Sprite face-off with HP bars
+  - `components/BattleArena.tsx` — Sprite face-off with HP bars + turn playback
   - `components/BattleLog.tsx` — Turn-by-turn scrollable log
-  - `components/BattleResult.tsx` — Winner banner + share buttons
+  - `components/BattleResult.tsx` — Winner banner + share buttons + rematch
 
-- [ ] **Battle animation** — CSS-only turn replay
-  - Attack animations (translateX + scale)
-  - Floating damage numbers
-  - HP bar transitions
-  - Victory/defeat effects
+- [x] **Battle animation** — CSS-only turn replay
+  - Floating damage numbers (@keyframes float-up)
+  - HP bar transitions (CSS transition: width)
+  - Skip button + complete state log view
 
-- [ ] **Battle OG image** — `api/og/battle/[addr1]/[addr2]/route.tsx`
-  - 1200x630 PNG with both fighters + winner
+- [x] **Battle OG image** — `api/og/battle/[addr1]/[addr2]/route.tsx`
+  - 1200x630 PNG with both fighters + matchup + winner banner
 
-- [ ] **Landing page update** — Add "Battle Mode" CTA on main page
+- [x] **Landing page update** — "Battle Mode" CTA on main page
 
 ---
 
 ## MEDIUM
 
-- [ ] **Include pixel art sprites in card/OG images** — Improve shared image quality
-  - Currently `/api/og/` and `/api/card/` routes only use emoji
-  - Mismatch between pixel art shown on frontend and shared images
-  - `@vercel/og` (Satori) constraints make local image embedding difficult → base64 encoding needed
+- [x] **Include pixel art sprites in card/OG images** — Improve shared image quality
+  - Created `lib/sprite-data.ts` — server-side sprite reader (fs + base64 data URL)
+  - OG route: 56px sprite next to class name (replaces emoji)
+  - Card route: 120px centered sprite (replaces emoji)
+  - Battle OG route: 72px sprite per fighter (replaces emoji)
+  - Fallback to emoji if sprite file missing
 
-- [ ] **Add Telegram/Discord share buttons** — Cover major crypto community channels
-  - Currently only Twitter + Farcaster + link copy supported
-  - Missing Telegram/Discord where crypto users are concentrated
+- [x] **Add Telegram/Discord share buttons** — Cover major crypto community channels
+  - Telegram: `t.me/share/url` intent (opens native app)
+  - Discord: copies share text + URL to clipboard (Discord auto-embeds via OG)
+  - Added to both `ShareButtons.tsx` (character card) and `BattleResult.tsx` (battle)
 
 ## BACKLOG (v1.1)
 

@@ -37,8 +37,18 @@ function openWarpcastCompose(text: string, url: string): void {
   );
 }
 
+function openTelegramShare(text: string, url: string): void {
+  const params = new URLSearchParams({ url, text });
+  window.open(
+    `https://t.me/share/url?${params.toString()}`,
+    '_blank',
+    'noopener,noreferrer',
+  );
+}
+
 export default function ShareButtons({ data }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
+  const [discordCopied, setDiscordCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
   const downloadLinkRef = useRef<HTMLAnchorElement>(null);
@@ -52,6 +62,20 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
 
   const handleFarcaster = useCallback(() => {
     openWarpcastCompose(shareText, shareUrl);
+  }, [shareText, shareUrl]);
+
+  const handleTelegram = useCallback(() => {
+    openTelegramShare(shareText, shareUrl);
+  }, [shareText, shareUrl]);
+
+  const handleDiscord = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      setDiscordCopied(true);
+      setTimeout(() => setDiscordCopied(false), 2000);
+    } catch {
+      // Clipboard API may fail in some environments
+    }
   }, [shareText, shareUrl]);
 
   const handleCopy = useCallback(async () => {
@@ -125,6 +149,24 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
         >
           <span aria-hidden="true">&#x1F7E3;</span>
           <span>Farcaster</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleTelegram}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary"
+        >
+          <span aria-hidden="true">{'\u2708\uFE0F'}</span>
+          <span>Telegram</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleDiscord}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary"
+        >
+          <span aria-hidden="true">{'\uD83C\uDFAE'}</span>
+          <span>{discordCopied ? 'Copied!' : 'Discord'}</span>
         </button>
 
         <button

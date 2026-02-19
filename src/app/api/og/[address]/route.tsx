@@ -1,6 +1,7 @@
 // GET /api/og/[address] — Dynamic OG image (1200x630)
 import { ImageResponse } from 'next/og';
 import { getCached } from '@/lib/cache';
+import { getSpriteSrc } from '@/lib/sprite-data';
 import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS, TIER_BORDER_COLORS } from '@/styles/themes';
 import type { CharacterClassId, Achievement } from '@/lib/types';
 
@@ -132,6 +133,7 @@ export async function GET(
     const theme = CLASS_THEMES[data.class.id as CharacterClassId];
     const shortAddr = shortenAddress(data.address);
     const displayName = data.ensName ?? shortAddr;
+    const spriteSrc = getSpriteSrc(data.class.id as CharacterClassId, data.stats.level);
 
     return new ImageResponse(
       (
@@ -151,12 +153,23 @@ export async function GET(
           }}>
             <div style={{
               display: 'flex',
-              fontSize: 40,
-              color: theme.primary,
-              fontWeight: 700,
+              alignItems: 'center',
+              gap: 12,
               marginBottom: 4,
             }}>
-              {`${theme.icon} ${data.class.name}`}
+              {spriteSrc ? (
+                <img src={spriteSrc} width={56} height={56} style={{ imageRendering: 'pixelated' as const }} />
+              ) : (
+                <div style={{ display: 'flex', fontSize: 40 }}>{theme.icon}</div>
+              )}
+              <div style={{
+                display: 'flex',
+                fontSize: 40,
+                color: theme.primary,
+                fontWeight: 700,
+              }}>
+                {data.class.name}
+              </div>
             </div>
             <div style={{
               display: 'flex',

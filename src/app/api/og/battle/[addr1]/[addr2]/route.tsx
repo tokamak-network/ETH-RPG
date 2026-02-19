@@ -3,6 +3,7 @@ import { ImageResponse } from 'next/og';
 import { generateCharacterData } from '@/lib/pipeline';
 import { simulateBattle } from '@/lib/battle';
 import { getCachedBattle } from '@/lib/battle-cache';
+import { getSpriteSrc } from '@/lib/sprite-data';
 import { CLASS_THEMES } from '@/styles/themes';
 import type { BattleFighter, BattleResult, CharacterClassId } from '@/lib/types';
 
@@ -115,6 +116,7 @@ interface FighterPanelProps {
 function FighterPanel({ fighter, isWinner }: FighterPanelProps) {
   const theme = CLASS_THEMES[fighter.class.id as CharacterClassId];
   const displayName = getDisplayName(fighter);
+  const spriteSrc = getSpriteSrc(fighter.class.id as CharacterClassId, fighter.stats.level);
 
   return (
     <div style={{
@@ -125,14 +127,18 @@ function FighterPanel({ fighter, isWinner }: FighterPanelProps) {
       flex: 1,
       padding: 20,
     }}>
-      {/* Class icon */}
-      <div style={{
-        display: 'flex',
-        fontSize: 56,
-        marginBottom: 8,
-      }}>
-        {theme.icon}
-      </div>
+      {/* Class sprite */}
+      {spriteSrc ? (
+        <img src={spriteSrc} width={72} height={72} style={{ imageRendering: 'pixelated' as const, marginBottom: 8 }} />
+      ) : (
+        <div style={{
+          display: 'flex',
+          fontSize: 56,
+          marginBottom: 8,
+        }}>
+          {theme.icon}
+        </div>
+      )}
 
       {/* Class name */}
       <div style={{
