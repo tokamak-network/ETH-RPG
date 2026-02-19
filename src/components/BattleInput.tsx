@@ -5,6 +5,7 @@ import { useState, type FormEvent } from 'react';
 interface BattleInputProps {
   readonly onSubmit: (addr1: string, addr2: string) => void;
   readonly isLoading: boolean;
+  readonly defaultAddress1?: string;
 }
 
 const ETH_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
@@ -15,8 +16,8 @@ function isValidAddressOrEns(value: string): boolean {
   return ETH_ADDRESS_REGEX.test(trimmed) || ENS_NAME_REGEX.test(trimmed);
 }
 
-export default function BattleInput({ onSubmit, isLoading }: BattleInputProps) {
-  const [address1, setAddress1] = useState('');
+export default function BattleInput({ onSubmit, isLoading, defaultAddress1 = '' }: BattleInputProps) {
+  const [address1, setAddress1] = useState(defaultAddress1);
   const [address2, setAddress2] = useState('');
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 

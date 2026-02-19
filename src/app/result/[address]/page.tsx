@@ -82,13 +82,15 @@ export default function ResultPage() {
               <ShareButtons data={data} />
             </div>
 
-            {/* Challenge CTA */}
-            <div
-              className="text-center p-6 rounded-xl mb-8 transition-all duration-200 hover:scale-[1.01]"
+            {/* Battle CTA */}
+            <button
+              type="button"
+              onClick={() => router.push(`/battle?challenger=${encodeURIComponent(data.address)}`)}
+              className="w-full text-center p-6 rounded-xl mb-8 transition-all duration-200 hover:scale-[1.01] cursor-pointer"
               style={{
                 backgroundColor: 'var(--color-bg-secondary)',
-                border: '1px solid var(--color-border)',
-                boxShadow: '0 0 40px rgba(244, 196, 48, 0.05)',
+                border: '1px solid var(--color-accent-gold)',
+                boxShadow: '0 0 40px rgba(244, 196, 48, 0.08)',
               }}
             >
               <p
@@ -101,9 +103,9 @@ export default function ResultPage() {
                 className="text-sm"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                Share with friends and compare your power
+                Challenge another wallet to battle
               </p>
-            </div>
+            </button>
 
             {/* Try Another */}
             <div className="text-center">
