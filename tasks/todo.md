@@ -21,6 +21,84 @@
 
 - [x] **Vercel deploy** — Production deployment complete
 
+- [x] **Fix OG/Card image rendering (Satori)** — Personalized images now render on production
+  - Root cause: Satori requires `display: 'flex'` on every `<div>` with child nodes
+  - Also switched `@vercel/og` → `next/og` (Next.js 16 compatibility)
+  - Also fixed env var validation (`LITELLM_API_KEY` as alternative to `ANTHROPIC_API_KEY`)
+  - Verified on production: OG 1200×630 (28KB), Card 1080×1350 (45KB) — `d66f620`
+
+- [x] **OG preview testing** — Personalized cards confirmed working in shared link previews
+  - vitalik.eth: Hunter Lv.33, Power 60,570 — renders with stats, lore, class icon
+
+- [x] **Generate 5 sample cards** — Famous wallet cards for seeding content
+  - vitalik.eth → Hunter Lv.33 | Power 60,570
+  - sassal.eth → Summoner Lv.31 | Power 64,850
+  - pranksy.eth → Priest Lv.49 | Power 77,230
+  - hayden.eth → Priest Lv.11 | Power 35,710
+  - jessepollak.eth → Hunter Lv.28 | Power 51,170
+
+---
+
+## NEW FEATURES
+
+### Phase 1: Achievement Badge System (~5h)
+> Spec: `tasks/spec-achievements.md`
+
+- [ ] **Create `lib/achievements.ts`** — Achievement evaluation engine
+  - 15 achievements across 4 tiers (legendary/epic/rare/common)
+  - Pure function: `evaluateAchievements(raw, classification) → Achievement[]`
+  - Unit tests in `lib/__tests__/achievements.test.ts`
+
+- [ ] **Create badge UI components**
+  - `components/AchievementBadge.tsx` — Single badge (icon + tier border + tooltip)
+  - `components/AchievementRow.tsx` — Horizontal row on card (max 6, "+N more")
+
+- [ ] **Integrate into pipeline + CharacterCard**
+  - Add `achievements` field to `GenerateResponse`
+  - Call `evaluateAchievements()` in `pipeline.ts` after stats calculation
+  - Render `<AchievementRow>` on CharacterCard front face
+
+- [ ] **Update OG/Card image routes** — Render badge icons in shared images
+
+### Phase 2: PvP Battle System (~15h)
+> Spec: `tasks/spec-pvp-battle.md`
+
+- [ ] **Create battle engine**
+  - `lib/skills.ts` — 8 class skills + 8 passives
+  - `lib/battle.ts` — Turn-based simulation (deterministic PRNG, max 20 turns)
+  - `lib/battle-narrative.ts` — Turn → RPG text descriptions
+  - Full test coverage for battle engine + skills
+
+- [ ] **Create battle API**
+  - `api/battle/route.ts` — POST: accept 2 addresses, return BattleResult
+  - Reuse existing `generateCharacterData` pipeline for both fighters
+  - Cache battle results (key = sorted address pair)
+
+- [ ] **Create battle pages**
+  - `app/battle/page.tsx` — Dual address input form
+  - `app/battle/[addr1]/[addr2]/page.tsx` — Battle result with animation
+  - `app/battle/[addr1]/[addr2]/layout.tsx` — OG metadata
+  - `hooks/useBattle.ts` — API call + loading state
+
+- [ ] **Create battle UI components**
+  - `components/BattleInput.tsx` — Two address fields with VS divider
+  - `components/BattleArena.tsx` — Sprite face-off with HP bars
+  - `components/BattleLog.tsx` — Turn-by-turn scrollable log
+  - `components/BattleResult.tsx` — Winner banner + share buttons
+
+- [ ] **Battle animation** — CSS-only turn replay
+  - Attack animations (translateX + scale)
+  - Floating damage numbers
+  - HP bar transitions
+  - Victory/defeat effects
+
+- [ ] **Battle OG image** — `api/og/battle/[addr1]/[addr2]/route.tsx`
+  - 1200x630 PNG with both fighters + winner
+
+- [ ] **Landing page update** — Add "Battle Mode" CTA on main page
+
+---
+
 ## MEDIUM
 
 - [ ] **Include pixel art sprites in card/OG images** — Improve shared image quality

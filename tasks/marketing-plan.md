@@ -412,10 +412,11 @@ Must-generate targets:
 [2] CRITICAL — Add card download button            ✅ DONE (8982d81)
 [3] HIGH     — Cache resilience (self-healing)     ✅ DONE (1ff80b6)
 [4] HIGH     — Vercel deploy + domain connection   ✅ DONE
-[5] HIGH     — Generate 5 sample cards             ⬜ TODO
-[6] HIGH     — OG preview testing                  ⬜ TODO (after deploy)
-[7] MEDIUM   — Vercel Analytics integration        ⬜ TODO
-[8] MEDIUM   — Insert UTM parameters in share links ⬜ TODO
+[5] HIGH     — Fix OG/Card Satori rendering        ✅ DONE (d66f620)
+[6] HIGH     — OG preview testing                  ✅ DONE (production verified)
+[7] HIGH     — Generate 5 sample cards             ✅ DONE (vitalik/sassal/pranksy/hayden/jessepollak)
+[8] MEDIUM   — Vercel Analytics integration        ⬜ TODO
+[9] MEDIUM   — Insert UTM parameters in share links ⬜ TODO
 ```
 
-**Launch blockers [1]-[3] resolved. Next: deploy to Vercel.**
+**Launch blockers [1]-[7] resolved. Ready for seeding. Next: analytics + UTM.**
