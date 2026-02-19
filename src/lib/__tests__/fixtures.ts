@@ -163,6 +163,7 @@ export function makeGenerateResponse(
     class: { id: 'warrior', name: 'Warrior', nameEn: 'Warrior' },
     lore: 'A warrior who walked the blockchain battlefield with a single ordinary sword.',
     longLore: 'No special magic, no legendary weapons. All this warrior has is perseverance and will. The journey of this warrior, who marched to battle every day taking one step at a time, is an epic saga in itself.',
+    achievements: [],
     cardImageUrl: 'http://localhost:3000/api/card/0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
     ogImageUrl: 'http://localhost:3000/api/og/0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
     cached: false,

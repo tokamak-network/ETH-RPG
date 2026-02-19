@@ -10,6 +10,7 @@ import {
   describeActivityPattern,
   formatWalletAge,
 } from '@/lib/crypto-events';
+import { evaluateAchievements } from '@/lib/achievements';
 import type { GenerateResponse, LoreInputData } from '@/lib/types';
 
 export class EmptyWalletError extends Error {
@@ -72,6 +73,9 @@ export async function generateCharacterData(
   // 6. Calculate stats
   const stats = calculateStats(rawData, classification, characterClass.id);
 
+  // 6b. Evaluate achievements
+  const achievements = evaluateAchievements(rawData, classification);
+
   // 7. Prepare lore input data
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
@@ -114,6 +118,7 @@ export async function generateCharacterData(
     class: characterClass,
     lore,
     longLore,
+    achievements,
     cardImageUrl: `${siteUrl}/api/card/${resolvedAddress}`,
     ogImageUrl: `${siteUrl}/api/og/${resolvedAddress}`,
     cached: false,

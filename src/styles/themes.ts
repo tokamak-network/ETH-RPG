@@ -1,5 +1,5 @@
 // Class-specific visual themes for card rendering and UI
-import type { CharacterClassId } from '@/lib/types';
+import type { CharacterClassId, AchievementTier } from '@/lib/types';
 
 export interface ClassTheme {
   readonly primary: string;
@@ -91,6 +91,13 @@ export const STAT_MAX_VALUES = {
   str: 400,
   int: 400,
   luck: 300,
+} as const;
+
+export const TIER_BORDER_COLORS: Record<AchievementTier, string> = {
+  legendary: '#f4c430',
+  epic: '#a78bfa',
+  rare: '#60a5fa',
+  common: '#6b7280',
 } as const;
 
 export const DESIGN_TOKENS = {

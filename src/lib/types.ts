@@ -71,6 +71,16 @@ export interface LoreInputData {
   readonly activityPattern: string;
 }
 
+export type AchievementTier = 'legendary' | 'epic' | 'rare' | 'common';
+
+export interface Achievement {
+  readonly id: string;
+  readonly name: string;
+  readonly icon: string;
+  readonly tier: AchievementTier;
+  readonly description: string;
+}
+
 export interface GenerateResponse {
   readonly address: string;
   readonly ensName?: string;
@@ -78,6 +88,7 @@ export interface GenerateResponse {
   readonly class: ClassResult;
   readonly lore: string;
   readonly longLore: string;
+  readonly achievements: readonly Achievement[];
   readonly cardImageUrl: string;
   readonly ogImageUrl: string;
   readonly cached: boolean;

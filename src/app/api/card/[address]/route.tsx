@@ -1,8 +1,11 @@
 // GET /api/card/[address] — Share card image (1080x1350)
 import { ImageResponse } from 'next/og';
 import { getCached } from '@/lib/cache';
-import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS } from '@/styles/themes';
-import type { CharacterClassId } from '@/lib/types';
+import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS, TIER_BORDER_COLORS } from '@/styles/themes';
+import type { CharacterClassId, Achievement } from '@/lib/types';
+
+const CARD_BADGE_SIZE = 32;
+const CARD_MAX_BADGES = 6;
 
 export const dynamic = 'force-dynamic';
 
@@ -207,6 +210,36 @@ export async function GET(
             background: '#2a2a3e',
             marginBottom: 32,
           }} />
+
+          {data.achievements && data.achievements.length > 0 && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: 10,
+              marginBottom: 32,
+              width: '100%',
+            }}>
+              {(data.achievements as readonly Achievement[]).slice(0, CARD_MAX_BADGES).map((a) => (
+                <div
+                  key={a.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: CARD_BADGE_SIZE,
+                    height: CARD_BADGE_SIZE,
+                    borderRadius: '50%',
+                    border: `2px solid ${TIER_BORDER_COLORS[a.tier]}`,
+                    backgroundColor: 'rgba(10, 10, 15, 0.8)',
+                    fontSize: 16,
+                  }}
+                >
+                  {a.icon}
+                </div>
+              ))}
+            </div>
+          )}
 
           <div style={{
             display: 'flex',

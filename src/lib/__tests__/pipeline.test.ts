@@ -15,6 +15,7 @@ const mockSetCache = vi.fn();
 const mockGetRelevantEvents = vi.fn();
 const mockDescribeActivityPattern = vi.fn();
 const mockFormatWalletAge = vi.fn();
+const mockEvaluateAchievements = vi.fn();
 
 vi.mock('@/lib/alchemy', () => ({
   fetchWalletData: (...args: unknown[]) => mockFetchWalletData(...args),
@@ -42,6 +43,9 @@ vi.mock('@/lib/crypto-events', () => ({
   getRelevantEvents: (...args: unknown[]) => mockGetRelevantEvents(...args),
   describeActivityPattern: (...args: unknown[]) => mockDescribeActivityPattern(...args),
   formatWalletAge: (...args: unknown[]) => mockFormatWalletAge(...args),
+}));
+vi.mock('@/lib/achievements', () => ({
+  evaluateAchievements: (...args: unknown[]) => mockEvaluateAchievements(...args),
 }));
 
 // Import after mocks
@@ -97,6 +101,9 @@ function setupDefaultMocks(): void {
   mockGetRelevantEvents.mockReturnValue(['Participated in the Ritual of the Great Merge']);
   mockDescribeActivityPattern.mockReturnValue('General transaction activity');
   mockFormatWalletAge.mockReturnValue('2 years');
+  mockEvaluateAchievements.mockReturnValue([
+    { id: 'first_step', name: 'First Step', icon: '\u{1F463}', tier: 'common', description: 'Made at least 1 transaction' },
+  ]);
 }
 
 describe('generateCharacterData', () => {
@@ -119,6 +126,7 @@ describe('generateCharacterData', () => {
       class: MOCK_CLASS,
       lore: 'Cached lore',
       longLore: 'Cached long lore',
+      achievements: [],
       cardImageUrl: `https://ethrpg.com/api/card/${TEST_ADDRESS}`,
       ogImageUrl: `https://ethrpg.com/api/og/${TEST_ADDRESS}`,
       cached: false,
@@ -140,6 +148,9 @@ describe('generateCharacterData', () => {
     expect(result.class).toEqual(MOCK_CLASS);
     expect(result.lore).toBe('The warrior\'s lore');
     expect(result.longLore).toBe('The long warrior\'s lore.');
+    expect(result.achievements).toEqual([
+      { id: 'first_step', name: 'First Step', icon: '\u{1F463}', tier: 'common', description: 'Made at least 1 transaction' },
+    ]);
     expect(result.cached).toBe(false);
     expect(mockGenerateLore).toHaveBeenCalledOnce();
     expect(mockGenerateLongLore).toHaveBeenCalledOnce();

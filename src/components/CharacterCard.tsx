@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import type { GenerateResponse } from '@/lib/types';
 import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS } from '@/styles/themes';
 import StatBar from './StatBar';
+import AchievementRow from './AchievementRow';
 import { PixelCharacter } from './pixel-sprites';
 
 interface CharacterCardProps {
@@ -110,6 +111,13 @@ export default function CharacterCard({ data }: CharacterCardProps) {
               <PixelCharacter classId={data.class.id} size={128} stats={data.stats} />
             </div>
           </div>
+
+          {/* Achievement badges */}
+          {data.achievements?.length > 0 && (
+            <div className="mb-4">
+              <AchievementRow achievements={data.achievements} />
+            </div>
+          )}
 
           {/* Stat bars */}
           <div className="flex flex-col gap-2 mb-6">

@@ -1,8 +1,11 @@
 // GET /api/og/[address] — Dynamic OG image (1200x630)
 import { ImageResponse } from 'next/og';
 import { getCached } from '@/lib/cache';
-import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS } from '@/styles/themes';
-import type { CharacterClassId } from '@/lib/types';
+import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS, TIER_BORDER_COLORS } from '@/styles/themes';
+import type { CharacterClassId, Achievement } from '@/lib/types';
+
+const OG_BADGE_SIZE = 28;
+const OG_MAX_BADGES = 6;
 
 export const dynamic = 'force-dynamic';
 
@@ -157,10 +160,37 @@ export async function GET(
               display: 'flex',
               fontSize: 22,
               color: '#9ca3af',
-              marginBottom: 20,
+              marginBottom: 12,
             }}>
               {`Lv. ${data.stats.level} | ${displayName}`}
             </div>
+            {data.achievements && data.achievements.length > 0 && (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 6,
+                marginBottom: 12,
+              }}>
+                {(data.achievements as readonly Achievement[]).slice(0, OG_MAX_BADGES).map((a) => (
+                  <div
+                    key={a.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: OG_BADGE_SIZE,
+                      height: OG_BADGE_SIZE,
+                      borderRadius: '50%',
+                      border: `2px solid ${TIER_BORDER_COLORS[a.tier]}`,
+                      backgroundColor: 'rgba(10, 10, 15, 0.8)',
+                      fontSize: 14,
+                    }}
+                  >
+                    {a.icon}
+                  </div>
+                ))}
+              </div>
+            )}
             <div style={{
               display: 'flex',
               fontSize: 56,
