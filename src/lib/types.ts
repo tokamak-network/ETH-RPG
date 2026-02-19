@@ -95,6 +95,57 @@ export interface GenerateResponse {
   readonly cached: boolean;
 }
 
+export interface BattleAction {
+  readonly turn: number;
+  readonly actorIndex: 0 | 1;
+  readonly actionType: 'skill' | 'basic_attack';
+  readonly skillName?: string;
+  readonly damage: number;
+  readonly healed?: number;
+  readonly isCrit: boolean;
+  readonly isStun: boolean;
+  readonly isDodge: boolean;
+  readonly reflected?: number;
+  readonly mpDrained?: number;
+  readonly actorHpAfter: number;
+  readonly targetHpAfter: number;
+  readonly narrative: string;
+}
+
+export interface BattleFighter {
+  readonly address: string;
+  readonly ensName?: string;
+  readonly class: ClassResult;
+  readonly stats: CharacterStats;
+  readonly achievements: readonly Achievement[];
+}
+
+export type MatchupAdvantage = 'advantaged' | 'disadvantaged' | 'neutral';
+
+export interface BattleMatchup {
+  readonly fighter0Advantage: MatchupAdvantage;
+  readonly fighter1Advantage: MatchupAdvantage;
+}
+
+export interface BattleResult {
+  readonly fighters: readonly [BattleFighter, BattleFighter];
+  readonly winner: 0 | 1;
+  readonly turns: readonly BattleAction[];
+  readonly totalTurns: number;
+  readonly winnerHpRemaining: number;
+  readonly winnerHpPercent: number;
+  readonly matchup: BattleMatchup;
+  readonly nonce: string;
+  readonly battleSeed: string;
+}
+
+export interface BattleResponse {
+  readonly result: BattleResult;
+  readonly battleImageUrl: string;
+  readonly ogImageUrl: string;
+  readonly cached: boolean;
+}
+
 export const ErrorCode = {
   INVALID_ADDRESS: 'INVALID_ADDRESS',
   NO_TRANSACTIONS: 'NO_TRANSACTIONS',
@@ -102,6 +153,7 @@ export const ErrorCode = {
   API_ERROR: 'API_ERROR',
   TIMEOUT: 'TIMEOUT',
   LLM_ERROR: 'LLM_ERROR',
+  SAME_ADDRESS: 'SAME_ADDRESS',
 } as const;
 
 export type ErrorCodeType = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -120,6 +172,7 @@ export const ERROR_MESSAGES: Record<ErrorCodeType, string> = {
   [ErrorCode.API_ERROR]: 'A temporary server error occurred. Please try again later.',
   [ErrorCode.TIMEOUT]: 'Analysis is taking too long. Please try again.',
   [ErrorCode.LLM_ERROR]: 'AI lore generation failed. Default lore will be applied.',
+  [ErrorCode.SAME_ADDRESS]: 'Cannot battle yourself. Please enter two different addresses.',
 };
 
 export interface CryptoEvent {

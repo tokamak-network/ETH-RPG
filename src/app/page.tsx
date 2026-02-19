@@ -52,9 +52,25 @@ export default function LandingPage() {
           </div>
 
           {/* Trust micro-text */}
-          <p className="text-xs mb-16" style={{ color: 'var(--color-text-muted)' }}>
+          <p className="text-xs mb-8" style={{ color: 'var(--color-text-muted)' }}>
             Only public data is analyzed.
           </p>
+
+          {/* Battle Mode CTA */}
+          <div className="mb-16">
+            <a
+              href="/battle"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
+              style={{
+                backgroundColor: 'var(--color-bg-tertiary)',
+                border: '1px solid var(--color-border)',
+                color: 'var(--color-text-primary)',
+              }}
+            >
+              <span aria-hidden="true">{'\u2694\uFE0F'}</span>
+              <span>Battle Mode — Pit two wallets against each other</span>
+            </a>
+          </div>
 
           {/* Character Classes Section */}
           <div id="classes" className="mb-16">

@@ -6,6 +6,9 @@ import type {
   TxClassification,
   LoreInputData,
   GenerateResponse,
+  BattleFighter,
+  BattleAction,
+  BattleResult,
 } from '@/lib/types';
 
 // --- Known contract addresses ---
@@ -168,6 +171,80 @@ export function makeGenerateResponse(
     cardImageUrl: 'http://localhost:3000/api/card/0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
     ogImageUrl: 'http://localhost:3000/api/og/0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
     cached: false,
+    ...overrides,
+  };
+}
+
+export function makeBattleFighter(
+  overrides?: Partial<BattleFighter>,
+): BattleFighter {
+  return {
+    address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045',
+    class: { id: 'warrior', name: 'Warrior', nameEn: 'Warrior' },
+    stats: {
+      level: 21,
+      hp: 350,
+      mp: 200,
+      str: 150,
+      int: 180,
+      dex: 300,
+      luck: 100,
+      power: 35400,
+    },
+    achievements: [],
+    ...overrides,
+  };
+}
+
+export function makeBattleAction(
+  overrides?: Partial<BattleAction>,
+): BattleAction {
+  return {
+    turn: 1,
+    actorIndex: 0,
+    actionType: 'basic_attack',
+    damage: 50,
+    isCrit: false,
+    isStun: false,
+    isDodge: false,
+    actorHpAfter: 350,
+    targetHpAfter: 300,
+    narrative: 'Warrior swings a heavy blade!',
+    ...overrides,
+  };
+}
+
+export function makeBattleResult(
+  overrides?: Partial<BattleResult>,
+): BattleResult {
+  const fighter0 = makeBattleFighter();
+  const fighter1 = makeBattleFighter({
+    address: '0xabcdef1234567890abcdef1234567890abcdef12',
+    class: { id: 'rogue', name: 'Rogue', nameEn: 'Rogue' },
+    stats: {
+      level: 18,
+      hp: 280,
+      mp: 180,
+      str: 130,
+      int: 120,
+      dex: 350,
+      luck: 150,
+      power: 28000,
+    },
+  });
+  return {
+    fighters: [fighter0, fighter1],
+    winner: 0,
+    turns: [makeBattleAction()],
+    totalTurns: 1,
+    winnerHpRemaining: 350,
+    winnerHpPercent: 100,
+    matchup: {
+      fighter0Advantage: 'advantaged',
+      fighter1Advantage: 'disadvantaged',
+    },
+    nonce: 'test-nonce-123',
+    battleSeed: 'test-seed-abc',
     ...overrides,
   };
 }

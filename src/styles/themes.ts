@@ -121,3 +121,21 @@ export const DESIGN_TOKENS = {
     mono: "'JetBrains Mono', monospace",
   },
 } as const;
+
+export const BATTLE_TOKENS = {
+  colors: {
+    player0: '#60a5fa',
+    player1: '#f87171',
+    crit: '#f4c430',
+    dodge: '#10b981',
+    stun: '#ef4444',
+    heal: '#22c55e',
+    mpDrain: '#8b5cf6',
+    reflect: '#f97316',
+  },
+  timing: {
+    turnDelay: 800,
+    hpTransition: 500,
+    damageFloat: 600,
+  },
+} as const;
