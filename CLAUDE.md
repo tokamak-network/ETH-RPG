@@ -35,13 +35,13 @@ User: View card -> Share (Twitter/Farcaster/copy) -> Viral loop
 ---
 
 ## 8 Classes (Priority Order, First Match Wins)
-1. **Hunter** — NFT transaction ratio >= 30%
-2. **Rogue** — DEX swap ratio >= 25%
-3. **Summoner** — Bridge tx >= 5 or ratio >= 10%
-4. **Merchant** — Stablecoin transfer ratio >= 35%
-5. **Priest** — High gas consumption with many contract interactions
-6. **Elder Wizard** — First tx 3+ years ago & fewer than 50 tx/year
-7. **Guardian** — Fewer than 100 transactions & balance 1+ ETH (holder type)
+1. **Hunter** — NFT ratio >= 25% AND nftRatio > dexRatio
+2. **Rogue** — DEX swap ratio >= 20%
+3. **Summoner** — Bridge tx >= 8 or ratio >= 12%
+4. **Merchant** — Stablecoin transfer ratio >= 25%
+5. **Priest** — Gas spent > 0.3 ETH AND contract interactions > 30
+6. **Elder Wizard** — First tx 4+ years ago & fewer than 30 tx/year & balance < 10 ETH
+7. **Guardian** — Fewer than 200 transactions & balance > 5 ETH (holder type)
 8. **Warrior** — Default class when no other conditions are met
 
 ## Stat Formulas
@@ -51,11 +51,12 @@ HP    = round(100 + 250 × log10(1 + balance_eth))
 MP    = round(80 + 220 × log10(1 + gas_spent_eth))
 STR   = round(50 + 180 × log10(1 + dex_swap_count + bridge_count))
 INT   = round(50 + 180 × log10(1 + unique_contracts))
-LUCK  = round(50 + 120 × log10(1 + rare_events))
-Power = Level×1000 + STR×30 + INT×30 + HP×10 + MP×10 + LUCK×20 + ClassBonus
+DEX   = round(50 + 150 × log10(1 + tx_count / max(wallet_age_years, 0.25)))
+LUCK  = round(50 + 180 × log10(1 + rare_events))
+Power = Level×500 + STR×25 + INT×25 + DEX×20 + HP×15 + MP×15 + LUCK×20 + ClassBonus
 
-ClassBonus = { hunter:0, rogue:0, summoner:2000, merchant:0, priest:0,
-               elder_wizard:8000, guardian:6000, warrior:3000 }
+ClassBonus = { hunter:2000, rogue:0, summoner:1500, merchant:3000, priest:1000,
+               elder_wizard:5000, guardian:4000, warrior:1500 }
 ```
 
 ---

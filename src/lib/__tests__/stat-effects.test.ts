@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { normalizeStats, type NormalizedStats } from '@/lib/stat-effects';
 import type { CharacterStats } from '@/lib/types';
 import { STAT_MAX_VALUES } from '@/styles/themes';
-import { HP_BASE, MP_BASE, STR_BASE, INT_BASE, LUCK_BASE } from '@/lib/stats';
+import { HP_BASE, MP_BASE, STR_BASE, INT_BASE, DEX_BASE, LUCK_BASE } from '@/lib/stats';
 
 function makeStats(overrides?: Partial<CharacterStats>): CharacterStats {
   return {
@@ -11,6 +11,7 @@ function makeStats(overrides?: Partial<CharacterStats>): CharacterStats {
     mp: MP_BASE,
     str: STR_BASE,
     int: INT_BASE,
+    dex: DEX_BASE,
     luck: LUCK_BASE,
     power: 0,
     ...overrides,
@@ -26,6 +27,7 @@ describe('normalizeStats', () => {
     expect(result.mp).toBe(0);
     expect(result.str).toBe(0);
     expect(result.int).toBe(0);
+    expect(result.dex).toBe(0);
     expect(result.luck).toBe(0);
     expect(result.tier).toBe(0);
   });
@@ -37,6 +39,7 @@ describe('normalizeStats', () => {
       mp: STAT_MAX_VALUES.mp,
       str: STAT_MAX_VALUES.str,
       int: STAT_MAX_VALUES.int,
+      dex: STAT_MAX_VALUES.dex,
       luck: STAT_MAX_VALUES.luck,
       power: 100_000,
     });
@@ -46,6 +49,7 @@ describe('normalizeStats', () => {
     expect(result.mp).toBe(1);
     expect(result.str).toBe(1);
     expect(result.int).toBe(1);
+    expect(result.dex).toBe(1);
     expect(result.luck).toBe(1);
     expect(result.tier).toBe(1);
   });

@@ -82,6 +82,7 @@ function setupSuccessfulMocks() {
     mp: 200,
     str: 150,
     int: 180,
+    dex: 300,
     luck: 100,
     power: 35400,
   };

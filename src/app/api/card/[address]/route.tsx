@@ -251,6 +251,7 @@ export async function GET(
             <StatBarCard label="MP" value={data.stats.mp} maxValue={STAT_MAX_VALUES.mp} color={STAT_COLORS.mp} />
             <StatBarCard label="STR" value={data.stats.str} maxValue={STAT_MAX_VALUES.str} color={STAT_COLORS.str} />
             <StatBarCard label="INT" value={data.stats.int} maxValue={STAT_MAX_VALUES.int} color={STAT_COLORS.int} />
+            <StatBarCard label="DEX" value={data.stats.dex} maxValue={STAT_MAX_VALUES.dex} color={STAT_COLORS.dex} />
             <StatBarCard label="LUCK" value={data.stats.luck} maxValue={STAT_MAX_VALUES.luck} color={STAT_COLORS.luck} />
           </div>
 

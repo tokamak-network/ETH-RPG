@@ -38,6 +38,7 @@ export interface CharacterStats {
   readonly mp: number;
   readonly str: number;
   readonly int: number;
+  readonly dex: number;
   readonly luck: number;
   readonly power: number;
 }

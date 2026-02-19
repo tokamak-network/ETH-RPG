@@ -82,14 +82,16 @@ export const STAT_COLORS = {
   mp: '#8b5cf6',
   str: '#f97316',
   int: '#60a5fa',
+  dex: '#10b981',
   luck: '#22c55e',
 } as const;
 
 export const STAT_MAX_VALUES = {
-  hp: 600,
-  mp: 500,
-  str: 400,
-  int: 400,
+  hp: 900,
+  mp: 600,
+  str: 550,
+  int: 500,
+  dex: 550,
   luck: 300,
 } as const;
 

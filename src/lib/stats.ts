@@ -24,28 +24,34 @@ export const STR_LOG_MULTIPLIER = 180;
 export const INT_BASE = 50;
 export const INT_LOG_MULTIPLIER = 180;
 
+// --- DEX (Dexterity) constants ---
+export const DEX_BASE = 50;
+export const DEX_LOG_MULTIPLIER = 150;
+export const DEX_FREQUENCY_FLOOR_YEARS = 0.25;
+
 // --- LUCK constants ---
 export const LUCK_BASE = 50;
-export const LUCK_LOG_MULTIPLIER = 120;
+export const LUCK_LOG_MULTIPLIER = 180;
 
 // --- Power weight constants ---
-export const POWER_LEVEL_WEIGHT = 1000;
-export const POWER_STR_WEIGHT = 30;
-export const POWER_INT_WEIGHT = 30;
-export const POWER_HP_WEIGHT = 10;
-export const POWER_MP_WEIGHT = 10;
+export const POWER_LEVEL_WEIGHT = 500;
+export const POWER_STR_WEIGHT = 25;
+export const POWER_INT_WEIGHT = 25;
+export const POWER_DEX_WEIGHT = 20;
+export const POWER_HP_WEIGHT = 15;
+export const POWER_MP_WEIGHT = 15;
 export const POWER_LUCK_WEIGHT = 20;
 
-// --- Class power bonus (flat bonus to compensate low-level classes) ---
+// --- Class power bonus (flat bonus to compensate structurally low-stat classes) ---
 export const CLASS_POWER_BONUS: Readonly<Record<CharacterClassId, number>> = {
-  hunter: 0,
+  hunter: 2000,
   rogue: 0,
-  summoner: 2000,
-  merchant: 0,
-  priest: 0,
-  elder_wizard: 8000,
-  guardian: 6000,
-  warrior: 3000,
+  summoner: 1500,
+  merchant: 3000,
+  priest: 1000,
+  elder_wizard: 5000,
+  guardian: 4000,
+  warrior: 1500,
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -73,6 +79,12 @@ function calculateINT(uniqueContracts: number): number {
   return Math.round(INT_BASE + INT_LOG_MULTIPLIER * Math.log10(1 + uniqueContracts));
 }
 
+function calculateDEX(txCount: number, walletAgeYears: number): number {
+  const effectiveAge = Math.max(walletAgeYears, DEX_FREQUENCY_FLOOR_YEARS);
+  const txFrequency = txCount / effectiveAge;
+  return Math.round(DEX_BASE + DEX_LOG_MULTIPLIER * Math.log10(1 + txFrequency));
+}
+
 function calculateLUCK(relevantEventCount: number, walletAgeYears: number): number {
   const rareEvents = relevantEventCount + walletAgeYears;
   return Math.round(LUCK_BASE + LUCK_LOG_MULTIPLIER * Math.log10(1 + rareEvents));
@@ -82,6 +94,7 @@ function calculatePower(
   level: number,
   str: number,
   int: number,
+  dex: number,
   hp: number,
   mp: number,
   luck: number
@@ -90,6 +103,7 @@ function calculatePower(
     level * POWER_LEVEL_WEIGHT +
     str * POWER_STR_WEIGHT +
     int * POWER_INT_WEIGHT +
+    dex * POWER_DEX_WEIGHT +
     hp * POWER_HP_WEIGHT +
     mp * POWER_MP_WEIGHT +
     luck * POWER_LUCK_WEIGHT
@@ -109,10 +123,11 @@ export function calculateStats(
   const mp = calculateMP(raw.gasSpentEth);
   const str = calculateSTR(classification.dexSwapCount, classification.bridgeCount);
   const int = calculateINT(classification.uniqueContracts);
+  const dex = calculateDEX(raw.txCount, walletAgeYears);
   const relevantEventCount = getRelevantEvents(raw.firstTxTimestamp, raw.lastTxTimestamp).length;
   const luck = calculateLUCK(relevantEventCount, walletAgeYears);
-  const basePower = calculatePower(level, str, int, hp, mp, luck);
+  const basePower = calculatePower(level, str, int, dex, hp, mp, luck);
   const power = basePower + CLASS_POWER_BONUS[classId];
 
-  return { level, hp, mp, str, int, luck, power };
+  return { level, hp, mp, str, int, dex, luck, power };
 }

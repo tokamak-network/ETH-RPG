@@ -20,6 +20,7 @@ const STAT_ENTRIES = [
   { key: 'mp', label: 'MP' },
   { key: 'str', label: 'STR' },
   { key: 'int', label: 'INT' },
+  { key: 'dex', label: 'DEX' },
   { key: 'luck', label: 'LUCK' },
 ] as const;
 

@@ -41,24 +41,26 @@
 
 ## NEW FEATURES
 
-### Phase 1: Achievement Badge System (~5h)
-> Spec: `tasks/spec-achievements.md`
+### Phase 1: Achievement Badge System (~5h) ✅
+> Spec: `tasks/spec-achievements.md` | Commit: `63fb6a7`
 
-- [ ] **Create `lib/achievements.ts`** — Achievement evaluation engine
+- [x] **Create `lib/achievements.ts`** — Achievement evaluation engine
   - 15 achievements across 4 tiers (legendary/epic/rare/common)
   - Pure function: `evaluateAchievements(raw, classification) → Achievement[]`
-  - Unit tests in `lib/__tests__/achievements.test.ts`
+  - 37 unit tests in `lib/__tests__/achievements.test.ts`
 
-- [ ] **Create badge UI components**
+- [x] **Create badge UI components**
   - `components/AchievementBadge.tsx` — Single badge (icon + tier border + tooltip)
   - `components/AchievementRow.tsx` — Horizontal row on card (max 6, "+N more")
 
-- [ ] **Integrate into pipeline + CharacterCard**
-  - Add `achievements` field to `GenerateResponse`
+- [x] **Integrate into pipeline + CharacterCard**
+  - Added `AchievementTier`, `Achievement` types and `achievements` field to `GenerateResponse`
   - Call `evaluateAchievements()` in `pipeline.ts` after stats calculation
   - Render `<AchievementRow>` on CharacterCard front face
+  - Shared `TIER_BORDER_COLORS` in `styles/themes.ts`
 
-- [ ] **Update OG/Card image routes** — Render badge icons in shared images
+- [x] **Update OG/Card image routes** — Render badge icons in shared images
+  - OG: 28px badges, Card: 32px badges, max 6 per image
 
 ### Phase 2: PvP Battle System (~15h)
 > Spec: `tasks/spec-pvp-battle.md`

@@ -84,6 +84,7 @@ const MOCK_STATS: CharacterStats = {
   mp: 120,
   str: 90,
   int: 80,
+  dex: 250,
   luck: 70,
   power: 30000,
 };

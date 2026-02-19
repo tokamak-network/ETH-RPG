@@ -221,6 +221,7 @@ export async function GET(
             <StatBarOG label="MP" value={data.stats.mp} maxValue={STAT_MAX_VALUES.mp} color={STAT_COLORS.mp} />
             <StatBarOG label="STR" value={data.stats.str} maxValue={STAT_MAX_VALUES.str} color={STAT_COLORS.str} />
             <StatBarOG label="INT" value={data.stats.int} maxValue={STAT_MAX_VALUES.int} color={STAT_COLORS.int} />
+            <StatBarOG label="DEX" value={data.stats.dex} maxValue={STAT_MAX_VALUES.dex} color={STAT_COLORS.dex} />
             <StatBarOG label="LUCK" value={data.stats.luck} maxValue={STAT_MAX_VALUES.luck} color={STAT_COLORS.luck} />
           </div>
 
