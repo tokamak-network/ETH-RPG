@@ -102,14 +102,16 @@ export async function getAllPlayerRecords(seasonId: string): Promise<readonly Pl
   try {
     const records: PlayerRecord[] = [];
     let cursor: string | number = '0';
+    let iterations = 0;
     do {
       const [nextCursor, batch] = await kv.sscan(playerIndexKey(seasonId), cursor, { count: 100 });
       cursor = nextCursor;
       if (batch.length > 0) {
-        const keys = (batch as string[]).map((addr) => playerKey(seasonId, addr));
+        const keys = batch.map((addr) => playerKey(seasonId, String(addr)));
         const results = await kv.mget<(PlayerRecord | null)[]>(...keys);
         records.push(...(results ?? []).filter((r): r is PlayerRecord => r !== null));
       }
+      if (++iterations > 5000) break;
     } while (cursor !== '0');
     return records;
   } catch {

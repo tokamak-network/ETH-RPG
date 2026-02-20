@@ -34,8 +34,6 @@ export interface HourlyBucket {
   readonly count: number;
 }
 
-// Re-exported from kv-utils for centralized KV config check
-
 // --- Counter operations ---
 
 export async function incrementCounter(key: string): Promise<void> {
