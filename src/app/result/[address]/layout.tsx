@@ -1,13 +1,10 @@
 // Dynamic metadata for social media OG previews on result pages
 import type { Metadata } from 'next';
 import { getCached } from '@/lib/cache';
+import { shortenAddress } from '@/lib/format-utils';
 
 const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 const ENS_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9.-]*\.eth$/;
-
-function shortenAddress(address: string): string {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
 
 export async function generateMetadata({
   params,

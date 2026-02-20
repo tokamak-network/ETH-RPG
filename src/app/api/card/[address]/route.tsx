@@ -2,6 +2,7 @@
 import { ImageResponse } from 'next/og';
 import { getCached } from '@/lib/cache';
 import { getSpriteSrc } from '@/lib/sprite-data';
+import { shortenAddress } from '@/lib/format-utils';
 import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS, TIER_BORDER_COLORS } from '@/styles/themes';
 import type { CharacterClassId, Achievement } from '@/lib/types';
 
@@ -16,10 +17,6 @@ const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 
 const SUCCESS_CACHE_HEADERS = { 'Cache-Control': 'public, max-age=86400, s-maxage=86400' };
 const ERROR_CACHE_HEADERS = { 'Cache-Control': 'private, no-store' };
-
-function shortenAddress(address: string): string {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
 
 interface StatBarCardProps {
   readonly label: string;

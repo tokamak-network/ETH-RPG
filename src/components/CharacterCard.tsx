@@ -3,16 +3,13 @@
 import { useState, useCallback } from 'react';
 import type { GenerateResponse } from '@/lib/types';
 import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS } from '@/styles/themes';
+import { shortenAddress } from '@/lib/format-utils';
 import StatBar from './StatBar';
 import AchievementRow from './AchievementRow';
 import { PixelCharacter } from './pixel-sprites';
 
 interface CharacterCardProps {
   readonly data: GenerateResponse;
-}
-
-function shortenAddress(address: string): string {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 const STAT_ENTRIES = [

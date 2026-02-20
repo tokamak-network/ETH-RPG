@@ -4,6 +4,8 @@ import { generateCharacterData } from '@/lib/pipeline';
 import { simulateBattle } from '@/lib/battle';
 import { getCachedBattle } from '@/lib/battle-cache';
 import { getSpriteSrc } from '@/lib/sprite-data';
+import { shortenAddress } from '@/lib/format-utils';
+import { isValidAddress } from '@/lib/route-utils';
 import { CLASS_THEMES } from '@/styles/themes';
 import type { BattleFighter, BattleResult, CharacterClassId } from '@/lib/types';
 
@@ -11,19 +13,9 @@ export const dynamic = 'force-dynamic';
 
 const CARD_WIDTH = 1200;
 const CARD_HEIGHT = 630;
-const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
-const ENS_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9.-]*\.eth$/;
 
 const SUCCESS_CACHE_HEADERS = { 'Cache-Control': 'public, max-age=86400, s-maxage=86400' };
 const ERROR_CACHE_HEADERS = { 'Cache-Control': 'private, no-store' };
-
-function isValidInput(input: string): boolean {
-  return ETH_ADDRESS_REGEX.test(input) || ENS_REGEX.test(input);
-}
-
-function shortenAddress(address: string): string {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
 
 function getDisplayName(fighter: BattleFighter): string {
   return fighter.ensName ?? shortenAddress(fighter.address);
@@ -348,7 +340,7 @@ export async function GET(
   const nonce = url.searchParams.get('n');
 
   // Validate both addresses
-  if (!isValidInput(addr1) || !isValidInput(addr2)) {
+  if (!isValidAddress(addr1) || !isValidAddress(addr2)) {
     return new ImageResponse(
       <GenericPreview addr1={addr1} addr2={addr2} />,
       { width: CARD_WIDTH, height: CARD_HEIGHT, status: 400, headers: ERROR_CACHE_HEADERS },

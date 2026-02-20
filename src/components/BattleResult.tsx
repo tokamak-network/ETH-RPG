@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import type { BattleResponse, BattleFighter, MatchupAdvantage } from '@/lib/types';
 import { CLASS_THEMES } from '@/styles/themes';
+import { shortenAddress } from '@/lib/format-utils';
 import { trackEvent } from '@/lib/analytics';
 import { appendUtmToUrl } from '@/lib/utm';
 import AchievementRow from './AchievementRow';
@@ -11,10 +12,6 @@ import { PixelCharacter } from './pixel-sprites';
 interface BattleResultProps {
   readonly data: BattleResponse;
   readonly onRematch: () => void;
-}
-
-function shortenAddress(address: string): string {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
 function getDisplayName(fighter: BattleFighter): string {
