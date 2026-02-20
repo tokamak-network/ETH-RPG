@@ -21,7 +21,19 @@ const FORBIDDEN_WORDS: readonly string[] = [
   'invest', 'buy order', 'sell order', 'price',
 ];
 
-// --- System Prompt ---
+// --- Lore Generation Config ---
+
+interface LoreCascadeConfig {
+  readonly systemPrompt: string;
+  readonly maxTokens: number;
+  readonly maxLength: number;
+  readonly sentryPrefix: string;
+  readonly fallbackTemplates: Readonly<Record<string, readonly string[]>>;
+  readonly promptInstruction: string;
+}
+
+// --- System Prompts ---
+
 export const LORE_SYSTEM_PROMPT = `You are a Lorekeeper of the RPG world.
 Based on on-chain data from an Ethereum wallet, you write the wallet owner's "hero lore" in 1-2 sentences in English.
 
@@ -58,261 +70,6 @@ Based on on-chain data from an Ethereum wallet, you write the wallet owner's "he
 - Elder Wizard: Ancient wisdom, reclusive, observant
 - Guardian: Silent protector, steadfast holder
 - Warrior: Ordinary but persistent fighter`;
-
-// --- Deterministic Hash ---
-
-/**
- * Produces a simple deterministic numeric hash from a string.
- * Used to select a consistent fallback template for the same input data.
- */
-function deterministicHash(input: string): number {
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    const char = input.charCodeAt(i);
-    hash = ((hash << 5) - hash + char) | 0;
-  }
-  return Math.abs(hash);
-}
-
-// --- User Prompt Builder ---
-
-/**
- * Formats LoreInputData into a structured prompt string for the AI model.
- */
-export function buildLoreUserPrompt(data: LoreInputData): string {
-  const eventsSection =
-    data.relevantEvents.length > 0
-      ? `Events Experienced: ${data.relevantEvents.join(', ')}`
-      : 'No notable events experienced';
-
-  return [
-    `Class: ${data.className} (${data.classNameEn})`,
-    `Level: ${data.level}`,
-    `Power: ${data.power}`,
-    `Total Transactions: ${data.txCount}`,
-    `Wallet Age: ${data.walletAgeDescription}`,
-    `First Activity: ${data.firstTxDate}`,
-    `Recent Activity: ${data.lastTxDate}`,
-    eventsSection,
-    `Activity Pattern: ${data.activityPattern}`,
-    '',
-    'Based on the data above, write this hero\'s lore in English, 1-2 sentences, within 80 characters.',
-  ].join('\n');
-}
-
-// --- Lore Validation ---
-
-/**
- * Sanitizes lore text: removes forbidden words and enforces max length.
- */
-function sanitizeLore(lore: string, maxLength: number): string {
-  let cleaned = lore.trim();
-
-  for (const word of FORBIDDEN_WORDS) {
-    if (cleaned.includes(word)) {
-      cleaned = cleaned.split(word).join('***');
-    }
-  }
-
-  if (cleaned.length > maxLength) {
-    cleaned = cleaned.slice(0, maxLength - 3) + '...';
-  }
-
-  return cleaned;
-}
-
-/**
- * Validates short lore text (max 80 chars).
- */
-export function validateLore(lore: string): string {
-  return sanitizeLore(lore, MAX_LORE_LENGTH);
-}
-
-// --- Fallback Lore Generation ---
-
-/**
- * Generates a deterministic template-based lore string when AI generation fails.
- * Uses a hash of the input data to consistently select the same template.
- */
-export function generateFallbackLore(input: LoreInputData): string {
-  const classId = input.classNameEn.toLowerCase().replace(/\s+/g, '_') as CharacterClassId;
-  const templates = FALLBACK_TEMPLATES[classId] ?? FALLBACK_TEMPLATES.warrior;
-
-  const hashInput = `${input.classNameEn}-${input.level}-${input.power}-${input.txCount}`;
-  const hash = deterministicHash(hashInput);
-  const index = hash % templates.length;
-
-  return validateLore(templates[index]);
-}
-
-// --- AI Lore Generation ---
-
-interface OpenAIChatMessage {
-  readonly role: 'system' | 'user' | 'assistant';
-  readonly content: string;
-}
-
-interface OpenAIChatResponse {
-  readonly choices: readonly {
-    readonly message: {
-      readonly content: string;
-    };
-  }[];
-}
-
-interface AnthropicMessage {
-  readonly role: 'user' | 'assistant';
-  readonly content: string;
-}
-
-interface AnthropicResponse {
-  readonly content: readonly { readonly type: string; readonly text: string }[];
-}
-
-/**
- * Calls a LiteLLM / OpenAI-compatible chat completion endpoint.
- */
-async function callLiteLLM(
-  apiKey: string,
-  baseUrl: string,
-  model: string,
-  userPrompt: string,
-  systemPrompt: string = LORE_SYSTEM_PROMPT,
-  maxTokens: number = MAX_TOKENS,
-): Promise<string | null> {
-  const messages: readonly OpenAIChatMessage[] = [
-    { role: 'system', content: systemPrompt },
-    { role: 'user', content: userPrompt },
-  ];
-
-  const response = await fetch(`${baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      max_tokens: maxTokens,
-    }),
-  });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const data = (await response.json()) as OpenAIChatResponse;
-
-  const content = data.choices?.[0]?.message?.content;
-  if (!content || content.trim().length === 0) {
-    return null;
-  }
-
-  return content.trim();
-}
-
-/**
- * Calls the Anthropic API directly (legacy fallback when LiteLLM is not configured).
- */
-async function callAnthropicDirect(
-  apiKey: string,
-  userPrompt: string,
-  systemPrompt: string = LORE_SYSTEM_PROMPT,
-  maxTokens: number = MAX_TOKENS,
-): Promise<string | null> {
-  const messages: readonly AnthropicMessage[] = [
-    { role: 'user', content: userPrompt },
-  ];
-
-  const response = await fetch(ANTHROPIC_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': ANTHROPIC_API_VERSION,
-    },
-    body: JSON.stringify({
-      model: DEFAULT_MODEL,
-      max_tokens: maxTokens,
-      system: systemPrompt,
-      messages,
-    }),
-  });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  const data = (await response.json()) as AnthropicResponse;
-
-  const textBlock = data.content.find((block) => block.type === 'text');
-  if (!textBlock?.text || textBlock.text.trim().length === 0) {
-    return null;
-  }
-
-  return textBlock.text.trim();
-}
-
-/**
- * Generates an AI-powered hero lore narrative.
- *
- * Priority:
- * 1. LiteLLM primary model (LITELLM_MODEL, default: deepseek-v3.2)
- * 2. LiteLLM fallback model (LITELLM_FALLBACK_MODEL, default: gpt-5.2-codex)
- * 3. Anthropic direct (ANTHROPIC_API_KEY set) — legacy fallback
- * 4. Template-based fallback
- */
-export async function generateLore(input: LoreInputData): Promise<string> {
-  const litellmKey = process.env.LITELLM_API_KEY;
-  const litellmBaseUrl = process.env.LITELLM_BASE_URL ?? DEFAULT_BASE_URL;
-  const litellmModel = process.env.LITELLM_MODEL ?? DEFAULT_MODEL;
-  const litellmFallbackModel = process.env.LITELLM_FALLBACK_MODEL;
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-
-  const userPrompt = buildLoreUserPrompt(input);
-
-  // 1. Try LiteLLM primary model
-  if (litellmKey) {
-    try {
-      const result = await callLiteLLM(litellmKey, litellmBaseUrl, litellmModel, userPrompt);
-      if (result) {
-        return validateLore(result);
-      }
-    } catch (error) {
-      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-short', model: litellmModel } });
-    }
-
-    // 2. Try LiteLLM fallback model
-    if (litellmFallbackModel) {
-      try {
-        const result = await callLiteLLM(litellmKey, litellmBaseUrl, litellmFallbackModel, userPrompt);
-        if (result) {
-          return validateLore(result);
-        }
-      } catch (error) {
-        Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-fallback-short', model: litellmFallbackModel } });
-      }
-    }
-  }
-
-  // 3. Try Anthropic direct (legacy)
-  if (anthropicKey) {
-    try {
-      const result = await callAnthropicDirect(anthropicKey, userPrompt);
-      if (result) {
-        return validateLore(result);
-      }
-    } catch (error) {
-      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-anthropic-short' } });
-    }
-  }
-
-  // 4. Template fallback
-  return generateFallbackLore(input);
-}
-
-// --- Long Lore (Card Back) ---
 
 const LONG_LORE_SYSTEM_PROMPT = `You are a Lorekeeper of the RPG world.
 Based on on-chain data from an Ethereum wallet, you write the wallet owner's "hero lore" in 3-5 sentences in English.
@@ -352,10 +109,40 @@ Based on on-chain data from an Ethereum wallet, you write the wallet owner's "he
 - Guardian: Silent protector, steadfast holder
 - Warrior: Ordinary but persistent fighter`;
 
-/**
- * Builds a user prompt requesting a longer narrative (3-5 sentences).
- */
-export function buildLongLoreUserPrompt(data: LoreInputData): string {
+// --- Short / Long Config ---
+
+const SHORT_LORE_CONFIG: LoreCascadeConfig = {
+  systemPrompt: LORE_SYSTEM_PROMPT,
+  maxTokens: MAX_TOKENS,
+  maxLength: MAX_LORE_LENGTH,
+  sentryPrefix: 'short',
+  fallbackTemplates: FALLBACK_TEMPLATES,
+  promptInstruction: 'Based on the data above, write this hero\'s lore in English, 1-2 sentences, within 80 characters.',
+};
+
+const LONG_LORE_CONFIG: LoreCascadeConfig = {
+  systemPrompt: LONG_LORE_SYSTEM_PROMPT,
+  maxTokens: MAX_LONG_TOKENS,
+  maxLength: MAX_LONG_LORE_LENGTH,
+  sentryPrefix: 'long',
+  fallbackTemplates: LONG_FALLBACK_TEMPLATES,
+  promptInstruction: 'Based on the data above, write this hero\'s lore in English, 3-5 sentences, within 400 characters as a dramatic narrative.',
+};
+
+// --- Deterministic Hash ---
+
+function deterministicHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i);
+    hash = ((hash << 5) - hash + char) | 0;
+  }
+  return Math.abs(hash);
+}
+
+// --- Internal Shared Helpers ---
+
+function buildUserPrompt(data: LoreInputData, instruction: string): string {
   const eventsSection =
     data.relevantEvents.length > 0
       ? `Events Experienced: ${data.relevantEvents.join(', ')}`
@@ -372,90 +159,236 @@ export function buildLongLoreUserPrompt(data: LoreInputData): string {
     eventsSection,
     `Activity Pattern: ${data.activityPattern}`,
     '',
-    'Based on the data above, write this hero\'s lore in English, 3-5 sentences, within 400 characters as a dramatic narrative.',
+    instruction,
   ].join('\n');
 }
 
-/**
- * Validates long lore text (max 400 chars).
- */
-export function validateLongLore(lore: string): string {
-  return sanitizeLore(lore, MAX_LONG_LORE_LENGTH);
+function sanitizeLore(lore: string, maxLength: number): string {
+  let cleaned = lore.trim();
+
+  for (const word of FORBIDDEN_WORDS) {
+    if (cleaned.includes(word)) {
+      cleaned = cleaned.split(word).join('***');
+    }
+  }
+
+  if (cleaned.length > maxLength) {
+    cleaned = cleaned.slice(0, maxLength - 3) + '...';
+  }
+
+  return cleaned;
 }
 
-/**
- * Generates a deterministic long fallback lore when AI generation fails.
- */
-export function generateLongFallbackLore(input: LoreInputData): string {
+function generateTemplateFallback(
+  input: LoreInputData,
+  templates: Readonly<Record<string, readonly string[]>>,
+  validate: (lore: string) => string,
+): string {
   const classId = input.classNameEn.toLowerCase().replace(/\s+/g, '_') as CharacterClassId;
-  const templates = LONG_FALLBACK_TEMPLATES[classId] ?? LONG_FALLBACK_TEMPLATES.warrior;
+  const classTemplates = templates[classId] ?? templates.warrior;
 
   const hashInput = `${input.classNameEn}-${input.level}-${input.power}-${input.txCount}`;
   const hash = deterministicHash(hashInput);
-  const index = hash % templates.length;
+  const index = hash % classTemplates.length;
 
-  return validateLongLore(templates[index]);
+  return validate(classTemplates[index]);
 }
 
+// --- AI API Callers ---
+
+interface OpenAIChatMessage {
+  readonly role: 'system' | 'user' | 'assistant';
+  readonly content: string;
+}
+
+interface OpenAIChatResponse {
+  readonly choices: readonly {
+    readonly message: {
+      readonly content: string;
+    };
+  }[];
+}
+
+interface AnthropicMessage {
+  readonly role: 'user' | 'assistant';
+  readonly content: string;
+}
+
+interface AnthropicResponse {
+  readonly content: readonly { readonly type: string; readonly text: string }[];
+}
+
+async function callLiteLLM(
+  apiKey: string,
+  baseUrl: string,
+  model: string,
+  userPrompt: string,
+  systemPrompt: string,
+  maxTokens: number,
+): Promise<string | null> {
+  const messages: readonly OpenAIChatMessage[] = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt },
+  ];
+
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      max_tokens: maxTokens,
+    }),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data = (await response.json()) as OpenAIChatResponse;
+
+  const content = data.choices?.[0]?.message?.content;
+  if (!content || content.trim().length === 0) {
+    return null;
+  }
+
+  return content.trim();
+}
+
+async function callAnthropicDirect(
+  apiKey: string,
+  userPrompt: string,
+  systemPrompt: string,
+  maxTokens: number,
+): Promise<string | null> {
+  const messages: readonly AnthropicMessage[] = [
+    { role: 'user', content: userPrompt },
+  ];
+
+  const response = await fetch(ANTHROPIC_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': ANTHROPIC_API_VERSION,
+    },
+    body: JSON.stringify({
+      model: DEFAULT_MODEL,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages,
+    }),
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data = (await response.json()) as AnthropicResponse;
+
+  const textBlock = data.content.find((block) => block.type === 'text');
+  if (!textBlock?.text || textBlock.text.trim().length === 0) {
+    return null;
+  }
+
+  return textBlock.text.trim();
+}
+
+// --- Generic 4-Step Cascade ---
+
 /**
- * Generates a longer AI-powered hero narrative (3-5 sentences) for the card back.
- *
- * Priority: LiteLLM primary → LiteLLM fallback → Anthropic direct → template fallback.
+ * Generates lore through a 4-step fallback cascade:
+ * 1. LiteLLM primary model
+ * 2. LiteLLM fallback model
+ * 3. Anthropic direct (legacy)
+ * 4. Template-based fallback
  */
-export async function generateLongLore(input: LoreInputData): Promise<string> {
+async function generateLoreWithCascade(
+  input: LoreInputData,
+  config: LoreCascadeConfig,
+): Promise<string> {
   const litellmKey = process.env.LITELLM_API_KEY;
   const litellmBaseUrl = process.env.LITELLM_BASE_URL ?? DEFAULT_BASE_URL;
   const litellmModel = process.env.LITELLM_MODEL ?? DEFAULT_MODEL;
   const litellmFallbackModel = process.env.LITELLM_FALLBACK_MODEL;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
-  const userPrompt = buildLongLoreUserPrompt(input);
+  const validate = (text: string) => sanitizeLore(text, config.maxLength);
+  const userPrompt = buildUserPrompt(input, config.promptInstruction);
 
   // 1. Try LiteLLM primary model
   if (litellmKey) {
     try {
-      const result = await callLiteLLM(
-        litellmKey, litellmBaseUrl, litellmModel, userPrompt,
-        LONG_LORE_SYSTEM_PROMPT, MAX_LONG_TOKENS,
-      );
+      const result = await callLiteLLM(litellmKey, litellmBaseUrl, litellmModel, userPrompt, config.systemPrompt, config.maxTokens);
       if (result) {
-        return validateLongLore(result);
+        return validate(result);
       }
     } catch (error) {
-      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-long', model: litellmModel } });
+      Sentry.captureException(error, { level: 'warning', tags: { source: `lore-litellm-${config.sentryPrefix}`, model: litellmModel } });
     }
 
     // 2. Try LiteLLM fallback model
     if (litellmFallbackModel) {
       try {
-        const result = await callLiteLLM(
-          litellmKey, litellmBaseUrl, litellmFallbackModel, userPrompt,
-          LONG_LORE_SYSTEM_PROMPT, MAX_LONG_TOKENS,
-        );
+        const result = await callLiteLLM(litellmKey, litellmBaseUrl, litellmFallbackModel, userPrompt, config.systemPrompt, config.maxTokens);
         if (result) {
-          return validateLongLore(result);
+          return validate(result);
         }
       } catch (error) {
-        Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-litellm-fallback-long', model: litellmFallbackModel } });
+        Sentry.captureException(error, { level: 'warning', tags: { source: `lore-litellm-fallback-${config.sentryPrefix}`, model: litellmFallbackModel } });
       }
     }
   }
 
-  // 3. Try Anthropic direct
+  // 3. Try Anthropic direct (legacy)
   if (anthropicKey) {
     try {
-      const result = await callAnthropicDirect(
-        anthropicKey, userPrompt,
-        LONG_LORE_SYSTEM_PROMPT, MAX_LONG_TOKENS,
-      );
+      const result = await callAnthropicDirect(anthropicKey, userPrompt, config.systemPrompt, config.maxTokens);
       if (result) {
-        return validateLongLore(result);
+        return validate(result);
       }
     } catch (error) {
-      Sentry.captureException(error, { level: 'warning', tags: { source: 'lore-anthropic-long' } });
+      Sentry.captureException(error, { level: 'warning', tags: { source: `lore-anthropic-${config.sentryPrefix}` } });
     }
   }
 
   // 4. Template fallback
-  return generateLongFallbackLore(input);
+  return generateTemplateFallback(input, config.fallbackTemplates, validate);
+}
+
+// --- Public Exports ---
+
+export function buildLoreUserPrompt(data: LoreInputData): string {
+  return buildUserPrompt(data, SHORT_LORE_CONFIG.promptInstruction);
+}
+
+export function buildLongLoreUserPrompt(data: LoreInputData): string {
+  return buildUserPrompt(data, LONG_LORE_CONFIG.promptInstruction);
+}
+
+export function validateLore(lore: string): string {
+  return sanitizeLore(lore, MAX_LORE_LENGTH);
+}
+
+export function validateLongLore(lore: string): string {
+  return sanitizeLore(lore, MAX_LONG_LORE_LENGTH);
+}
+
+export function generateFallbackLore(input: LoreInputData): string {
+  return generateTemplateFallback(input, FALLBACK_TEMPLATES, validateLore);
+}
+
+export function generateLongFallbackLore(input: LoreInputData): string {
+  return generateTemplateFallback(input, LONG_FALLBACK_TEMPLATES, validateLongLore);
+}
+
+export async function generateLore(input: LoreInputData): Promise<string> {
+  return generateLoreWithCascade(input, SHORT_LORE_CONFIG);
+}
+
+export async function generateLongLore(input: LoreInputData): Promise<string> {
+  return generateLoreWithCascade(input, LONG_LORE_CONFIG);
 }
