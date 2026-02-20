@@ -2,18 +2,14 @@ import type { Metadata } from 'next';
 
 export async function generateMetadata({
   params,
-  searchParams,
 }: {
   params: Promise<{ addr1: string; addr2: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
   const { addr1, addr2 } = await params;
-  const query = await searchParams;
-  const nonce = typeof query.n === 'string' ? query.n : '';
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-  const ogUrl = nonce
-    ? `${siteUrl}/api/og/battle/${addr1}/${addr2}?n=${encodeURIComponent(nonce)}`
-    : `${siteUrl}/api/og/battle/${addr1}/${addr2}`;
+  // Note: searchParams is not available in layout generateMetadata (Next.js limitation).
+  // The nonce (if any) is passed client-side; the OG endpoint works without it.
+  const ogUrl = `${siteUrl}/api/og/battle/${addr1}/${addr2}`;
 
   return {
     title: `Wallet Battle \u2014 Eth\u00B7RPG`,
