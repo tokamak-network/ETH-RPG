@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import AddressInput from '@/components/AddressInput';
+import RecentHeroes from '@/components/RecentHeroes';
 import { usePageView } from '@/hooks/useAnalytics';
 
 export default function LandingHero() {
@@ -47,9 +48,14 @@ export default function LandingHero() {
       </div>
 
       {/* Trust micro-text */}
-      <p className="text-xs mb-8" style={{ color: 'var(--color-text-muted)' }}>
+      <p className="text-xs mb-4" style={{ color: 'var(--color-text-muted)' }}>
         Only public data is analyzed.
       </p>
+
+      {/* Recent Heroes */}
+      <div className="mb-8">
+        <RecentHeroes />
+      </div>
 
       {/* Battle Mode CTA */}
       <div className="mb-16">

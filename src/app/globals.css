@@ -186,6 +186,16 @@ body {
 }
 
 /* Card glow effect */
+/* Card reveal border glow pulse */
+@keyframes reveal-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.reveal-pulse-border {
+  animation: reveal-pulse 1.2s ease-in-out infinite;
+}
+
 .card-glow {
   transition: box-shadow 0.3s ease;
 }
@@ -370,6 +380,11 @@ body {
 
   .bg-atmosphere::after {
     animation: none;
+  }
+
+  .reveal-pulse-border {
+    animation: none;
+    opacity: 1;
   }
 
   .animate-card-entrance {

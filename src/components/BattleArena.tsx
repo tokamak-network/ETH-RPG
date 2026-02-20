@@ -5,6 +5,7 @@ import type { BattleAction, BattleFighter } from '@/lib/types';
 import { CLASS_THEMES, BATTLE_TOKENS } from '@/styles/themes';
 import { PixelCharacter } from '@/components/pixel-sprites';
 import { formatFighterName } from '@/lib/format-utils';
+import { useSound } from '@/contexts/SoundContext';
 
 const LIVE_LOG_MAX_LINES = 10;
 
@@ -50,6 +51,8 @@ export default function BattleArena({ turns, fighters, onComplete }: BattleArena
   const [isPlaying, setIsPlaying] = useState(true);
   const [isComplete, setIsComplete] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
+  const lastPlayedTurn = useRef(-1);
+  const { playHit, playCrit, playDodge, playHeal, playVictory } = useSound();
 
   const maxHp0 = fighters[0].stats.hp;
   const maxHp1 = fighters[1].stats.hp;
@@ -59,6 +62,7 @@ export default function BattleArena({ turns, fighters, onComplete }: BattleArena
     if (currentTurnIndex >= turns.length) {
       setIsComplete(true);
       setIsPlaying(false);
+      playVictory();
       onComplete();
       return;
     }
@@ -66,7 +70,7 @@ export default function BattleArena({ turns, fighters, onComplete }: BattleArena
       setCurrentTurnIndex((prev) => prev + 1);
     }, BATTLE_TOKENS.timing.turnDelay);
     return () => clearTimeout(timer);
-  }, [currentTurnIndex, isPlaying, isComplete, turns.length, onComplete]);
+  }, [currentTurnIndex, isPlaying, isComplete, turns.length, onComplete, playVictory]);
 
   // Auto-scroll live log to bottom
   useEffect(() => {
@@ -86,6 +90,18 @@ export default function BattleArena({ turns, fighters, onComplete }: BattleArena
   const hp0 = visibleIndex >= 0 ? getHpForFighter(turns, visibleIndex, 0) : maxHp0;
   const hp1 = visibleIndex >= 0 ? getHpForFighter(turns, visibleIndex, 1) : maxHp1;
   const currentAction = visibleIndex >= 0 ? turns[visibleIndex] : null;
+
+  // Play sound effects on turn advance
+  useEffect(() => {
+    if (visibleIndex < 0 || visibleIndex <= lastPlayedTurn.current) return;
+    lastPlayedTurn.current = visibleIndex;
+    const turn = turns[visibleIndex];
+    if (!turn) return;
+    if (turn.isDodge) { playDodge(); return; }
+    if (turn.isCrit) { playCrit(); return; }
+    if (turn.healed !== undefined && turn.healed > 0) { playHeal(); return; }
+    playHit();
+  }, [visibleIndex, turns, playHit, playCrit, playDodge, playHeal]);
 
   // Visible log entries: all turns up to current index
   const visibleTurns = turns.slice(0, Math.max(0, currentTurnIndex));

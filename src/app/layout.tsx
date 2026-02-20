@@ -4,6 +4,8 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import FeedbackButton from '@/components/FeedbackButton';
+import SoundToggle from '@/components/SoundToggle';
+import { SoundProvider } from '@/contexts/SoundContext';
 import './globals.css';
 
 const cinzel = Cinzel({
@@ -69,10 +71,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${cinzel.variable} ${inter.variable} ${notoSansKR.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
-        <FeedbackButton />
+        <SoundProvider>
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+          <SoundToggle />
+          <FeedbackButton />
+        </SoundProvider>
         <Analytics />
         <SpeedInsights />
       </body>
