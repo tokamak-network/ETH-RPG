@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveMatchup, getDamageModifier, getReceiveModifier } from '@/lib/matchups';
+import { resolveMatchup, getDamageModifier, getReceiveModifier, getMatchupInfo } from '@/lib/matchups';
 import type { CharacterClassId } from '@/lib/types';
 
 describe('resolveMatchup', () => {
@@ -236,5 +236,50 @@ describe('getReceiveModifier', () => {
 
   it('returns 1.0 for neutral', () => {
     expect(getReceiveModifier('neutral')).toBe(1.0);
+  });
+});
+
+describe('getMatchupInfo', () => {
+  it('warrior is strong vs rogue, weak vs elder_wizard', () => {
+    const info = getMatchupInfo('warrior');
+
+    expect(info.strongVs).toContain('rogue');
+    expect(info.weakVs).toContain('elder_wizard');
+  });
+
+  it('hunter is strong vs summoner, weak vs guardian', () => {
+    const info = getMatchupInfo('hunter');
+
+    expect(info.strongVs).toContain('summoner');
+    expect(info.weakVs).toContain('guardian');
+  });
+
+  it('does not include self in strong or weak', () => {
+    const info = getMatchupInfo('priest');
+
+    expect(info.strongVs).not.toContain('priest');
+    expect(info.weakVs).not.toContain('priest');
+  });
+
+  it('returns empty arrays for classes with no cross-ring advantage', () => {
+    // warrior (Ring A) has no advantage vs hunter (Ring B) — cross-ring = neutral
+    const info = getMatchupInfo('warrior');
+
+    expect(info.strongVs).not.toContain('hunter');
+    expect(info.weakVs).not.toContain('hunter');
+  });
+
+  it('each class has at most 1 strong and 1 weak (ring-adjacent only)', () => {
+    const classes: CharacterClassId[] = [
+      'warrior', 'rogue', 'summoner', 'merchant', 'priest',
+      'elder_wizard', 'guardian', 'hunter',
+    ];
+
+    for (const cls of classes) {
+      const info = getMatchupInfo(cls);
+      // Each class beats exactly 1 adjacent in its ring
+      expect(info.strongVs.length).toBe(1);
+      expect(info.weakVs.length).toBe(1);
+    }
   });
 });

@@ -282,7 +282,6 @@ export async function GET(
               fontSize: 16,
               fontWeight: 700,
               color: tier.frameColor,
-              textTransform: 'uppercase',
               letterSpacing: 2,
               marginBottom: 4,
             }}>

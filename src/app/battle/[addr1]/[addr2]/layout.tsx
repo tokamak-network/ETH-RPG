@@ -12,7 +12,7 @@ export async function generateMetadata({
   const nonce = typeof query.n === 'string' ? query.n : '';
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
   const ogUrl = nonce
-    ? `${siteUrl}/api/og/battle/${addr1}/${addr2}?n=${nonce}`
+    ? `${siteUrl}/api/og/battle/${addr1}/${addr2}?n=${encodeURIComponent(nonce)}`
     : `${siteUrl}/api/og/battle/${addr1}/${addr2}`;
 
   return {

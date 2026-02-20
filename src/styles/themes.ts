@@ -124,6 +124,12 @@ export interface PowerTier {
   readonly glowIntensity: number;
 }
 
+// Thresholds derived from power formula analysis:
+//   Min possible (fresh warrior):  ~8,200  → Bronze
+//   Typical active wallet:         ~15,000 → Silver
+//   Heavy DeFi user:               ~35,000 → Gold
+//   Theoretical max (elder_wizard): ~100,750 → Diamond
+// Sorted descending so getPowerTier() returns on first match.
 export const POWER_TIERS: readonly PowerTier[] = [
   { id: 'diamond', label: 'DIAMOND', minPower: 55000, frameColor: '#b9f2ff', glowColor: 'rgba(185, 242, 255, 0.4)', glowIntensity: 30 },
   { id: 'gold', label: 'GOLD', minPower: 35000, frameColor: '#f4c430', glowColor: 'rgba(244, 196, 48, 0.35)', glowIntensity: 25 },
