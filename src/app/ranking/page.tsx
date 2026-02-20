@@ -24,7 +24,7 @@ export default function RankingPage() {
         if (res.ok) return res.json();
         return null;
       })
-      .then((body: { season: Season } | null) => {
+      .then((body: { season: Season | null } | null) => {
         if (body?.season) setSeason(body.season);
       })
       .catch(() => { /* season fetch failed silently */ });
@@ -115,13 +115,28 @@ export default function RankingPage() {
             </div>
           )}
 
-          {status === 'success' && data && (
+          {status === 'success' && data && data.entries.length > 0 && (
             <LeaderboardTable
               type={activeTab}
               entries={data.entries}
               playerRank={data.playerRank}
               totalPlayers={data.totalPlayers}
             />
+          )}
+
+          {status === 'success' && data && data.entries.length === 0 && (
+            <div className="text-center py-16">
+              <p
+                className="text-lg font-semibold mb-2"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                No rankings yet
+              </p>
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                Battle other wallets to appear on the leaderboard.
+                Rankings update every 30 minutes.
+              </p>
+            </div>
           )}
 
           {/* Back link */}

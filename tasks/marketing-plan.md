@@ -138,10 +138,12 @@ My Power {power}... what's yours?
 [Card image attached]
 ```
 
-**KOL Seeding (5-10 people)**
-- Pre-generate cards for famous wallet addresses (vitalik.eth, etc.)
-- DM with "vitalik.eth's Power is XX" screenshot
-- Target: Crypto influencers with 1K-50K followers (very large accounts have low response rates)
+**Famous Wallet Tag Posts (Day 1-3, 2-3 posts/day)**
+- Post pre-generated cards for famous wallets (vitalik.eth, etc.) on CT
+- Tag the wallet owner: "@vitalikbuterin Power 89,432 Elder Wizard"
+- Even without RT, followers click out of curiosity → inflow
+- Cold DMs to KOLs are unrealistic (1-5% response rate, mostly ignored)
+- Tag posts get search/timeline exposure without requiring any response
 
 **Hashtags**
 ```
@@ -337,9 +339,9 @@ Must-generate targets:
 ```
 
 **Usage**
-- "vitalik.eth is Lv.58 Elder Wizard, Power 89,432" → CT post
-- Multiple celebrity cards side by side → "Ethereum Legends Ranking" infographic
-- When DMing KOLs: "Let me make your card too" + preview of their card
+- "@vitalikbuterin Lv.58 Elder Wizard, Power 89,432" → CT tag post (Day 1-3)
+- Multiple celebrity cards side by side → "Ethereum Legends Ranking" infographic (Day 2-3)
+- Use as sample images when seeding Discord/Telegram communities
 
 ---
 
@@ -353,7 +355,7 @@ Must-generate targets:
 | D-1 AM | OG preview testing (Twitter Card Validator, Farcaster) | QA |
 | D-1 AM | Generate 5 sample cards (famous wallets) | Growth |
 | D-1 PM | Finalize 6 share copy sets | Growth |
-| D-1 PM | Finalize seeding target list of 20 + prepare DMs | Growth |
+| D-1 PM | Finalize seeding target list of 20 + prepare post texts | Growth |
 
 ### Launch (Day 1)
 | Time | Task |
@@ -362,7 +364,7 @@ Must-generate targets:
 | 09:30 | Farcaster /ethereum channel cast |
 | 10:00 | Discord seeding begins (5 servers) |
 | 12:00 | Telegram seeding (3 groups) |
-| 14:00 | KOL DMs sent (5 people) |
+| 14:00 | Famous wallet tag posts 2-3 (vitalik.eth, sassal.eth, etc.) |
 | 18:00 | First funnel data check |
 | 21:00 | User response monitoring + hotfix |
 
@@ -416,12 +418,12 @@ Must-generate targets:
 | Farcaster (5 channels) | 20-30 | /ethereum channel reach |
 | Discord (10 servers) | 50-100 | 5-10 per server |
 | Telegram (5 groups) | 30-50 | 6-10 per group |
-| KOL amplification | 50-100 | 2-3 RTs × 30-50 clicks each |
+| Famous wallet tag posts (6-9) | 30-60 | 5-10 clicks per post, search/timeline exposure without RT |
 | Viral spread (K=0.3) | 50-80 | ~200 generations × 20% share × K |
 | KakaoTalk (5 rooms) | 20-30 | 4-6 per room |
-| **Total (conservative)** | **250-440** | |
+| **Total (conservative)** | **230-400** | |
 
-**Implication**: UV 500 is an optimistic target. Conservative estimate is 250-440.
+**Implication**: UV 400 is an optimistic target. Conservative estimate is 230-400.
 Adjust Go/No-Go accordingly — "Average" band is the realistic Day 7 outcome with
 seeding alone. Reaching "Success" requires viral amplification (K > 0.3).
 

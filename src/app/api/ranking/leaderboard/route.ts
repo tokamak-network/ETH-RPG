@@ -32,7 +32,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // Get season
   const season = await getCurrentSeason();
   if (!season) {
-    return errorResponse('NO_SEASON', 'No active season found.', 404);
+    // No season yet — return empty leaderboard (not an error)
+    return NextResponse.json({
+      season: null,
+      type,
+      updatedAt: Date.now(),
+      entries: [],
+      totalPlayers: 0,
+    }, {
+      headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300' },
+    });
   }
 
   const seasonParam = searchParams.get('season');

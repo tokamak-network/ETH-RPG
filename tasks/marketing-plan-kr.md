@@ -137,10 +137,12 @@ K=0.3으로 계획하고, 더 높으면 축하한다.
 [카드 이미지 첨부]
 ```
 
-**KOL 시딩 (5-10명)**
-- 유명 지갑 주소(vitalik.eth 등)로 미리 카드 생성
-- "vitalik.eth의 전투력은 XX" 스크린샷과 함께 DM
-- 타겟: 팔로워 1K-50K 크립토 인플루언서 (너무 큰 계정은 응답률 낮음)
+**유명 지갑 태그 포스트 (Day 1-3, 하루 2-3건)**
+- 유명 지갑 주소(vitalik.eth 등)로 미리 생성한 카드를 CT에 포스트
+- "@vitalikbuterin 님 전투력 89,432 Elder Wizard" 식으로 태그
+- 본인이 RT 안 해도 팔로워들이 호기심에 클릭 → 유입
+- KOL DM은 비현실적 (콜드 DM 응답률 1-5%, 대부분 무시)
+- 태그 포스트는 RT 없이도 검색/타임라인 노출 효과
 
 **해시태그**
 ```
@@ -336,9 +338,9 @@ Reddit/HN:      ?utm_source={platform}&utm_medium=post&utm_campaign=community
 ```
 
 **활용법**
-- "vitalik.eth는 Lv.58 Elder Wizard, 전투력 89,432" → CT 포스트
-- 여러 유명인 카드 나란히 → "이더리움 레전드 랭킹" 인포그래픽
-- KOL DM 시 "당신의 카드도 만들어드릴게요" + 본인 카드 미리보기
+- "@vitalikbuterin Lv.58 Elder Wizard, 전투력 89,432" → CT 태그 포스트 (Day 1-3)
+- 여러 유명인 카드 나란히 → "이더리움 레전드 랭킹" 인포그래픽 (Day 2-3)
+- 디스코드/텔레그램 시딩 시 샘플 이미지로 활용
 
 ---
 
@@ -352,7 +354,7 @@ Reddit/HN:      ?utm_source={platform}&utm_medium=post&utm_campaign=community
 | D-1 AM | OG 프리뷰 테스트 (Twitter Card Validator, Farcaster) | QA |
 | D-1 AM | 샘플 카드 5장 생성 (유명 지갑) | 그로스 |
 | D-1 PM | 공유 카피 6세트 최종 확정 | 그로스 |
-| D-1 PM | 시딩 타겟 20곳 리스트 확정 + DM 준비 | 그로스 |
+| D-1 PM | 시딩 타겟 20곳 리스트 확정 + 포스트 텍스트 준비 | 그로스 |
 
 ### 런칭 (Day 1)
 | 시간 | 작업 |
@@ -361,7 +363,7 @@ Reddit/HN:      ?utm_source={platform}&utm_medium=post&utm_campaign=community
 | 09:30 | Farcaster /ethereum 채널 캐스트 |
 | 10:00 | 디스코드 시딩 시작 (5곳) |
 | 12:00 | 텔레그램 시딩 (3곳) |
-| 14:00 | KOL DM 발송 (5명) |
+| 14:00 | 유명 지갑 태그 포스트 2-3건 (vitalik.eth, sassal.eth 등) |
 | 18:00 | 퍼널 데이터 1차 확인 |
 | 21:00 | 유저 반응 모니터링 + 핫픽스 |
 
@@ -415,12 +417,12 @@ Reddit/HN:      ?utm_source={platform}&utm_medium=post&utm_campaign=community
 | Farcaster (5개 채널) | 20-30 | /ethereum 채널 도달 |
 | Discord (10곳) | 50-100 | 서버당 5-10명 |
 | Telegram (5곳) | 30-50 | 그룹당 6-10명 |
-| KOL 확산 | 50-100 | 2-3 RT × 30-50 클릭 |
+| 유명지갑 태그 포스트 (6-9건) | 30-60 | 포스트당 5-10 클릭, RT 없이 검색/타임라인 노출 |
 | 바이럴 확산 (K=0.3) | 50-80 | ~200 생성 × 20% 공유 × K |
 | 카카오톡 (5곳) | 20-30 | 방당 4-6명 |
-| **합계 (보수적)** | **250-440** | |
+| **합계 (보수적)** | **230-400** | |
 
-**시사점**: UV 500은 낙관적 목표. 보수적 추정은 250-440.
+**시사점**: UV 400은 낙관적 목표. 보수적 추정은 230-400.
 Go/No-Go 기준 조정 필요 — "보통" 등급이 시딩만으로의 현실적 Day 7 결과.
 "성공" 도달에는 바이럴 증폭(K > 0.3)이 필수.
 

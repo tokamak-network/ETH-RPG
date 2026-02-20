@@ -18,7 +18,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const season = await getCurrentSeason();
 
     if (!season) {
-      return errorResponse('NO_SEASON', 'No active season found. Rankings have not been initialized.', 404);
+      return NextResponse.json({ season: null, remaining: null }, {
+        headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300' },
+      });
     }
 
     const remaining = getSeasonTimeRemaining(season);
