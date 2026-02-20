@@ -120,6 +120,20 @@ describe('POST /api/events', () => {
     expect(mockTrackShare).toHaveBeenCalledWith('twitter');
   });
 
+  it('routes address_input_start to trackFunnel("input_focus")', async () => {
+    const response = await POST(createRequest({ event: 'address_input_start' }));
+
+    expect(response.status).toBe(202);
+    expect(mockTrackFunnel).toHaveBeenCalledWith('input_focus');
+  });
+
+  it('routes funnel_* prefixed events to trackFunnel with stripped prefix', async () => {
+    const response = await POST(createRequest({ event: 'funnel_landing' }));
+
+    expect(response.status).toBe(202);
+    expect(mockTrackFunnel).toHaveBeenCalledWith('landing');
+  });
+
   it('sanitizes properties — drops nested objects, keeps primitives', async () => {
     const response = await POST(createRequest({
       event: 'custom_event',

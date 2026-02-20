@@ -4,6 +4,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockKv = vi.hoisted(() => ({
+  get: vi.fn().mockResolvedValue(null),
+  set: vi.fn().mockResolvedValue('OK'),
+  sadd: vi.fn().mockResolvedValue(1),
+  sscan: vi.fn().mockResolvedValue(['0', []]),
+  mget: vi.fn().mockResolvedValue([]),
+  eval: vi.fn().mockResolvedValue(1),
+  lpush: vi.fn().mockResolvedValue(1),
+  ltrim: vi.fn().mockResolvedValue('OK'),
   lrange: vi.fn().mockResolvedValue([]),
 }));
 
