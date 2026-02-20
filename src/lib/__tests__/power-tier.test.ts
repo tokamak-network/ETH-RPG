@@ -34,6 +34,14 @@ describe('getPowerTier', () => {
     expect(getPowerTier(100000).id).toBe('diamond');
   });
 
+  it('returns bronze for negative power (defensive fallback)', () => {
+    expect(getPowerTier(-1).id).toBe('bronze');
+  });
+
+  it('returns bronze for NaN power (defensive fallback)', () => {
+    expect(getPowerTier(NaN).id).toBe('bronze');
+  });
+
   it('returns correct frameColor for each tier', () => {
     expect(getPowerTier(0).frameColor).toBe('#cd7f32');
     expect(getPowerTier(15000).frameColor).toBe('#c0c0c0');

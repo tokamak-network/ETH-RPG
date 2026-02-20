@@ -105,7 +105,7 @@ const ALL_CLASS_IDS: readonly CharacterClassId[] = [
   ...RING_B,
 ] as const;
 
-export function getMatchupInfo(classId: CharacterClassId): MatchupInfo {
+function computeMatchupInfo(classId: CharacterClassId): MatchupInfo {
   const strongVs: CharacterClassId[] = [];
   const weakVs: CharacterClassId[] = [];
 
@@ -120,6 +120,16 @@ export function getMatchupInfo(classId: CharacterClassId): MatchupInfo {
   }
 
   return { strongVs, weakVs };
+}
+
+// Pre-computed at module load — avoids recalculation on every render.
+const MATCHUP_INFO_MAP: Readonly<Record<CharacterClassId, MatchupInfo>> =
+  Object.fromEntries(
+    ALL_CLASS_IDS.map((id) => [id, computeMatchupInfo(id)]),
+  ) as Record<CharacterClassId, MatchupInfo>;
+
+export function getMatchupInfo(classId: CharacterClassId): MatchupInfo {
+  return MATCHUP_INFO_MAP[classId];
 }
 
 export function getDamageModifier(advantage: MatchupAdvantage): number {
