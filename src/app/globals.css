@@ -186,14 +186,33 @@ body {
 }
 
 /* Card glow effect */
-/* Card reveal border glow pulse */
-@keyframes reveal-pulse {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+/* Card reveal — sealed card with glow pulse */
+@keyframes reveal-glow {
+  0%, 100% { box-shadow: 0 0 15px var(--reveal-glow-color, rgba(255,255,255,0.2)); }
+  50% { box-shadow: 0 0 40px var(--reveal-glow-color, rgba(255,255,255,0.5)), 0 0 80px var(--reveal-glow-color, rgba(255,255,255,0.15)); }
 }
 
-.reveal-pulse-border {
-  animation: reveal-pulse 1.2s ease-in-out infinite;
+@keyframes reveal-enter {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.reveal-card {
+  width: 12rem;
+  height: 16rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: var(--color-bg-secondary);
+  border: 2px solid var(--reveal-color, var(--color-border));
+  animation: reveal-glow 1.5s ease-in-out infinite;
+}
+
+.reveal-card-enter {
+  animation: reveal-enter 0.4s ease-out forwards, reveal-glow 1.5s ease-in-out 0.4s infinite;
 }
 
 .card-glow {
@@ -382,7 +401,8 @@ body {
     animation: none;
   }
 
-  .reveal-pulse-border {
+  .reveal-card,
+  .reveal-card-enter {
     animation: none;
     opacity: 1;
   }

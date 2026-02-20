@@ -19,7 +19,7 @@ export default function ResultPage() {
   const router = useRouter();
   const { status, data, error, step, generate } = useGenerateCharacter();
   const { addEntry } = useWalletHistory();
-  const { playSummon } = useSound();
+  const { playSummon, playRevealSeal, playRevealTier } = useSound();
   const [revealed, setRevealed] = useState(false);
 
   const address = params.address ? decodeURIComponent(params.address) : '';
@@ -53,6 +53,11 @@ export default function ResultPage() {
       });
     }
   }, [status, data, addEntry]);
+
+  const handlePhaseChange = useCallback((phase: 0 | 1 | 2) => {
+    if (phase === 1) playRevealSeal();
+    if (phase === 2) playRevealTier();
+  }, [playRevealSeal, playRevealTier]);
 
   const handleRevealed = useCallback(() => {
     playSummon();
@@ -115,7 +120,7 @@ export default function ResultPage() {
         {status === 'success' && data && (
           <div className="w-full max-w-lg mx-auto">
             {/* Card Reveal Animation */}
-            <CardReveal data={data} onRevealed={handleRevealed} />
+            <CardReveal data={data} onPhaseChange={handlePhaseChange} onRevealed={handleRevealed} />
 
             {/* Below-card content — only after reveal */}
             {revealed && (

@@ -137,6 +137,18 @@ export function useSoundEngine() {
     [play],
   );
 
+  // Card reveal: low rumble when sealed card appears
+  const playRevealSeal = useCallback(
+    () => play((ctx) => playTone(ctx, 'sine', 80, 120, 600, 0.08)),
+    [play],
+  );
+
+  // Card reveal: ascending chime when tier/level shown
+  const playRevealTier = useCallback(
+    () => play((ctx) => playNoteSequence(ctx, [330, 440], 180, 0.1)),
+    [play],
+  );
+
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
       const next = !prev;
@@ -154,6 +166,8 @@ export function useSoundEngine() {
     playHeal,
     playVictory,
     playSummon,
+    playRevealSeal,
+    playRevealTier,
     isMuted,
     toggleMute,
   } as const;

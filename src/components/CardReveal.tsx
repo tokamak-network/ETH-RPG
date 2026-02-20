@@ -7,13 +7,16 @@ import CharacterCard from '@/components/CharacterCard';
 
 interface CardRevealProps {
   readonly data: GenerateResponse;
+  readonly onPhaseChange?: (phase: 0 | 1 | 2) => void;
   readonly onRevealed?: () => void;
 }
 
-export default function CardReveal({ data, onRevealed }: CardRevealProps) {
+export default function CardReveal({ data, onPhaseChange, onRevealed }: CardRevealProps) {
   const [phase, setPhase] = useState<0 | 1 | 2>(0);
   const onRevealedRef = useRef(onRevealed);
+  const onPhaseChangeRef = useRef(onPhaseChange);
   onRevealedRef.current = onRevealed;
+  onPhaseChangeRef.current = onPhaseChange;
 
   const theme = CLASS_THEMES[data.class.id];
   const tier = getPowerTier(data.stats.power);
@@ -25,15 +28,20 @@ export default function CardReveal({ data, onRevealed }: CardRevealProps) {
 
     if (prefersReduced) {
       setPhase(2);
+      onPhaseChangeRef.current?.(2);
       onRevealedRef.current?.();
       return;
     }
 
-    const t1 = setTimeout(() => setPhase(1), 800);
+    const t1 = setTimeout(() => {
+      setPhase(1);
+      onPhaseChangeRef.current?.(1);
+    }, 1000);
     const t2 = setTimeout(() => {
       setPhase(2);
+      onPhaseChangeRef.current?.(2);
       onRevealedRef.current?.();
-    }, 1600);
+    }, 2200);
 
     return () => {
       clearTimeout(t1);
@@ -41,49 +49,49 @@ export default function CardReveal({ data, onRevealed }: CardRevealProps) {
     };
   }, []);
 
-  // Phase 0: Sealed card with class icon + glow
-  if (phase === 0) {
+  // Phase 2: Full CharacterCard — replaces the sealed card entirely
+  if (phase === 2) {
     return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <div
-          className="w-48 h-64 rounded-2xl flex flex-col items-center justify-center gap-4 reveal-pulse-border"
-          style={{
-            backgroundColor: 'var(--color-bg-secondary)',
-            border: `2px solid ${theme.primary}`,
-            boxShadow: theme.borderGlow,
-          }}
-        >
-          <span className="text-6xl" aria-hidden="true">{theme.icon}</span>
-          <p
-            className="text-lg font-bold"
-            style={{ color: theme.primary, fontFamily: 'var(--font-display)' }}
-          >
-            {data.class.nameEn}
-          </p>
+      <div className="w-full max-w-lg mx-auto animate-card-entrance">
+        <div className="mb-8">
+          <CharacterCard data={data} />
         </div>
       </div>
     );
   }
 
-  // Phase 1: Level + tier label fade in
-  if (phase === 1) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 animate-fade-in-up">
+  // Phase 0 & 1: Single persistent DOM that morphs via CSS transitions
+  return (
+    <div className="flex flex-col items-center justify-center py-16">
+      <div
+        className={`reveal-card ${phase === 0 ? 'reveal-card-enter' : ''}`}
+        style={{
+          '--reveal-color': theme.primary,
+          '--reveal-glow': theme.borderGlow,
+          '--reveal-glow-color': theme.primary,
+        } as React.CSSProperties}
+      >
+        {/* Icon — persistent across Phase 0 & 1 */}
+        <span className="text-6xl transition-transform duration-500" aria-hidden="true">
+          {theme.icon}
+        </span>
+
+        {/* Class name — persistent */}
+        <p
+          className="text-lg font-bold transition-opacity duration-300"
+          style={{ color: theme.primary, fontFamily: 'var(--font-display)' }}
+        >
+          {data.class.nameEn}
+        </p>
+
+        {/* Level + Tier — fade in during Phase 1 */}
         <div
-          className="w-48 h-64 rounded-2xl flex flex-col items-center justify-center gap-3"
+          className="flex flex-col items-center gap-1 transition-all duration-500"
           style={{
-            backgroundColor: 'var(--color-bg-secondary)',
-            border: `2px solid ${theme.primary}`,
-            boxShadow: theme.borderGlow,
+            opacity: phase >= 1 ? 1 : 0,
+            transform: phase >= 1 ? 'translateY(0)' : 'translateY(8px)',
           }}
         >
-          <span className="text-5xl" aria-hidden="true">{theme.icon}</span>
-          <p
-            className="text-lg font-bold"
-            style={{ color: theme.primary, fontFamily: 'var(--font-display)' }}
-          >
-            {data.class.nameEn}
-          </p>
           <p
             className="text-2xl font-bold"
             style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-display)' }}
@@ -97,20 +105,6 @@ export default function CardReveal({ data, onRevealed }: CardRevealProps) {
             {tier.label}
           </p>
         </div>
-      </div>
-    );
-  }
-
-  // Phase 2: Full CharacterCard
-  return (
-    <div
-      className="w-full max-w-lg mx-auto"
-      style={{
-        animation: 'card-entrance 0.5s ease-out forwards',
-      }}
-    >
-      <div className="mb-8">
-        <CharacterCard data={data} />
       </div>
     </div>
   );
