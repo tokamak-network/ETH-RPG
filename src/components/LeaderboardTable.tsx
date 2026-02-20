@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import type {
   LeaderboardType,
@@ -52,35 +53,49 @@ function RankCell({ rank }: { readonly rank: number }) {
   );
 }
 
-function PowerRow({ entry }: { readonly entry: PowerRankingEntry }) {
-  const router = useRouter();
-  const theme = CLASS_THEMES[entry.classId];
+interface ClickableRowProps {
+  readonly address: string;
+  readonly classId: CharacterClassId;
+  readonly label: string;
+  readonly withShadow?: boolean;
+  readonly children: ReactNode;
+}
 
+function ClickableRow({ address, classId, label, withShadow, children }: ClickableRowProps) {
+  const router = useRouter();
+  const theme = CLASS_THEMES[classId];
+  const navigate = () => router.push(`/result/${address}`);
+  const setHover = (el: HTMLElement, on: boolean) => {
+    el.style.backgroundColor = on ? `${theme.primary}08` : 'transparent';
+    if (withShadow) {
+      el.style.boxShadow = on ? `inset 0 0 20px ${theme.primary}05` : 'none';
+    }
+  };
   return (
     <tr
       className="transition-colors duration-150 cursor-pointer"
       style={{ borderBottom: '1px solid var(--color-border)' }}
       tabIndex={0}
-      role="link"
-      aria-label={`View ${formatDisplayName(entry.address, entry.ensName)} profile`}
-      onClick={() => router.push(`/result/${entry.address}`)}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/result/${entry.address}`); } }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
-        (e.currentTarget as HTMLElement).style.boxShadow = `inset 0 0 20px ${theme.primary}05`;
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-        (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-      }}
-      onFocus={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
-        (e.currentTarget as HTMLElement).style.boxShadow = `inset 0 0 20px ${theme.primary}05`;
-      }}
-      onBlur={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-        (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-      }}
+      aria-label={label}
+      onClick={navigate}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(); } }}
+      onMouseEnter={(e) => setHover(e.currentTarget, true)}
+      onMouseLeave={(e) => setHover(e.currentTarget, false)}
+      onFocus={(e) => setHover(e.currentTarget, true)}
+      onBlur={(e) => setHover(e.currentTarget, false)}
+    >
+      {children}
+    </tr>
+  );
+}
+
+function PowerRow({ entry }: { readonly entry: PowerRankingEntry }) {
+  return (
+    <ClickableRow
+      address={entry.address}
+      classId={entry.classId}
+      label={`View ${formatDisplayName(entry.address, entry.ensName)} profile`}
+      withShadow
     >
       <RankCell rank={entry.rank} />
       <td className="px-3 py-3"><ClassBadge classId={entry.classId} /></td>
@@ -93,35 +108,16 @@ function PowerRow({ entry }: { readonly entry: PowerRankingEntry }) {
       <td className="px-3 py-3 text-sm text-right tabular-nums font-bold" style={{ color: '#f4c430' }}>
         {entry.power.toLocaleString()}
       </td>
-    </tr>
+    </ClickableRow>
   );
 }
 
 function BattleRow({ entry }: { readonly entry: BattleRankingEntry }) {
-  const router = useRouter();
-  const theme = CLASS_THEMES[entry.classId];
-
   return (
-    <tr
-      className="transition-colors duration-150 cursor-pointer"
-      style={{ borderBottom: '1px solid var(--color-border)' }}
-      tabIndex={0}
-      role="link"
-      aria-label={`View ${formatDisplayName(entry.address, entry.ensName)} profile`}
-      onClick={() => router.push(`/result/${entry.address}`)}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/result/${entry.address}`); } }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-      }}
-      onFocus={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
-      }}
-      onBlur={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-      }}
+    <ClickableRow
+      address={entry.address}
+      classId={entry.classId}
+      label={`View ${formatDisplayName(entry.address, entry.ensName)} profile`}
     >
       <RankCell rank={entry.rank} />
       <td className="px-3 py-3"><ClassBadge classId={entry.classId} /></td>
@@ -139,35 +135,16 @@ function BattleRow({ entry }: { readonly entry: BattleRankingEntry }) {
       <td className="px-3 py-3 text-sm text-right tabular-nums font-bold" style={{ color: '#f4c430' }}>
         {entry.ratingScore.toLocaleString()}
       </td>
-    </tr>
+    </ClickableRow>
   );
 }
 
 function ExplorerRow({ entry }: { readonly entry: ExplorerRankingEntry }) {
-  const router = useRouter();
-  const theme = CLASS_THEMES[entry.classId];
-
   return (
-    <tr
-      className="transition-colors duration-150 cursor-pointer"
-      style={{ borderBottom: '1px solid var(--color-border)' }}
-      tabIndex={0}
-      role="link"
-      aria-label={`View ${formatDisplayName(entry.address, entry.ensName)} profile`}
-      onClick={() => router.push(`/result/${entry.address}`)}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/result/${entry.address}`); } }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-      }}
-      onFocus={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
-      }}
-      onBlur={(e) => {
-        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-      }}
+    <ClickableRow
+      address={entry.address}
+      classId={entry.classId}
+      label={`View ${formatDisplayName(entry.address, entry.ensName)} profile`}
     >
       <RankCell rank={entry.rank} />
       <td className="px-3 py-3"><ClassBadge classId={entry.classId} /></td>
@@ -180,7 +157,7 @@ function ExplorerRow({ entry }: { readonly entry: ExplorerRankingEntry }) {
       <td className="px-3 py-3 text-sm text-right tabular-nums font-bold" style={{ color: '#f4c430' }}>
         {entry.explorerScore.toLocaleString()}
       </td>
-    </tr>
+    </ClickableRow>
   );
 }
 

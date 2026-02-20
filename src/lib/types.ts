@@ -154,6 +154,8 @@ export const ErrorCode = {
   TIMEOUT: 'TIMEOUT',
   LLM_ERROR: 'LLM_ERROR',
   SAME_ADDRESS: 'SAME_ADDRESS',
+  INVALID_EVENT: 'INVALID_EVENT',
+  INVALID_REQUEST: 'INVALID_REQUEST',
 } as const;
 
 export type ErrorCodeType = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -173,6 +175,8 @@ export const ERROR_MESSAGES: Record<ErrorCodeType, string> = {
   [ErrorCode.TIMEOUT]: 'Analysis is taking too long. Please try again.',
   [ErrorCode.LLM_ERROR]: 'AI lore generation failed. Default lore will be applied.',
   [ErrorCode.SAME_ADDRESS]: 'Cannot battle yourself. Please enter two different addresses.',
+  [ErrorCode.INVALID_EVENT]: 'Invalid event.',
+  [ErrorCode.INVALID_REQUEST]: 'Invalid request format.',
 };
 
 export interface CryptoEvent {

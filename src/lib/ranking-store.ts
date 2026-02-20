@@ -185,7 +185,11 @@ export async function getBattleRecords(
   try {
     const raw = await kv.lrange<string>(battleListKey(seasonId, address), 0, 199);
     return (raw ?? [])
-      .map((item) => (typeof item === 'string' ? JSON.parse(item) : item))
+      .map((item) => {
+        try { return typeof item === 'string' ? JSON.parse(item) : item; }
+        catch { return null; }
+      })
+      .filter((item): item is unknown => item !== null)
       .filter(isBattleRecord);
   } catch {
     return [];

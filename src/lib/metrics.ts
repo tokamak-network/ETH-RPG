@@ -160,7 +160,11 @@ export async function getMetricsSnapshot(): Promise<MetricsSnapshot> {
     const hourlyResults = hourlyKeys.map((key, i) => ({ hour: key, count: (hourlyValues ?? [])[i] ?? 0 }));
 
     const recentEvents: MetricEvent[] = (rawEvents ?? [])
-      .map((raw) => (typeof raw === 'string' ? JSON.parse(raw) : raw))
+      .map((raw) => {
+        try { return typeof raw === 'string' ? JSON.parse(raw) : raw; }
+        catch { return null; }
+      })
+      .filter((item): item is unknown => item !== null)
       .filter(isMetricEvent);
 
     // Hourly activity: reverse to chronological order

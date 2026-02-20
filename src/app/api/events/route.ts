@@ -52,11 +52,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const body = await request.json() as AnalyticsEvent;
 
     if (!body.event || typeof body.event !== 'string') {
-      return NextResponse.json({ ok: false }, { status: 400 });
+      return errorResponse(ErrorCode.INVALID_EVENT, 'Event name is required.', 400);
     }
 
     if (body.event.length > MAX_EVENT_NAME_LENGTH) {
-      return NextResponse.json({ ok: false }, { status: 400 });
+      return errorResponse(ErrorCode.INVALID_EVENT, 'Event name exceeds maximum length.', 400);
     }
 
     const safeUrl = typeof body.url === 'string' ? body.url.slice(0, MAX_URL_LENGTH) : undefined;
@@ -87,6 +87,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ ok: true }, { status: 202 });
   } catch {
-    return NextResponse.json({ ok: false }, { status: 400 });
+    return errorResponse(ErrorCode.INVALID_REQUEST, 'Invalid request format.', 400);
   }
 }
