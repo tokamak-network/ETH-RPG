@@ -1,10 +1,14 @@
-// In-memory cache with 24-hour TTL for battle results
+// Two-layer cache (L1 in-memory + L2 Vercel KV) with 24-hour TTL for battle results
 import type { BattleResponse } from '@/lib/types';
+import { kvCacheGet, kvCacheSet } from '@/lib/kv-cache';
 
 const CACHE_TTL = 24 * 60 * 60 * 1000;
+const CACHE_TTL_SECONDS = 86400;
 const MAX_CACHE_SIZE = 5_000;
 const EVICTION_BATCH_SIZE = 500;
 const CACHE_SCHEMA_VERSION = 1;
+
+const KV_KEY_PREFIX = 'battle:v1:';
 
 interface BattleCacheEntry {
   readonly data: BattleResponse;
@@ -32,32 +36,49 @@ function evictOldestEntries(): void {
   }
 }
 
-export function getCachedBattle(
+export async function getCachedBattle(
   addr1: string,
   addr2: string,
   nonce: string,
-): BattleResponse | null {
+): Promise<BattleResponse | null> {
   const key = buildKey(addr1, addr2, nonce);
+
+  // L1: in-memory check
   const entry = cache.get(key);
 
-  if (!entry) {
-    return null;
+  if (entry) {
+    if (isExpired(entry) || entry.schemaVersion !== CACHE_SCHEMA_VERSION) {
+      cache.delete(key);
+      return null;
+    }
+    return entry.data;
   }
 
-  if (isExpired(entry) || entry.schemaVersion !== CACHE_SCHEMA_VERSION) {
-    cache.delete(key);
-    return null;
+  // L2: KV check
+  const kvData = await kvCacheGet<BattleResponse>(KV_KEY_PREFIX + key);
+  if (kvData) {
+    // Promote to L1
+    const promoted: BattleCacheEntry = {
+      data: kvData,
+      timestamp: Date.now(),
+      schemaVersion: CACHE_SCHEMA_VERSION,
+    };
+    if (cache.size >= MAX_CACHE_SIZE) {
+      evictOldestEntries();
+    }
+    cache.set(key, promoted);
+    return kvData;
   }
 
-  return entry.data;
+  return null;
 }
 
-export function setCachedBattle(
+export async function setCachedBattle(
   addr1: string,
   addr2: string,
   nonce: string,
   data: BattleResponse,
-): void {
+): Promise<void> {
   const key = buildKey(addr1, addr2, nonce);
 
   if (cache.size >= MAX_CACHE_SIZE) {
@@ -71,4 +92,7 @@ export function setCachedBattle(
   };
 
   cache.set(key, entry);
+
+  // Fire-and-forget KV write
+  kvCacheSet(KV_KEY_PREFIX + key, data, CACHE_TTL_SECONDS).catch(() => {});
 }

@@ -108,6 +108,35 @@ describe('validateLore', () => {
     expect(result.length).toBe(80);
     expect(result.endsWith('...')).toBe(true);
   });
+
+  it('replaces lowercase forbidden word "eth"', () => {
+    const result = validateLore('The hero earned 50 eth in quests.');
+
+    expect(result).not.toContain('eth');
+    expect(result).toContain('***');
+  });
+
+  it('replaces mixed-case forbidden word "Eth"', () => {
+    const result = validateLore('Eth treasures awaited the brave.');
+
+    expect(result).not.toMatch(/eth/i);
+    expect(result).toContain('***');
+  });
+
+  it('replaces capitalized forbidden word "Invest"', () => {
+    const result = validateLore('Invest wisely in the realm.');
+
+    expect(result).not.toMatch(/invest/i);
+    expect(result).toContain('***');
+  });
+
+  it('replaces all case variants in one pass', () => {
+    const result = validateLore('eth ETH Eth are all blocked.');
+
+    expect(result).not.toMatch(/eth/i);
+    // 3 replacements
+    expect(result.match(/\*\*\*/g)?.length).toBe(3);
+  });
 });
 
 // ---------------------------------------------------------------------------

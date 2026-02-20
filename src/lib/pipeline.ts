@@ -51,7 +51,7 @@ export async function generateCharacterData(
   const { skipAiLore = false } = options;
 
   // 1. Cache check
-  const cached = getCached(address);
+  const cached = await getCached(address);
   if (cached) {
     return { ...cached, cached: true };
   }
@@ -125,9 +125,9 @@ export async function generateCharacterData(
   };
 
   // 10. Cache the result
-  setCache(resolvedAddress, response);
+  await setCache(resolvedAddress, response);
   if (rawData.ensName) {
-    setCache(rawData.ensName.toLowerCase(), response);
+    await setCache(rawData.ensName.toLowerCase(), response);
   }
 
   return response;

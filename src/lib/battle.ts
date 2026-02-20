@@ -13,6 +13,7 @@ import {
 } from '@/lib/skills';
 import { resolveMatchup, getDamageModifier, getReceiveModifier } from '@/lib/matchups';
 import { generateNarrative } from '@/lib/battle-narrative';
+import { formatFighterName } from '@/lib/format-utils';
 
 // --- Constants ---
 
@@ -75,12 +76,6 @@ function initFighterState(fighter: BattleFighter): FighterState {
     isReflecting: false,
     turnsElapsed: 0,
   };
-}
-
-// --- Helper: get display name for narrative ---
-
-function getDisplayName(fighter: BattleFighter): string {
-  return fighter.ensName ?? `${fighter.address.slice(0, 6)}...${fighter.address.slice(-4)}`;
 }
 
 // --- Helper: calculate defense ---
@@ -182,7 +177,7 @@ export function simulateBattle(
           isDodge: false,
           actorHpAfter: actor.currentHp,
           targetHpAfter: target.currentHp,
-          narrative: `${getDisplayName(fighters[actorIdx])} is stunned and cannot act!`,
+          narrative: `${formatFighterName(fighters[actorIdx])} is stunned and cannot act!`,
         });
         applyTurnEndPassives(actor, target, random);
         continue;
@@ -262,8 +257,8 @@ export function simulateBattle(
           targetHpAfter: target.currentHp,
           narrative: generateNarrative(
             { actionType, skillName, damage: 0, isCrit: false, isStun: false, isDodge: true },
-            getDisplayName(fighters[actorIdx]),
-            getDisplayName(fighters[targetIdx]),
+            formatFighterName(fighters[actorIdx]),
+            formatFighterName(fighters[targetIdx]),
             actor.classId,
           ),
         });
@@ -351,8 +346,8 @@ export function simulateBattle(
             reflected: reflected > 0 ? reflected : undefined,
             mpDrained: skillResult.mpDrained > 0 ? skillResult.mpDrained : undefined,
           },
-          getDisplayName(fighters[actorIdx]),
-          getDisplayName(fighters[targetIdx]),
+          formatFighterName(fighters[actorIdx]),
+          formatFighterName(fighters[targetIdx]),
           actor.classId,
         ),
       };

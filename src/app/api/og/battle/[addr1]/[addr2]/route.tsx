@@ -4,7 +4,7 @@ import { generateCharacterData } from '@/lib/pipeline';
 import { simulateBattle } from '@/lib/battle';
 import { getCachedBattle } from '@/lib/battle-cache';
 import { getSpriteSrc } from '@/lib/sprite-data';
-import { shortenAddress } from '@/lib/format-utils';
+import { shortenAddress, formatFighterName } from '@/lib/format-utils';
 import { isValidAddress, isValidNonce } from '@/lib/route-utils';
 import { CLASS_THEMES } from '@/styles/themes';
 import type { BattleFighter, BattleResult, CharacterClassId } from '@/lib/types';
@@ -16,10 +16,6 @@ const CARD_HEIGHT = 630;
 
 const SUCCESS_CACHE_HEADERS = { 'Cache-Control': 'public, max-age=86400, s-maxage=86400' };
 const ERROR_CACHE_HEADERS = { 'Cache-Control': 'private, no-store' };
-
-function getDisplayName(fighter: BattleFighter): string {
-  return fighter.ensName ?? shortenAddress(fighter.address);
-}
 
 function getMatchupLabel(
   advantage: 'advantaged' | 'disadvantaged' | 'neutral',
@@ -107,7 +103,7 @@ interface FighterPanelProps {
 
 function FighterPanel({ fighter, isWinner }: FighterPanelProps) {
   const theme = CLASS_THEMES[fighter.class.id as CharacterClassId];
-  const displayName = getDisplayName(fighter);
+  const displayName = formatFighterName(fighter);
   const spriteSrc = getSpriteSrc(fighter.class.id as CharacterClassId, fighter.stats.level);
 
   return (
@@ -314,7 +310,7 @@ function BattleOGImage({ result }: { readonly result: BattleResult }) {
             fontWeight: 700,
             color: '#f4c430',
           }}>
-            {`${getDisplayName(winnerFighter)} wins!`}
+            {`${formatFighterName(winnerFighter)} wins!`}
           </div>
           <div style={{
             display: 'flex',
@@ -357,7 +353,7 @@ export async function GET(
 
   try {
     // Check battle cache first
-    const cached = getCachedBattle(addr1, addr2, nonce);
+    const cached = await getCachedBattle(addr1, addr2, nonce);
     if (cached) {
       return new ImageResponse(
         <BattleOGImage result={cached.result} />,

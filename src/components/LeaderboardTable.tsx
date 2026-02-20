@@ -10,6 +10,7 @@ import type {
   CharacterClassId,
 } from '@/lib/types';
 import { CLASS_THEMES, CLASS_LABELS } from '@/styles/themes';
+import { formatDisplayName } from '@/lib/format-utils';
 
 interface LeaderboardTableProps {
   readonly type: LeaderboardType;
@@ -23,11 +24,6 @@ const RANK_BADGES: Record<number, string> = {
   2: '\u{1F948}',
   3: '\u{1F949}',
 };
-
-function formatAddress(address: string, ensName?: string): string {
-  if (ensName) return ensName;
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
 
 function ClassBadge({ classId }: { readonly classId: CharacterClassId }) {
   const theme = CLASS_THEMES[classId];
@@ -77,7 +73,7 @@ function PowerRow({ entry }: { readonly entry: PowerRankingEntry }) {
       <RankCell rank={entry.rank} />
       <td className="px-3 py-3"><ClassBadge classId={entry.classId} /></td>
       <td className="px-3 py-3 text-sm" style={{ color: 'var(--color-text-primary)' }}>
-        {formatAddress(entry.address, entry.ensName)}
+        {formatDisplayName(entry.address, entry.ensName)}
       </td>
       <td className="px-3 py-3 text-sm text-center tabular-nums" style={{ color: 'var(--color-text-secondary)' }}>
         Lv.{entry.level}
@@ -108,7 +104,7 @@ function BattleRow({ entry }: { readonly entry: BattleRankingEntry }) {
       <RankCell rank={entry.rank} />
       <td className="px-3 py-3"><ClassBadge classId={entry.classId} /></td>
       <td className="px-3 py-3 text-sm" style={{ color: 'var(--color-text-primary)' }}>
-        {formatAddress(entry.address, entry.ensName)}
+        {formatDisplayName(entry.address, entry.ensName)}
       </td>
       <td className="px-3 py-3 text-sm text-center tabular-nums" style={{ color: 'var(--color-text-secondary)' }}>
         <span style={{ color: '#22c55e' }}>{entry.wins}W</span>
@@ -144,7 +140,7 @@ function ExplorerRow({ entry }: { readonly entry: ExplorerRankingEntry }) {
       <RankCell rank={entry.rank} />
       <td className="px-3 py-3"><ClassBadge classId={entry.classId} /></td>
       <td className="px-3 py-3 text-sm" style={{ color: 'var(--color-text-primary)' }}>
-        {formatAddress(entry.address, entry.ensName)}
+        {formatDisplayName(entry.address, entry.ensName)}
       </td>
       <td className="px-3 py-3 text-sm text-center tabular-nums" style={{ color: 'var(--color-text-secondary)' }}>
         {entry.achievementCount}

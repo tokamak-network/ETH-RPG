@@ -8,6 +8,7 @@ const MAX_LORE_LENGTH = 80;
 const MAX_LONG_LORE_LENGTH = 400;
 const MAX_TOKENS = 200;
 const MAX_LONG_TOKENS = 500;
+const LORE_FETCH_TIMEOUT_MS = 10_000;
 
 // LiteLLM / OpenAI-compatible defaults (overridden by env vars)
 const DEFAULT_BASE_URL = 'http://localhost:4000';
@@ -163,13 +164,16 @@ function buildUserPrompt(data: LoreInputData, instruction: string): string {
   ].join('\n');
 }
 
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function sanitizeLore(lore: string, maxLength: number): string {
   let cleaned = lore.trim();
 
   for (const word of FORBIDDEN_WORDS) {
-    if (cleaned.includes(word)) {
-      cleaned = cleaned.split(word).join('***');
-    }
+    const pattern = new RegExp(escapeRegex(word), 'gi');
+    cleaned = cleaned.replace(pattern, '***');
   }
 
   if (cleaned.length > maxLength) {
@@ -231,6 +235,9 @@ async function callLiteLLM(
     { role: 'user', content: userPrompt },
   ];
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), LORE_FETCH_TIMEOUT_MS);
+
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -242,7 +249,10 @@ async function callLiteLLM(
       messages,
       max_tokens: maxTokens,
     }),
+    signal: controller.signal,
   });
+
+  clearTimeout(timer);
 
   if (!response.ok) {
     return null;
@@ -268,6 +278,9 @@ async function callAnthropicDirect(
     { role: 'user', content: userPrompt },
   ];
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), LORE_FETCH_TIMEOUT_MS);
+
   const response = await fetch(ANTHROPIC_API_URL, {
     method: 'POST',
     headers: {
@@ -281,7 +294,10 @@ async function callAnthropicDirect(
       system: systemPrompt,
       messages,
     }),
+    signal: controller.signal,
   });
+
+  clearTimeout(timer);
 
   if (!response.ok) {
     return null;

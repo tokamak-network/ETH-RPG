@@ -8,12 +8,13 @@ import { generateCharacterData, EmptyWalletError } from '@/lib/pipeline';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { isValidInput, getClientIp, errorResponse } from '@/lib/route-utils';
 import { ErrorCode } from '@/lib/types';
+import { TimeoutError } from '@/lib/with-timeout';
 import { trackGenerate, trackError } from '@/lib/metrics';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Rate limit check
   const clientIp = getClientIp(request);
-  const rateLimitResult = checkRateLimit(clientIp);
+  const rateLimitResult = await checkRateLimit(clientIp);
 
   if (!rateLimitResult.allowed) {
     return errorResponse(
@@ -71,6 +72,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         'This wallet has no transactions. Please enter an address with activity history.',
         400,
       );
+    }
+
+    if (error instanceof TimeoutError) {
+      trackError('timeout').catch(() => {});
+      return errorResponse(ErrorCode.TIMEOUT, 'Analysis is taking too long. Please try again.', 504);
     }
 
     const message = error instanceof Error ? error.message : 'Unknown error';

@@ -36,8 +36,8 @@ vi.mock('@/lib/lore', () => ({
   generateLongFallbackLore: (...args: unknown[]) => mockGenerateLongFallbackLore(...args),
 }));
 vi.mock('@/lib/cache', () => ({
-  getCached: (...args: unknown[]) => mockGetCached(...args),
-  setCache: (...args: unknown[]) => mockSetCache(...args),
+  getCached: (...args: unknown[]) => Promise.resolve(mockGetCached(...args)),
+  setCache: (...args: unknown[]) => Promise.resolve(mockSetCache(...args)),
 }));
 vi.mock('@/lib/crypto-events', () => ({
   getRelevantEvents: (...args: unknown[]) => mockGetRelevantEvents(...args),

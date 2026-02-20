@@ -88,8 +88,8 @@ function setupSuccessfulMocks() {
   };
   const classResult = { id: 'warrior' as const, name: 'Warrior', nameEn: 'Warrior' };
 
-  mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
-  mockGetCached.mockReturnValue(null);
+  mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
+  mockGetCached.mockResolvedValue(null);
   mockFetchWalletData.mockResolvedValue(walletData);
   mockClassifyTransactions.mockReturnValue(classification);
   mockCalculateStats.mockReturnValue(stats);
@@ -130,8 +130,8 @@ describe('POST /api/generate', () => {
 
   it('returns cached response when cache hit', async () => {
     const cached = makeGenerateResponse({ cached: true });
-    mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
-    mockGetCached.mockReturnValue(cached);
+    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
+    mockGetCached.mockResolvedValue(cached);
 
     const request = createRequest({ address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' });
     const response = await POST(request);
@@ -152,7 +152,7 @@ describe('POST /api/generate', () => {
   });
 
   it('returns 429 when rate limited', async () => {
-    mockCheckRateLimit.mockReturnValue({ allowed: false, remaining: 0, resetAt: Date.now() + 60000 });
+    mockCheckRateLimit.mockResolvedValue({ allowed: false, remaining: 0, resetAt: Date.now() + 60000 });
 
     const request = createRequest({ address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' });
     const response = await POST(request);
@@ -163,7 +163,7 @@ describe('POST /api/generate', () => {
   });
 
   it('returns 400 when address is missing', async () => {
-    mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
+    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
 
     const request = createRequest({});
     const response = await POST(request);
@@ -174,7 +174,7 @@ describe('POST /api/generate', () => {
   });
 
   it('returns 400 when address is empty string', async () => {
-    mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
+    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
 
     const request = createRequest({ address: '' });
     const response = await POST(request);
@@ -185,8 +185,8 @@ describe('POST /api/generate', () => {
   });
 
   it('returns 400 when address format is invalid', async () => {
-    mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
-    mockGetCached.mockReturnValue(null);
+    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
+    mockGetCached.mockResolvedValue(null);
 
     const request = createRequest({ address: 'not-an-address' });
     const response = await POST(request);
@@ -197,7 +197,7 @@ describe('POST /api/generate', () => {
   });
 
   it('returns 400 when body is not valid JSON', async () => {
-    mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
+    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
 
     const request = new Request('http://localhost:3000/api/generate', {
       method: 'POST',
@@ -212,8 +212,8 @@ describe('POST /api/generate', () => {
   });
 
   it('returns 400 when wallet has no transactions', async () => {
-    mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
-    mockGetCached.mockReturnValue(null);
+    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
+    mockGetCached.mockResolvedValue(null);
     mockFetchWalletData.mockResolvedValue(
       makeWalletRawData({ txCount: 0, transfers: [] }),
     );
@@ -227,8 +227,8 @@ describe('POST /api/generate', () => {
   });
 
   it('returns 500 when fetchWalletData throws', async () => {
-    mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
-    mockGetCached.mockReturnValue(null);
+    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
+    mockGetCached.mockResolvedValue(null);
     mockFetchWalletData.mockRejectedValue(new Error('Alchemy API down'));
 
     const request = createRequest({ address: '0xd8da6bf26964af9d7eed9e03e53415d37aa96045' });
@@ -240,8 +240,8 @@ describe('POST /api/generate', () => {
   });
 
   it('returns 400 when fetchWalletData throws ENS resolution error', async () => {
-    mockCheckRateLimit.mockReturnValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
-    mockGetCached.mockReturnValue(null);
+    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
+    mockGetCached.mockResolvedValue(null);
     mockFetchWalletData.mockRejectedValue(new Error('ENS name "bad.eth" could not be resolved'));
 
     const request = createRequest({ address: 'vitalik.eth' });

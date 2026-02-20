@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { makeGenerateResponse } from './fixtures';
 
+// Mock kv-cache to isolate L1 behavior
+vi.mock('@/lib/kv-cache', () => ({
+  kvCacheGet: vi.fn().mockResolvedValue(null),
+  kvCacheSet: vi.fn().mockResolvedValue(undefined),
+}));
+
 describe('cache', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -20,7 +26,7 @@ describe('cache', () => {
   it('returns null for a non-existent key', async () => {
     const { getCached } = await freshCache();
 
-    const result = getCached('0xabc');
+    const result = await getCached('0xabc');
 
     expect(result).toBeNull();
   });
@@ -30,8 +36,8 @@ describe('cache', () => {
     const { getCached, setCache } = await freshCache();
     const data = makeGenerateResponse();
 
-    setCache('0xabc', data);
-    const result = getCached('0xabc');
+    await setCache('0xabc', data);
+    const result = await getCached('0xabc');
 
     expect(result).toEqual(data);
   });
@@ -41,8 +47,8 @@ describe('cache', () => {
     const { getCached, setCache } = await freshCache();
     const data = makeGenerateResponse();
 
-    setCache('0xABC123DEF', data);
-    const result = getCached('0xabc123def');
+    await setCache('0xABC123DEF', data);
+    const result = await getCached('0xabc123def');
 
     expect(result).toEqual(data);
   });
@@ -52,9 +58,9 @@ describe('cache', () => {
     const { getCached, setCache } = await freshCache();
     const data = makeGenerateResponse();
 
-    setCache('0xabc', data);
+    await setCache('0xabc', data);
     vi.advanceTimersByTime(24 * 60 * 60 * 1000 + 1);
-    const result = getCached('0xabc');
+    const result = await getCached('0xabc');
 
     expect(result).toBeNull();
   });
@@ -64,9 +70,9 @@ describe('cache', () => {
     const { getCached, setCache } = await freshCache();
     const data = makeGenerateResponse();
 
-    setCache('0xabc', data);
+    await setCache('0xabc', data);
     vi.advanceTimersByTime(24 * 60 * 60 * 1000 - 1);
-    const result = getCached('0xabc');
+    const result = await getCached('0xabc');
 
     expect(result).toEqual(data);
   });
@@ -76,11 +82,11 @@ describe('cache', () => {
     const { getCached, setCache, getCacheStats } = await freshCache();
     const data = makeGenerateResponse();
 
-    setCache('0xabc', data);
+    await setCache('0xabc', data);
     expect(getCacheStats().size).toBe(1);
 
     vi.advanceTimersByTime(24 * 60 * 60 * 1000 + 1);
-    getCached('0xabc');
+    await getCached('0xabc');
 
     expect(getCacheStats().size).toBe(0);
   });
@@ -100,12 +106,12 @@ describe('cache', () => {
     const { getCached, setCache, getCacheStats } = await freshCache();
     const data = makeGenerateResponse();
 
-    setCache('0xabc', data);
+    await setCache('0xabc', data);
 
-    getCached('0xabc'); // hit
-    getCached('0xabc'); // hit
-    getCached('0xabc'); // hit
-    getCached('0xnonexistent'); // miss
+    await getCached('0xabc'); // hit
+    await getCached('0xabc'); // hit
+    await getCached('0xabc'); // hit
+    await getCached('0xnonexistent'); // miss
 
     const stats = getCacheStats();
 
@@ -118,14 +124,14 @@ describe('cache', () => {
 
     for (let i = 0; i < 10_000; i++) {
       const addr = `0x${i.toString(16).padStart(40, '0')}`;
-      setCache(addr, makeGenerateResponse({ address: addr }));
+      await setCache(addr, makeGenerateResponse({ address: addr }));
       vi.advanceTimersByTime(1); // ensure distinct timestamps for ordering
     }
 
     expect(getCacheStats().size).toBe(10_000);
 
     // One more entry triggers eviction
-    setCache('0xtrigger', makeGenerateResponse({ address: '0xtrigger' }));
+    await setCache('0xtrigger', makeGenerateResponse({ address: '0xtrigger' }));
 
     expect(getCacheStats().size).toBe(9_001);
   });
@@ -136,23 +142,23 @@ describe('cache', () => {
 
     for (let i = 0; i < 10_000; i++) {
       const addr = `0x${i.toString(16).padStart(40, '0')}`;
-      setCache(addr, makeGenerateResponse({ address: addr }));
+      await setCache(addr, makeGenerateResponse({ address: addr }));
       vi.advanceTimersByTime(1);
     }
 
     // Trigger eviction
-    setCache('0xtrigger', makeGenerateResponse({ address: '0xtrigger' }));
+    await setCache('0xtrigger', makeGenerateResponse({ address: '0xtrigger' }));
 
     // The first entry (i=0) should have been evicted
-    const oldest = getCached('0x' + '0'.repeat(40));
+    const oldest = await getCached('0x' + '0'.repeat(40));
     expect(oldest).toBeNull();
 
     // Entry i=999 (last of evicted batch) should also be gone
-    const lastEvicted = getCached(`0x${(999).toString(16).padStart(40, '0')}`);
+    const lastEvicted = await getCached(`0x${(999).toString(16).padStart(40, '0')}`);
     expect(lastEvicted).toBeNull();
 
     // Entry i=1000 (first survivor) should still exist
-    const firstSurvivor = getCached(`0x${(1000).toString(16).padStart(40, '0')}`);
+    const firstSurvivor = await getCached(`0x${(1000).toString(16).padStart(40, '0')}`);
     expect(firstSurvivor).not.toBeNull();
   });
 
@@ -160,14 +166,14 @@ describe('cache', () => {
   it('tracks multiple hits and misses accurately', async () => {
     const { getCached, setCache, getCacheStats } = await freshCache();
 
-    setCache('0xaaa', makeGenerateResponse({ address: '0xaaa' }));
-    setCache('0xbbb', makeGenerateResponse({ address: '0xbbb' }));
+    await setCache('0xaaa', makeGenerateResponse({ address: '0xaaa' }));
+    await setCache('0xbbb', makeGenerateResponse({ address: '0xbbb' }));
 
-    getCached('0xaaa');        // hit
-    getCached('0xbbb');        // hit
-    getCached('0xnonexist1');  // miss
-    getCached('0xnonexist2');  // miss
-    getCached('0xnonexist3');  // miss
+    await getCached('0xaaa');        // hit
+    await getCached('0xbbb');        // hit
+    await getCached('0xnonexist1');  // miss
+    await getCached('0xnonexist2');  // miss
+    await getCached('0xnonexist3');  // miss
 
     const stats = getCacheStats();
 
@@ -181,11 +187,11 @@ describe('cache', () => {
     const dataA = makeGenerateResponse({ address: '0xaaa', lore: 'Lore A' });
     const dataB = makeGenerateResponse({ address: '0xbbb', lore: 'Lore B' });
 
-    setCache('0xaaa', dataA);
-    setCache('0xbbb', dataB);
+    await setCache('0xaaa', dataA);
+    await setCache('0xbbb', dataB);
 
-    expect(getCached('0xaaa')).toEqual(dataA);
-    expect(getCached('0xbbb')).toEqual(dataB);
+    expect(await getCached('0xaaa')).toEqual(dataA);
+    expect(await getCached('0xbbb')).toEqual(dataB);
   });
 
   // 13. Overwriting same address updates data
@@ -194,10 +200,10 @@ describe('cache', () => {
     const dataV1 = makeGenerateResponse({ lore: 'Version 1' });
     const dataV2 = makeGenerateResponse({ lore: 'Version 2' });
 
-    setCache('0xabc', dataV1);
-    setCache('0xabc', dataV2);
+    await setCache('0xabc', dataV1);
+    await setCache('0xabc', dataV2);
 
-    const result = getCached('0xabc');
+    const result = await getCached('0xabc');
 
     expect(result).toEqual(dataV2);
     expect(result?.lore).toBe('Version 2');
@@ -208,11 +214,11 @@ describe('cache', () => {
     const { getCached, setCache } = await freshCache();
     const data = makeGenerateResponse();
 
-    setCache('0xAbCdEf', data);
+    await setCache('0xAbCdEf', data);
 
-    expect(getCached('0xABCDEF')).toEqual(data);
-    expect(getCached('0xabcdef')).toEqual(data);
-    expect(getCached('0xAbCdEf')).toEqual(data);
+    expect(await getCached('0xABCDEF')).toEqual(data);
+    expect(await getCached('0xabcdef')).toEqual(data);
+    expect(await getCached('0xAbCdEf')).toEqual(data);
   });
 
   // 15. Schema version mismatch — stale entries are evicted
@@ -220,15 +226,15 @@ describe('cache', () => {
     const { getCached, setCache, getCacheStats, _testSetSchemaVersion } = await freshCache();
     const data = makeGenerateResponse();
 
-    setCache('0xabc', data);
+    await setCache('0xabc', data);
     expect(getCacheStats().size).toBe(1);
-    expect(getCached('0xabc')).toEqual(data);
+    expect(await getCached('0xabc')).toEqual(data);
 
     // Simulate a stale entry by setting an old schema version
     _testSetSchemaVersion('0xabc', 1);
 
     // Stale entry should be rejected and deleted
-    const result = getCached('0xabc');
+    const result = await getCached('0xabc');
     expect(result).toBeNull();
     expect(getCacheStats().size).toBe(0);
   });

@@ -4,20 +4,20 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
-import { generateCharacterData, EmptyWalletError } from '@/lib/pipeline';
-import { simulateBattle } from '@/lib/battle';
+import { EmptyWalletError } from '@/lib/pipeline';
 import { checkRateLimit } from '@/lib/rate-limit';
-import { getCachedBattle, setCachedBattle } from '@/lib/battle-cache';
+import { getCachedBattle } from '@/lib/battle-cache';
+import { executeBattle } from '@/lib/battle-pipeline';
 import { isValidInput, isValidNonce, getClientIp, errorResponse } from '@/lib/route-utils';
 import { ErrorCode } from '@/lib/types';
-import type { BattleFighter, BattleResponse } from '@/lib/types';
+import { TimeoutError } from '@/lib/with-timeout';
 import { trackBattle, trackError } from '@/lib/metrics';
 import { recordBattleForRanking } from '@/lib/ranking-recorder';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Rate limit
   const clientIp = getClientIp(request);
-  const rateLimitResult = checkRateLimit(clientIp);
+  const rateLimitResult = await checkRateLimit(clientIp);
   if (!rateLimitResult.allowed) {
     return errorResponse(ErrorCode.RATE_LIMITED, 'Too many requests. Please try again later.', 429);
   }
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // Check battle cache (only if nonce provided — replaying a battle)
   if (nonce) {
-    const cached = getCachedBattle(address1, address2, nonce);
+    const cached = await getCachedBattle(address1, address2, nonce);
     if (cached) {
       trackBattle(true).catch(() => {});
       return NextResponse.json({ ...cached, cached: true }, {
@@ -80,48 +80,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    // Generate both characters in parallel (skip AI lore for speed)
-    const [char1, char2] = await Promise.all([
-      generateCharacterData(address1, { skipAiLore: true }),
-      generateCharacterData(address2, { skipAiLore: true }),
-    ]);
-
-    // Build fighters
-    const fighter0: BattleFighter = {
-      address: char1.address,
-      ...(char1.ensName ? { ensName: char1.ensName } : {}),
-      class: char1.class,
-      stats: char1.stats,
-      achievements: char1.achievements,
-    };
-    const fighter1: BattleFighter = {
-      address: char2.address,
-      ...(char2.ensName ? { ensName: char2.ensName } : {}),
-      class: char2.class,
-      stats: char2.stats,
-      achievements: char2.achievements,
-    };
-
-    // Generate nonce if not provided
-    const battleNonce = nonce ?? crypto.randomUUID();
-
-    // Simulate
-    const result = simulateBattle(fighter0, fighter1, battleNonce);
-
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-    const response: BattleResponse = {
-      result,
-      battleImageUrl: `${siteUrl}/api/og/battle/${char1.address}/${char2.address}?n=${battleNonce}`,
-      ogImageUrl: `${siteUrl}/api/og/battle/${char1.address}/${char2.address}?n=${battleNonce}`,
-      cached: false,
-    };
-
-    // Cache the result
-    setCachedBattle(address1, address2, battleNonce, response);
+    const response = await executeBattle({ address1, address2, nonce });
 
     // Fire-and-forget: server-side metrics + ranking
     trackBattle(false).catch(() => {});
-    recordBattleForRanking(fighter0, fighter1, result).catch(() => {});
+    const { result } = response;
+    recordBattleForRanking(result.fighters[0], result.fighters[1], result).catch(() => {});
 
     return NextResponse.json(response, {
       headers: { 'Cache-Control': 'private, no-cache' },
@@ -134,6 +98,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         'One of the wallets has no transactions.',
         400,
       );
+    }
+
+    if (error instanceof TimeoutError) {
+      trackError('timeout').catch(() => {});
+      return errorResponse(ErrorCode.TIMEOUT, 'Analysis is taking too long. Please try again.', 504);
     }
 
     const message = error instanceof Error ? error.message : 'Unknown error';

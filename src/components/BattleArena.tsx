@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { BattleAction, BattleFighter } from '@/lib/types';
 import { CLASS_THEMES, BATTLE_TOKENS } from '@/styles/themes';
 import { PixelCharacter } from '@/components/pixel-sprites';
+import { formatFighterName } from '@/lib/format-utils';
 
 const LIVE_LOG_MAX_LINES = 10;
 
@@ -11,11 +12,6 @@ interface BattleArenaProps {
   readonly turns: readonly BattleAction[];
   readonly fighters: readonly [BattleFighter, BattleFighter];
   readonly onComplete: () => void;
-}
-
-function formatAddress(fighter: BattleFighter): string {
-  if (fighter.ensName) return fighter.ensName;
-  return `${fighter.address.slice(0, 6)}...${fighter.address.slice(-4)}`;
 }
 
 function getHpForFighter(
@@ -101,7 +97,7 @@ export default function BattleArena({ turns, fighters, onComplete }: BattleArena
     <div style={{ flex: 1, textAlign: 'center', padding: 12 }}>
       <PixelCharacter classId={fighter.class.id} size={80} stats={fighter.stats} />
       <div style={{ fontFamily: "'Cinzel', serif", fontSize: 14, color: playerColor, marginTop: 8 }}>
-        {formatAddress(fighter)}
+        {formatFighterName(fighter)}
       </div>
       <div style={{ fontSize: 11, color: theme.primary, marginTop: 2 }}>
         {fighter.class.nameEn}

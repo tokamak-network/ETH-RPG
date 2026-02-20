@@ -26,7 +26,7 @@ vi.mock('alchemy-sdk', () => {
       ERC721: 'erc721',
       ERC1155: 'erc1155',
     },
-    SortingOrder: { ASCENDING: 'asc' },
+    SortingOrder: { ASCENDING: 'asc', DESCENDING: 'desc' },
   };
 });
 

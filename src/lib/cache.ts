@@ -1,13 +1,17 @@
-// In-memory cache with 24-hour TTL for generated character data
+// Two-layer cache (L1 in-memory + L2 Vercel KV) with 24-hour TTL
 import type { GenerateResponse } from '@/lib/types';
+import { kvCacheGet, kvCacheSet } from '@/lib/kv-cache';
 
 const CACHE_TTL = 24 * 60 * 60 * 1000;
+const CACHE_TTL_SECONDS = 86400;
 const MAX_CACHE_SIZE = 10_000;
 const EVICTION_BATCH_SIZE = 1_000;
 
 // Bump this version whenever CharacterStats shape changes (e.g. adding DEX).
 // Cached entries with a different version are treated as stale.
 const CACHE_SCHEMA_VERSION = 2;
+
+const KV_KEY_PREFIX = 'cache:v2:';
 
 interface CacheEntry {
   readonly data: GenerateResponse;
@@ -43,26 +47,44 @@ function evictOldestEntries(): void {
   }
 }
 
-export function getCached(address: string): GenerateResponse | null {
+export async function getCached(address: string): Promise<GenerateResponse | null> {
   const key = normalizeAddress(address);
+
+  // L1: in-memory check
   const entry = cache.get(key);
 
-  if (!entry) {
-    misses += 1;
-    return null;
+  if (entry) {
+    if (isExpired(entry) || entry.schemaVersion !== CACHE_SCHEMA_VERSION) {
+      cache.delete(key);
+      misses += 1;
+      return null;
+    }
+    hits += 1;
+    return entry.data;
   }
 
-  if (isExpired(entry) || entry.schemaVersion !== CACHE_SCHEMA_VERSION) {
-    cache.delete(key);
-    misses += 1;
-    return null;
+  // L2: KV check
+  const kvData = await kvCacheGet<GenerateResponse>(KV_KEY_PREFIX + key);
+  if (kvData) {
+    // Promote to L1
+    const promoted: CacheEntry = {
+      data: kvData,
+      timestamp: Date.now(),
+      schemaVersion: CACHE_SCHEMA_VERSION,
+    };
+    if (cache.size >= MAX_CACHE_SIZE) {
+      evictOldestEntries();
+    }
+    cache.set(key, promoted);
+    hits += 1;
+    return kvData;
   }
 
-  hits += 1;
-  return entry.data;
+  misses += 1;
+  return null;
 }
 
-export function setCache(address: string, data: GenerateResponse): void {
+export async function setCache(address: string, data: GenerateResponse): Promise<void> {
   const key = normalizeAddress(address);
 
   if (cache.size >= MAX_CACHE_SIZE) {
@@ -76,6 +98,9 @@ export function setCache(address: string, data: GenerateResponse): void {
   };
 
   cache.set(key, entry);
+
+  // Fire-and-forget KV write
+  kvCacheSet(KV_KEY_PREFIX + key, data, CACHE_TTL_SECONDS).catch(() => {});
 }
 
 export function getCacheStats(): CacheStats {

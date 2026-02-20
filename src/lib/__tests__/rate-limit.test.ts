@@ -5,6 +5,11 @@ const RATE_LIMIT_WINDOW = 60_000;
 const STALE_ENTRY_THRESHOLD = RATE_LIMIT_WINDOW * 2;
 const BASE_TIME = 1_000_000;
 
+// Mock kv-cache so KV is not available — tests exercise in-memory fallback
+vi.mock('@/lib/kv-cache', () => ({
+  kvIncr: vi.fn().mockResolvedValue(null),
+}));
+
 describe('rate-limit', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -25,7 +30,7 @@ describe('rate-limit', () => {
     vi.setSystemTime(BASE_TIME);
     const { checkRateLimit } = await freshRateLimit();
 
-    const result = checkRateLimit('1.2.3.4');
+    const result = await checkRateLimit('1.2.3.4');
 
     expect(result.allowed).toBe(true);
     expect(result.remaining).toBe(4);
@@ -40,7 +45,7 @@ describe('rate-limit', () => {
     const expectedRemaining = [4, 3, 2, 1, 0];
 
     for (let i = 0; i < RATE_LIMIT_MAX; i++) {
-      const result = checkRateLimit('1.2.3.4');
+      const result = await checkRateLimit('1.2.3.4');
       expect(result.allowed).toBe(true);
       expect(result.remaining).toBe(expectedRemaining[i]);
     }
@@ -52,10 +57,10 @@ describe('rate-limit', () => {
     const { checkRateLimit } = await freshRateLimit();
 
     for (let i = 0; i < RATE_LIMIT_MAX; i++) {
-      checkRateLimit('1.2.3.4');
+      await checkRateLimit('1.2.3.4');
     }
 
-    const result = checkRateLimit('1.2.3.4');
+    const result = await checkRateLimit('1.2.3.4');
 
     expect(result.allowed).toBe(false);
     expect(result.remaining).toBe(0);
@@ -67,12 +72,12 @@ describe('rate-limit', () => {
     const { checkRateLimit } = await freshRateLimit();
 
     for (let i = 0; i < RATE_LIMIT_MAX; i++) {
-      checkRateLimit('1.2.3.4');
+      await checkRateLimit('1.2.3.4');
     }
 
-    const sixth = checkRateLimit('1.2.3.4');
-    const seventh = checkRateLimit('1.2.3.4');
-    const eighth = checkRateLimit('1.2.3.4');
+    const sixth = await checkRateLimit('1.2.3.4');
+    const seventh = await checkRateLimit('1.2.3.4');
+    const eighth = await checkRateLimit('1.2.3.4');
 
     expect(sixth.allowed).toBe(false);
     expect(seventh.allowed).toBe(false);
@@ -87,14 +92,14 @@ describe('rate-limit', () => {
     const { checkRateLimit } = await freshRateLimit();
 
     for (let i = 0; i < RATE_LIMIT_MAX; i++) {
-      checkRateLimit('1.2.3.4');
+      await checkRateLimit('1.2.3.4');
     }
-    const blocked = checkRateLimit('1.2.3.4');
+    const blocked = await checkRateLimit('1.2.3.4');
     expect(blocked.allowed).toBe(false);
 
     vi.setSystemTime(BASE_TIME + RATE_LIMIT_WINDOW);
 
-    const result = checkRateLimit('1.2.3.4');
+    const result = await checkRateLimit('1.2.3.4');
 
     expect(result.allowed).toBe(true);
     expect(result.remaining).toBe(4);
@@ -108,27 +113,27 @@ describe('rate-limit', () => {
 
     const expectedResetAt = BASE_TIME + RATE_LIMIT_WINDOW;
 
-    const first = checkRateLimit('1.2.3.4');
+    const first = await checkRateLimit('1.2.3.4');
     expect(first.resetAt).toBe(expectedResetAt);
 
     vi.setSystemTime(BASE_TIME + 10_000);
-    const second = checkRateLimit('1.2.3.4');
+    const second = await checkRateLimit('1.2.3.4');
     expect(second.resetAt).toBe(expectedResetAt);
 
     vi.setSystemTime(BASE_TIME + 30_000);
-    const third = checkRateLimit('1.2.3.4');
+    const third = await checkRateLimit('1.2.3.4');
     expect(third.resetAt).toBe(expectedResetAt);
 
     vi.setSystemTime(BASE_TIME + 50_000);
-    const fourth = checkRateLimit('1.2.3.4');
+    const fourth = await checkRateLimit('1.2.3.4');
     expect(fourth.resetAt).toBe(expectedResetAt);
 
     vi.setSystemTime(BASE_TIME + 55_000);
-    const fifth = checkRateLimit('1.2.3.4');
+    const fifth = await checkRateLimit('1.2.3.4');
     expect(fifth.resetAt).toBe(expectedResetAt);
 
     vi.setSystemTime(BASE_TIME + 59_000);
-    const sixth = checkRateLimit('1.2.3.4');
+    const sixth = await checkRateLimit('1.2.3.4');
     expect(sixth.resetAt).toBe(expectedResetAt);
   });
 
@@ -138,12 +143,12 @@ describe('rate-limit', () => {
     const { checkRateLimit } = await freshRateLimit();
 
     for (let i = 0; i < RATE_LIMIT_MAX; i++) {
-      checkRateLimit('10.0.0.1');
+      await checkRateLimit('10.0.0.1');
     }
-    const blockedIp1 = checkRateLimit('10.0.0.1');
+    const blockedIp1 = await checkRateLimit('10.0.0.1');
     expect(blockedIp1.allowed).toBe(false);
 
-    const freshIp2 = checkRateLimit('10.0.0.2');
+    const freshIp2 = await checkRateLimit('10.0.0.2');
     expect(freshIp2.allowed).toBe(true);
     expect(freshIp2.remaining).toBe(4);
   });
@@ -153,7 +158,7 @@ describe('rate-limit', () => {
     vi.setSystemTime(BASE_TIME);
     const { checkRateLimit } = await freshRateLimit();
 
-    checkRateLimit('stale-ip');
+    await checkRateLimit('stale-ip');
     const firstResetAt = BASE_TIME + RATE_LIMIT_WINDOW;
 
     // Advance past stale threshold: resetAt + STALE_ENTRY_THRESHOLD + 1
@@ -161,7 +166,7 @@ describe('rate-limit', () => {
 
     // This call triggers cleanStaleEntries, which removes the old entry.
     // Then the IP gets a brand-new window.
-    const result = checkRateLimit('stale-ip');
+    const result = await checkRateLimit('stale-ip');
 
     expect(result.allowed).toBe(true);
     expect(result.remaining).toBe(4);
@@ -174,14 +179,14 @@ describe('rate-limit', () => {
     vi.setSystemTime(BASE_TIME);
     const { checkRateLimit } = await freshRateLimit();
 
-    checkRateLimit('1.2.3.4');
-    checkRateLimit('1.2.3.4');
-    checkRateLimit('1.2.3.4');
+    await checkRateLimit('1.2.3.4');
+    await checkRateLimit('1.2.3.4');
+    await checkRateLimit('1.2.3.4');
 
     // Move to exactly resetAt (now >= existing.resetAt triggers new window)
     vi.setSystemTime(BASE_TIME + RATE_LIMIT_WINDOW);
 
-    const result = checkRateLimit('1.2.3.4');
+    const result = await checkRateLimit('1.2.3.4');
 
     expect(result.allowed).toBe(true);
     expect(result.remaining).toBe(4);
@@ -193,9 +198,9 @@ describe('rate-limit', () => {
     vi.setSystemTime(BASE_TIME);
     const { checkRateLimit } = await freshRateLimit();
 
-    checkRateLimit('1.2.3.4');
-    checkRateLimit('1.2.3.4');
-    const third = checkRateLimit('1.2.3.4');
+    await checkRateLimit('1.2.3.4');
+    await checkRateLimit('1.2.3.4');
+    const third = await checkRateLimit('1.2.3.4');
 
     expect(third.allowed).toBe(true);
     expect(third.remaining).toBe(2);
@@ -207,11 +212,11 @@ describe('rate-limit', () => {
     const { checkRateLimit } = await freshRateLimit();
 
     for (let i = 0; i < RATE_LIMIT_MAX; i++) {
-      checkRateLimit('1.2.3.4');
+      await checkRateLimit('1.2.3.4');
     }
 
-    const sixth = checkRateLimit('1.2.3.4');
-    const seventh = checkRateLimit('1.2.3.4');
+    const sixth = await checkRateLimit('1.2.3.4');
+    const seventh = await checkRateLimit('1.2.3.4');
 
     expect(sixth.allowed).toBe(false);
     expect(sixth.remaining).toBe(0);
@@ -222,7 +227,7 @@ describe('rate-limit', () => {
     // (proving the count was not incremented past the max)
     vi.setSystemTime(BASE_TIME + RATE_LIMIT_WINDOW);
 
-    const afterReset = checkRateLimit('1.2.3.4');
+    const afterReset = await checkRateLimit('1.2.3.4');
     expect(afterReset.allowed).toBe(true);
     expect(afterReset.remaining).toBe(4);
   });
@@ -233,7 +238,7 @@ describe('rate-limit', () => {
     vi.setSystemTime(preciseTime);
     const { checkRateLimit } = await freshRateLimit();
 
-    const result = checkRateLimit('brand-new-ip');
+    const result = await checkRateLimit('brand-new-ip');
 
     expect(result.resetAt).toBe(preciseTime + 60_000);
   });

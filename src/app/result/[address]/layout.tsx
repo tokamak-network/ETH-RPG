@@ -21,7 +21,7 @@ export async function generateMetadata({
     };
   }
 
-  const data = getCached(rawAddress);
+  const data = await getCached(rawAddress);
 
   if (!data) {
     // Data not yet cached — show generic metadata with address hint

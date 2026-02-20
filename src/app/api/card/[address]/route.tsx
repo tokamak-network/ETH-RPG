@@ -146,7 +146,7 @@ export async function GET(
   }
 
   try {
-    const data = getCached(address);
+    const data = await getCached(address);
 
     if (!data) {
       return new ImageResponse(<ErrorCard />, {

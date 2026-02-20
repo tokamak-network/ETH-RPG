@@ -10,8 +10,12 @@ import type {
 } from 'alchemy-sdk';
 
 import type { AssetTransferItem, WalletRawData } from '@/lib/types';
+import { withTimeout } from '@/lib/with-timeout';
+import { withRetry } from '@/lib/with-retry';
 
 const MAX_TRANSFER_COUNT = 1000 as const;
+const ALCHEMY_TIMEOUT_MS = 15_000;
+const ALCHEMY_MAX_RETRIES = 2;
 
 const GAS_COST_BY_CATEGORY: Record<AssetTransferItem['category'], number> = {
   external: 0.0005,
@@ -103,11 +107,16 @@ function mapTransferToItem(
   };
 }
 
+interface TransferResult {
+  readonly transfers: readonly AssetTransferItem[];
+  readonly hasMore: boolean;
+}
+
 async function fetchTransfers(
   alchemy: Alchemy,
   address: string,
   direction: 'from' | 'to',
-): Promise<readonly AssetTransferItem[]> {
+): Promise<TransferResult> {
   const params = {
     ...(direction === 'from'
       ? { fromAddress: address }
@@ -115,12 +124,15 @@ async function fetchTransfers(
     category: [...TRANSFER_CATEGORIES],
     withMetadata: true as const,
     maxCount: MAX_TRANSFER_COUNT,
-    order: SortingOrder.ASCENDING,
+    order: SortingOrder.DESCENDING,
   };
 
   const response = await alchemy.core.getAssetTransfers(params);
 
-  return response.transfers.map(mapTransferToItem);
+  return {
+    transfers: response.transfers.map(mapTransferToItem),
+    hasMore: !!response.pageKey,
+  };
 }
 
 function extractTimestamps(
@@ -176,16 +188,23 @@ export async function fetchWalletData(
   const { address, ensName } = await resolveAddress(addressInput);
   const alchemy = getAlchemy();
 
-  const [balanceResult, txCount, fromTransfers, toTransfers] = await Promise.all([
-    alchemy.core.getBalance(address),
-    alchemy.core.getTransactionCount(address),
-    fetchTransfers(alchemy, address, 'from'),
-    fetchTransfers(alchemy, address, 'to'),
-  ]);
+  const [balanceResult, txCount, fromResult, toResult] = await withTimeout(
+    withRetry(
+      () => Promise.all([
+        alchemy.core.getBalance(address),
+        alchemy.core.getTransactionCount(address),
+        fetchTransfers(alchemy, address, 'from'),
+        fetchTransfers(alchemy, address, 'to'),
+      ]),
+      { maxRetries: ALCHEMY_MAX_RETRIES },
+    ),
+    ALCHEMY_TIMEOUT_MS,
+  );
 
-  const allTransfers = [...fromTransfers, ...toTransfers];
-  const gasSpentEth = estimateGasSpent(fromTransfers, txCount);
+  const allTransfers = [...fromResult.transfers, ...toResult.transfers];
+  const gasSpentEth = estimateGasSpent(fromResult.transfers, txCount);
   const { firstTxTimestamp, lastTxTimestamp } = extractTimestamps(allTransfers);
+  const transfersCapped = fromResult.hasMore || toResult.hasMore;
 
   const balanceWei = BigInt(balanceResult.toString());
 
@@ -197,6 +216,7 @@ export async function fetchWalletData(
     firstTxTimestamp,
     lastTxTimestamp,
     gasSpentEth,
+    transfersCapped,
     ...(ensName ? { ensName } : {}),
   };
 }

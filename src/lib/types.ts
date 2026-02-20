@@ -8,6 +8,7 @@ export interface WalletRawData {
   readonly firstTxTimestamp: number | null;
   readonly lastTxTimestamp: number | null;
   readonly gasSpentEth: number;
+  readonly transfersCapped?: boolean;
   readonly ensName?: string;
 }
 
