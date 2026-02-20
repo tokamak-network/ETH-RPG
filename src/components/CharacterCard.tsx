@@ -2,8 +2,10 @@
 
 import { useState, useCallback } from 'react';
 import type { GenerateResponse } from '@/lib/types';
-import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS } from '@/styles/themes';
+import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS, getPowerTier } from '@/styles/themes';
 import { shortenAddress } from '@/lib/format-utils';
+import { CLASS_SKILLS, CLASS_PASSIVES } from '@/lib/skills';
+import { getMatchupInfo } from '@/lib/matchups';
 import StatBar from './StatBar';
 import AchievementRow from './AchievementRow';
 import { PixelCharacter } from './pixel-sprites';
@@ -24,6 +26,10 @@ const STAT_ENTRIES = [
 export default function CharacterCard({ data }: CharacterCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const theme = CLASS_THEMES[data.class.id];
+  const tier = getPowerTier(data.stats.power);
+  const skill = CLASS_SKILLS[data.class.id];
+  const passive = CLASS_PASSIVES[data.class.id];
+  const matchup = getMatchupInfo(data.class.id);
   const displayName = data.ensName ?? shortenAddress(data.address);
   const longLoreText = data.longLore || data.lore;
 
@@ -60,8 +66,8 @@ export default function CharacterCard({ data }: CharacterCardProps) {
           className="card-face card-glow relative w-full rounded-2xl border p-6 sm:p-8"
           style={{
             backgroundColor: 'var(--color-bg-secondary)',
-            borderColor: theme.primary,
-            boxShadow: theme.borderGlow,
+            borderColor: tier.frameColor,
+            boxShadow: `${theme.borderGlow}, 0 0 ${tier.glowIntensity}px ${tier.glowColor}`,
             '--glow-color': theme.borderGlow,
           } as React.CSSProperties}
         >
@@ -130,8 +136,14 @@ export default function CharacterCard({ data }: CharacterCardProps) {
             ))}
           </div>
 
-          {/* Power */}
+          {/* Power + Tier */}
           <div className="text-center mb-6">
+            <p
+              className="text-xs font-bold uppercase tracking-widest mb-1"
+              style={{ color: tier.frameColor }}
+            >
+              {tier.label}
+            </p>
             <p className="text-xs text-text-muted uppercase tracking-widest mb-1">
               Combat Power
             </p>
@@ -151,8 +163,8 @@ export default function CharacterCard({ data }: CharacterCardProps) {
           className="card-face-back card-glow absolute inset-0 w-full rounded-2xl border p-6 sm:p-8 flex flex-col justify-between overflow-y-auto"
           style={{
             background: theme.gradient,
-            borderColor: theme.primary,
-            boxShadow: theme.borderGlow,
+            borderColor: tier.frameColor,
+            boxShadow: `${theme.borderGlow}, 0 0 ${tier.glowIntensity}px ${tier.glowColor}`,
             '--glow-color': theme.borderGlow,
           } as React.CSSProperties}
         >
@@ -189,9 +201,9 @@ export default function CharacterCard({ data }: CharacterCardProps) {
               {displayName}
             </p>
 
-            {/* Long lore narrative */}
+            {/* Lore (compact) */}
             <div
-              className="rounded-xl p-5 mb-6"
+              className="rounded-xl p-4 mb-3"
               style={{
                 backgroundColor: 'rgba(10, 10, 15, 0.7)',
                 border: `1px solid ${theme.primary}30`,
@@ -201,11 +213,70 @@ export default function CharacterCard({ data }: CharacterCardProps) {
                 {longLoreText}
               </p>
             </div>
+
+            {/* Skill */}
+            <div className="mb-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span
+                  className="text-sm font-bold"
+                  style={{ color: theme.primary }}
+                >
+                  {skill.name}
+                </span>
+                <span
+                  className="text-xs font-mono px-2 py-0.5 rounded-full"
+                  style={{
+                    backgroundColor: `${theme.primary}20`,
+                    color: theme.primary,
+                  }}
+                >
+                  {skill.mpCost} MP
+                </span>
+              </div>
+              <p className="text-xs text-text-secondary">{skill.description}</p>
+            </div>
+
+            {/* Passive */}
+            <div className="mb-3">
+              <span
+                className="text-sm font-bold"
+                style={{ color: theme.secondary }}
+              >
+                {passive.name}
+              </span>
+              <p className="text-xs text-text-secondary">{passive.description}</p>
+            </div>
+
+            {/* Matchups */}
+            <div className="flex gap-4 mb-3 text-xs">
+              {matchup.strongVs.length > 0 && (
+                <div>
+                  <span className="text-text-muted">Strong vs </span>
+                  {matchup.strongVs.map((id) => (
+                    <span key={id} className="mr-1">{CLASS_THEMES[id].icon}</span>
+                  ))}
+                </div>
+              )}
+              {matchup.weakVs.length > 0 && (
+                <div>
+                  <span className="text-text-muted">Weak vs </span>
+                  {matchup.weakVs.map((id) => (
+                    <span key={id} className="mr-1">{CLASS_THEMES[id].icon}</span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Power at bottom */}
+          {/* Power + Tier at bottom */}
           <div>
             <div className="text-center">
+              <p
+                className="text-xs font-bold uppercase tracking-widest mb-1"
+                style={{ color: tier.frameColor }}
+              >
+                {tier.label}
+              </p>
               <p className="text-xs text-text-muted uppercase tracking-widest mb-1">
                 Combat Power
               </p>

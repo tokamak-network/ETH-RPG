@@ -33,6 +33,7 @@ export interface SkillResult {
 
 export interface SkillDefinition {
   readonly name: string;
+  readonly description: string;
   readonly mpCost: number;
   readonly cooldown: number;
   readonly execute: (
@@ -46,6 +47,7 @@ export interface SkillDefinition {
 
 export interface PassiveDefinition {
   readonly name: string;
+  readonly description: string;
   readonly battleStartHpBonus: number;
   readonly battleStartHealPercent: number;
   readonly turnEndHealPercent: number;
@@ -86,6 +88,7 @@ function emptyResult(): SkillResult {
 
 const warriorSkill: SkillDefinition = {
   name: 'Heavy Strike',
+  description: 'A powerful blow with a chance to stun.',
   mpCost: 15,
   cooldown: 2,
   execute: (actor, _target, random) => {
@@ -106,6 +109,7 @@ const warriorSkill: SkillDefinition = {
 
 const rogueSkill: SkillDefinition = {
   name: 'Arbitrage',
+  description: 'Two rapid strikes. The second may crit.',
   mpCost: 18,
   cooldown: 3,
   execute: (actor, _target, random) => {
@@ -134,6 +138,7 @@ const rogueSkill: SkillDefinition = {
 
 const hunterSkill: SkillDefinition = {
   name: 'NFT Snipe',
+  description: 'Precision shot. High crit if LUCK exceeds target.',
   mpCost: 18,
   cooldown: 2,
   execute: (actor, target, random) => {
@@ -154,6 +159,7 @@ const hunterSkill: SkillDefinition = {
 
 const merchantSkill: SkillDefinition = {
   name: 'Hostile Takeover',
+  description: 'Weakens the target and boosts your attack.',
   mpCost: 20,
   cooldown: 3,
   execute: (actor, target, random) => {
@@ -177,6 +183,7 @@ const merchantSkill: SkillDefinition = {
 
 const priestSkill: SkillDefinition = {
   name: 'Divine Shield',
+  description: 'Heals and reduces incoming damage.',
   mpCost: 18,
   cooldown: 3,
   execute: (actor, _target, _random) => {
@@ -198,6 +205,7 @@ const priestSkill: SkillDefinition = {
 
 const elderWizardSkill: SkillDefinition = {
   name: 'Ancient Spell',
+  description: 'Devastating magic that pierces defense.',
   mpCost: 35,
   cooldown: 3,
   execute: (actor, _target, random) => {
@@ -219,6 +227,7 @@ const elderWizardSkill: SkillDefinition = {
 
 const guardianSkill: SkillDefinition = {
   name: 'Counter Stance',
+  description: 'Reflects half of incoming damage.',
   mpCost: 15,
   cooldown: 2,
   execute: (actor, _target, _random) => {
@@ -231,6 +240,7 @@ const guardianSkill: SkillDefinition = {
 
 const summonerSkill: SkillDefinition = {
   name: 'Portal Strike',
+  description: 'Hybrid STR+INT damage. Drains enemy MP.',
   mpCost: 22,
   cooldown: 3,
   execute: (actor, target, random) => {
@@ -269,10 +279,12 @@ export const CLASS_SKILLS: Readonly<Record<CharacterClassId, SkillDefinition>> =
 
 function makePassive(
   name: string,
-  overrides: Partial<Omit<PassiveDefinition, 'name'>> = {},
+  description: string,
+  overrides: Partial<Omit<PassiveDefinition, 'name' | 'description'>> = {},
 ): PassiveDefinition {
   return {
     name,
+    description,
     battleStartHpBonus: 0,
     battleStartHealPercent: 0,
     turnEndHealPercent: 0,
@@ -289,31 +301,31 @@ function makePassive(
 }
 
 export const CLASS_PASSIVES: Readonly<Record<CharacterClassId, PassiveDefinition>> = {
-  warrior: makePassive('Iron Will', {
+  warrior: makePassive('Iron Will', 'Start with +10% max HP.', {
     battleStartHpBonus: 0.10,
   }),
-  rogue: makePassive('Evasion', {
+  rogue: makePassive('Evasion', '+10% dodge chance.', {
     dodgeChanceBonus: 0.10,
   }),
-  hunter: makePassive('Keen Eye', {
+  hunter: makePassive('Keen Eye', '+15% crit chance.', {
     critChanceBonus: 0.15,
   }),
-  merchant: makePassive('Compound Interest', {
+  merchant: makePassive('Compound Interest', 'Recover MP every 4 turns.', {
     mpRecoveryInterval: 4,
     mpRecoveryPercent: 0.15,
   }),
-  priest: makePassive('Blessing', {
+  priest: makePassive('Blessing', 'Heal at start and each turn.', {
     battleStartHealPercent: 0.05,
     turnEndHealPercent: 0.015,
   }),
-  elder_wizard: makePassive('Mana Well', {
+  elder_wizard: makePassive('Mana Well', 'Skills cost 15% less MP.', {
     mpCostReduction: 0.15,
   }),
-  guardian: makePassive('Unbreakable', {
+  guardian: makePassive('Unbreakable', '+20% defense. Burst damage capped.', {
     defenseMultiplier: 0.20,
     antiBurstThreshold: 0.20,
   }),
-  summoner: makePassive('Summon Familiar', {
+  summoner: makePassive('Summon Familiar', 'Bonus damage grows each turn.', {
     bonusDamagePerTurn: 0.05,
   }),
 };

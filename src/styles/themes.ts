@@ -113,6 +113,33 @@ export const CLASS_LABELS: Record<CharacterClassId, string> = {
   warrior: 'Warrior',
 } as const;
 
+// --- Power tier definitions ---
+
+export interface PowerTier {
+  readonly id: string;
+  readonly label: string;
+  readonly minPower: number;
+  readonly frameColor: string;
+  readonly glowColor: string;
+  readonly glowIntensity: number;
+}
+
+export const POWER_TIERS: readonly PowerTier[] = [
+  { id: 'diamond', label: 'DIAMOND', minPower: 55000, frameColor: '#b9f2ff', glowColor: 'rgba(185, 242, 255, 0.4)', glowIntensity: 30 },
+  { id: 'gold', label: 'GOLD', minPower: 35000, frameColor: '#f4c430', glowColor: 'rgba(244, 196, 48, 0.35)', glowIntensity: 25 },
+  { id: 'silver', label: 'SILVER', minPower: 15000, frameColor: '#c0c0c0', glowColor: 'rgba(192, 192, 192, 0.3)', glowIntensity: 20 },
+  { id: 'bronze', label: 'BRONZE', minPower: 0, frameColor: '#cd7f32', glowColor: 'rgba(205, 127, 50, 0.25)', glowIntensity: 15 },
+] as const;
+
+export function getPowerTier(power: number): PowerTier {
+  for (const tier of POWER_TIERS) {
+    if (power >= tier.minPower) {
+      return tier;
+    }
+  }
+  return POWER_TIERS[POWER_TIERS.length - 1];
+}
+
 export const BATTLE_TOKENS = {
   colors: {
     player0: '#60a5fa',

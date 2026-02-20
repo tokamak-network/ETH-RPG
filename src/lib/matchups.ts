@@ -93,6 +93,35 @@ export function resolveMatchup(
   return { fighter0Advantage: 'neutral', fighter1Advantage: 'neutral' };
 }
 
+// --- Matchup info for card display ---
+
+export interface MatchupInfo {
+  readonly strongVs: readonly CharacterClassId[];
+  readonly weakVs: readonly CharacterClassId[];
+}
+
+const ALL_CLASS_IDS: readonly CharacterClassId[] = [
+  ...RING_A,
+  ...RING_B,
+] as const;
+
+export function getMatchupInfo(classId: CharacterClassId): MatchupInfo {
+  const strongVs: CharacterClassId[] = [];
+  const weakVs: CharacterClassId[] = [];
+
+  for (const other of ALL_CLASS_IDS) {
+    if (other === classId) continue;
+    const matchup = resolveMatchup(classId, other);
+    if (matchup.fighter0Advantage === 'advantaged') {
+      strongVs.push(other);
+    } else if (matchup.fighter0Advantage === 'disadvantaged') {
+      weakVs.push(other);
+    }
+  }
+
+  return { strongVs, weakVs };
+}
+
 export function getDamageModifier(advantage: MatchupAdvantage): number {
   return DAMAGE_MODIFIERS[advantage];
 }

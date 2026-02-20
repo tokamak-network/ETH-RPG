@@ -3,7 +3,8 @@ import { ImageResponse } from 'next/og';
 import { getCached } from '@/lib/cache';
 import { getSpriteSrc } from '@/lib/sprite-data';
 import { shortenAddress } from '@/lib/format-utils';
-import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS, TIER_BORDER_COLORS } from '@/styles/themes';
+import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS, TIER_BORDER_COLORS, getPowerTier } from '@/styles/themes';
+import { CLASS_SKILLS } from '@/lib/skills';
 import { incrementCounter } from '@/lib/metrics';
 import type { CharacterClassId, Achievement } from '@/lib/types';
 
@@ -130,6 +131,8 @@ export async function GET(
 
     incrementCounter('og_image_load').catch(() => {});
     const theme = CLASS_THEMES[data.class.id as CharacterClassId];
+    const tier = getPowerTier(data.stats.power);
+    const skill = CLASS_SKILLS[data.class.id as CharacterClassId];
     const shortAddr = shortenAddress(data.address);
     const displayName = data.ensName ?? shortAddr;
     const spriteSrc = getSpriteSrc(data.class.id as CharacterClassId, data.stats.level);
@@ -141,6 +144,7 @@ export async function GET(
           height: '100%',
           display: 'flex',
           background: '#0a0a0f',
+          border: `2px solid ${tier.frameColor}`,
           padding: 40,
         }}>
           <div style={{
@@ -207,12 +211,28 @@ export async function GET(
             )}
             <div style={{
               display: 'flex',
-              fontSize: 56,
-              color: '#f4c430',
-              fontWeight: 900,
+              alignItems: 'center',
+              gap: 12,
               marginBottom: 20,
             }}>
-              {data.stats.power.toLocaleString()}
+              <div style={{
+                display: 'flex',
+                fontSize: 56,
+                color: '#f4c430',
+                fontWeight: 900,
+              }}>
+                {data.stats.power.toLocaleString()}
+              </div>
+              <div style={{
+                display: 'flex',
+                fontSize: 16,
+                fontWeight: 700,
+                color: tier.frameColor,
+                textTransform: 'uppercase',
+                letterSpacing: 2,
+              }}>
+                {tier.label}
+              </div>
             </div>
             <div style={{
               display: 'flex',
@@ -220,8 +240,17 @@ export async function GET(
               color: '#e8e8ed',
               fontStyle: 'italic',
               lineHeight: 1.5,
+              marginBottom: 12,
             }}>
               {data.lore}
+            </div>
+            <div style={{
+              display: 'flex',
+              fontSize: 14,
+              color: theme.primary,
+              fontWeight: 600,
+            }}>
+              {`${skill.name} \u2022 ${skill.mpCost} MP`}
             </div>
           </div>
 

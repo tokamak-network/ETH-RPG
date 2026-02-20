@@ -3,7 +3,8 @@ import { ImageResponse } from 'next/og';
 import { getCached } from '@/lib/cache';
 import { getSpriteSrc } from '@/lib/sprite-data';
 import { shortenAddress } from '@/lib/format-utils';
-import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS, TIER_BORDER_COLORS } from '@/styles/themes';
+import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS, TIER_BORDER_COLORS, getPowerTier } from '@/styles/themes';
+import { CLASS_SKILLS } from '@/lib/skills';
 import type { CharacterClassId, Achievement } from '@/lib/types';
 
 const CARD_BADGE_SIZE = 32;
@@ -157,6 +158,8 @@ export async function GET(
     }
 
     const theme = CLASS_THEMES[data.class.id as CharacterClassId];
+    const tier = getPowerTier(data.stats.power);
+    const skill = CLASS_SKILLS[data.class.id as CharacterClassId];
     const shortAddr = shortenAddress(data.address);
     const displayName = data.ensName ?? shortAddr;
     const spriteSrc = getSpriteSrc(data.class.id as CharacterClassId, data.stats.level);
@@ -169,7 +172,7 @@ export async function GET(
           display: 'flex',
           flexDirection: 'column',
           background: '#0a0a0f',
-          border: `2px solid ${theme.primary}`,
+          border: `2px solid ${tier.frameColor}`,
           borderRadius: 16,
           padding: 60,
         }}>
@@ -276,6 +279,17 @@ export async function GET(
           }}>
             <div style={{
               display: 'flex',
+              fontSize: 16,
+              fontWeight: 700,
+              color: tier.frameColor,
+              textTransform: 'uppercase',
+              letterSpacing: 2,
+              marginBottom: 4,
+            }}>
+              {tier.label}
+            </div>
+            <div style={{
+              display: 'flex',
               fontSize: 20,
               color: '#9ca3af',
               marginBottom: 8,
@@ -303,7 +317,7 @@ export async function GET(
           <div style={{
             display: 'flex',
             justifyContent: 'center',
-            marginBottom: 40,
+            marginBottom: 24,
             padding: '0 20px',
           }}>
             <div style={{
@@ -314,6 +328,39 @@ export async function GET(
               lineHeight: 1.6,
             }}>
               {data.lore}
+            </div>
+          </div>
+
+          {/* Skill pill */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: 32,
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '8px 20px',
+              borderRadius: 20,
+              backgroundColor: `${theme.primary}20`,
+              border: `1px solid ${theme.primary}40`,
+            }}>
+              <div style={{
+                display: 'flex',
+                fontSize: 18,
+                fontWeight: 700,
+                color: theme.primary,
+              }}>
+                {skill.name}
+              </div>
+              <div style={{
+                display: 'flex',
+                fontSize: 14,
+                color: '#9ca3af',
+              }}>
+                {`${skill.mpCost} MP`}
+              </div>
             </div>
           </div>
 
