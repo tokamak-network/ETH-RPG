@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { LeaderboardResponse, LeaderboardType } from '@/lib/types';
 
 type LeaderboardStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -26,9 +26,24 @@ const INITIAL_STATE: LeaderboardState = {
 
 export function useLeaderboard() {
   const [state, setState] = useState<LeaderboardState>(INITIAL_STATE);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current !== null) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   const fetchLeaderboard = useCallback(
     async (type: LeaderboardType, options?: FetchOptions): Promise<void> => {
+      if (abortControllerRef.current !== null) {
+        abortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       setState({ status: 'loading', data: null, error: null });
 
       try {
@@ -38,7 +53,9 @@ export function useLeaderboard() {
         if (options?.page) params.set('page', String(options.page));
         if (options?.limit) params.set('limit', String(options.limit));
 
-        const response = await fetch(`/api/ranking/leaderboard?${params.toString()}`);
+        const response = await fetch(`/api/ranking/leaderboard?${params.toString()}`, {
+          signal: controller.signal,
+        });
         const body: unknown = await response.json();
 
         if (!response.ok) {
@@ -56,7 +73,10 @@ export function useLeaderboard() {
           data: body as LeaderboardResponse,
           error: null,
         });
-      } catch {
+      } catch (err: unknown) {
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          return;
+        }
         setState({
           status: 'error',
           data: null,

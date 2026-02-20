@@ -4,6 +4,7 @@
 import { kv } from '@vercel/kv';
 import type { CharacterClassId } from '@/lib/types';
 import { isKvConfigured } from '@/lib/kv-utils';
+import { isMetricEvent } from '@/lib/kv-guards';
 
 // --- Constants ---
 
@@ -123,7 +124,7 @@ export async function getMetricsSnapshot(): Promise<MetricsSnapshot> {
       'error_api', 'error_rate_limit', 'error_invalid_address',
       'error_no_transactions', 'error_empty_wallet',
       'funnel_landing', 'funnel_input_focus', 'funnel_generate_start',
-      'funnel_generate_success', 'funnel_share',
+      'funnel_generate_success', 'funnel_share', 'og_image_load',
     ];
 
     // Batch fetch all 16 counters in 1 mget call
@@ -158,12 +159,9 @@ export async function getMetricsSnapshot(): Promise<MetricsSnapshot> {
     const counters = Object.fromEntries(counterResults);
     const hourlyResults = hourlyKeys.map((key, i) => ({ hour: key, count: (hourlyValues ?? [])[i] ?? 0 }));
 
-    const recentEvents: MetricEvent[] = (rawEvents ?? []).map((raw) => {
-      if (typeof raw === 'string') {
-        return JSON.parse(raw) as MetricEvent;
-      }
-      return raw as unknown as MetricEvent;
-    });
+    const recentEvents: MetricEvent[] = (rawEvents ?? [])
+      .map((raw) => (typeof raw === 'string' ? JSON.parse(raw) : raw))
+      .filter(isMetricEvent);
 
     // Hourly activity: reverse to chronological order
     const hourlyActivity = [...hourlyResults].reverse();

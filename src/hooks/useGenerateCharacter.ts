@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { GenerateResponse, ApiErrorResponse } from '@/lib/types';
+import type { GenerateResponse } from '@/lib/types';
 import { ERROR_MESSAGES, ErrorCode } from '@/lib/types';
+import { trackEvent } from '@/lib/analytics';
+import { isApiErrorResponse } from '@/lib/api-guards';
 
 type GenerateStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -28,18 +30,6 @@ const INITIAL_STATE: GenerateState = {
   error: null,
   step: '',
 };
-
-function isApiErrorResponse(body: unknown): body is ApiErrorResponse {
-  return (
-    typeof body === 'object' &&
-    body !== null &&
-    'error' in body &&
-    typeof (body as ApiErrorResponse).error === 'object' &&
-    (body as ApiErrorResponse).error !== null &&
-    'code' in (body as ApiErrorResponse).error &&
-    'message' in (body as ApiErrorResponse).error
-  );
-}
 
 export function useGenerateCharacter() {
   const [state, setState] = useState<GenerateState>(INITIAL_STATE);
@@ -92,6 +82,7 @@ export function useGenerateCharacter() {
         step: LOADING_STEPS[0],
       });
 
+      trackEvent('generate_start', { address });
       startStepRotation();
 
       try {

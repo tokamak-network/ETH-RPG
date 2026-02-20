@@ -4,6 +4,7 @@ import { getCached } from '@/lib/cache';
 import { getSpriteSrc } from '@/lib/sprite-data';
 import { shortenAddress } from '@/lib/format-utils';
 import { CLASS_THEMES, STAT_MAX_VALUES, STAT_COLORS, TIER_BORDER_COLORS } from '@/styles/themes';
+import { incrementCounter } from '@/lib/metrics';
 import type { CharacterClassId, Achievement } from '@/lib/types';
 
 const OG_BADGE_SIZE = 28;
@@ -127,6 +128,7 @@ export async function GET(
       });
     }
 
+    incrementCounter('og_image_load').catch(() => {});
     const theme = CLASS_THEMES[data.class.id as CharacterClassId];
     const shortAddr = shortenAddress(data.address);
     const displayName = data.ensName ?? shortAddr;

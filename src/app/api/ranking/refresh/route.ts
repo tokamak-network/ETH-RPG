@@ -3,6 +3,7 @@
 // 2. Recompute all 3 leaderboards from PlayerRecords
 // 3. Save snapshots to KV
 
+import * as Sentry from '@sentry/nextjs';
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getCurrentSeason,
@@ -22,6 +23,7 @@ import {
   endSeason,
 } from '@/lib/season-manager';
 import { safeCompare } from '@/lib/kv-utils';
+import { errorResponse } from '@/lib/route-utils';
 import type { LeaderboardResponse, LeaderboardType, RankingEntry } from '@/lib/types';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -31,10 +33,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
   if (!cronSecret || !token || !safeCompare(token, cronSecret)) {
-    return NextResponse.json(
-      { error: { code: 'UNAUTHORIZED', message: 'Invalid cron secret.' } },
-      { status: 401 },
-    );
+    return errorResponse('UNAUTHORIZED', 'Invalid cron secret.', 401);
   }
 
   try {
@@ -95,11 +94,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       refreshedAt: new Date(now).toISOString(),
     });
   } catch (error) {
-    // Log internal details server-side, return generic message to client
-    console.error('[ranking/refresh] Failed:', error instanceof Error ? error.message : error);
-    return NextResponse.json(
-      { error: { code: 'REFRESH_FAILED', message: 'Leaderboard refresh failed.' } },
-      { status: 500 },
-    );
+    Sentry.captureException(error);
+    return errorResponse('REFRESH_FAILED', 'Leaderboard refresh failed.', 500);
   }
 }

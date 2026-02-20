@@ -15,12 +15,14 @@ const TABS: readonly { readonly type: LeaderboardType; readonly label: string; r
 
 export default function RankingTabs({ activeTab, onTabChange }: RankingTabsProps) {
   return (
-    <div className="flex gap-1 rounded-xl p-1" style={{ backgroundColor: 'var(--color-surface-alt)' }}>
+    <div className="flex gap-1 rounded-xl p-1" role="tablist" aria-label="Ranking categories" style={{ backgroundColor: 'var(--color-surface-alt)' }}>
       {TABS.map((tab) => {
         const isActive = activeTab === tab.type;
         return (
           <button
             key={tab.type}
+            role="tab"
+            aria-selected={isActive}
             onClick={() => onTabChange(tab.type)}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-200"
             style={{
@@ -29,7 +31,7 @@ export default function RankingTabs({ activeTab, onTabChange }: RankingTabsProps
               borderBottom: isActive ? '2px solid #f4c430' : '2px solid transparent',
             }}
           >
-            <span>{tab.icon}</span>
+            <span aria-hidden="true">{tab.icon}</span>
             <span>{tab.label}</span>
           </button>
         );

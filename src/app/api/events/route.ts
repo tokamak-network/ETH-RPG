@@ -1,8 +1,11 @@
 // POST /api/events — Receive client-side analytics events.
 // Records events in Vercel KV via metrics module.
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { trackShare, trackFunnel, recordEvent, incrementCounter } from '@/lib/metrics';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { getClientIp, errorResponse } from '@/lib/route-utils';
+import { ErrorCode } from '@/lib/types';
 
 const MAX_EVENT_NAME_LENGTH = 100;
 const MAX_URL_LENGTH = 2048;
@@ -38,7 +41,13 @@ function sanitizeProperties(
   return sanitized;
 }
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  const clientIp = getClientIp(request);
+  const rateResult = await checkRateLimit(clientIp);
+  if (!rateResult.allowed) {
+    return errorResponse(ErrorCode.RATE_LIMITED, 'Too many requests. Please try again later.', 429);
+  }
+
   try {
     const body = await request.json() as AnalyticsEvent;
 
@@ -56,6 +65,12 @@ export async function POST(request: Request): Promise<NextResponse> {
     // Route to appropriate metric tracking
     if (body.event === 'share_click' && safeProperties?.platform) {
       trackShare(String(safeProperties.platform)).catch(() => {});
+    } else if (body.event === 'address_input_start') {
+      trackFunnel('input_focus').catch(() => {});
+    } else if (body.event === 'generate_start') {
+      trackFunnel('generate_start').catch(() => {});
+    } else if (body.event === 'card_generated') {
+      trackFunnel('generate_success').catch(() => {});
     } else if (body.event.startsWith('funnel_')) {
       const step = body.event.replace('funnel_', '');
       trackFunnel(step).catch(() => {});

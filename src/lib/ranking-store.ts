@@ -10,6 +10,7 @@ import type {
   LeaderboardResponse,
 } from '@/lib/types';
 import { isKvConfigured } from '@/lib/kv-utils';
+import { isBattleRecord } from '@/lib/kv-guards';
 
 // --- Key patterns ---
 
@@ -183,12 +184,9 @@ export async function getBattleRecords(
   if (!isKvConfigured()) return [];
   try {
     const raw = await kv.lrange<string>(battleListKey(seasonId, address), 0, 199);
-    return (raw ?? []).map((item) => {
-      if (typeof item === 'string') {
-        return JSON.parse(item) as BattleRecord;
-      }
-      return item as unknown as BattleRecord;
-    });
+    return (raw ?? [])
+      .map((item) => (typeof item === 'string' ? JSON.parse(item) : item))
+      .filter(isBattleRecord);
   } catch {
     return [];
   }

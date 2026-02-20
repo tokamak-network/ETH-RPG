@@ -18,6 +18,11 @@ export default function StatBar({ label, value, maxValue, color }: StatBarProps)
       </span>
       <div className="flex-1 h-3 rounded-full bg-bg-tertiary overflow-hidden">
         <div
+          role="progressbar"
+          aria-valuenow={safeValue}
+          aria-valuemin={0}
+          aria-valuemax={maxValue}
+          aria-label={`${label} ${safeValue} out of ${maxValue}`}
           className="h-full rounded-full stat-bar-fill"
           style={{
             '--fill-width': `${fillPercent}%`,

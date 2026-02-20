@@ -4,6 +4,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getLeaderboardSnapshot, getCurrentSeason } from '@/lib/ranking-store';
 import { findPlayerRank } from '@/lib/ranking-engine';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { getClientIp, errorResponse } from '@/lib/route-utils';
+import { ErrorCode } from '@/lib/types';
 import type { LeaderboardType, LeaderboardResponse } from '@/lib/types';
 
 const VALID_TYPES = new Set<LeaderboardType>(['power', 'battle', 'explorer']);
@@ -13,23 +16,23 @@ const MAX_PAGE_SIZE = 100;
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
 
+  const clientIp = getClientIp(request);
+  const rateResult = await checkRateLimit(clientIp);
+  if (!rateResult.allowed) {
+    return errorResponse(ErrorCode.RATE_LIMITED, 'Too many requests. Please try again later.', 429);
+  }
+
   // Parse type
   const typeParam = searchParams.get('type') ?? 'power';
   if (!VALID_TYPES.has(typeParam as LeaderboardType)) {
-    return NextResponse.json(
-      { error: { code: 'INVALID_TYPE', message: 'Type must be power, battle, or explorer.' } },
-      { status: 400 },
-    );
+    return errorResponse('INVALID_TYPE', 'Type must be power, battle, or explorer.', 400);
   }
   const type = typeParam as LeaderboardType;
 
   // Get season
   const season = await getCurrentSeason();
   if (!season) {
-    return NextResponse.json(
-      { error: { code: 'NO_SEASON', message: 'No active season found.' } },
-      { status: 404 },
-    );
+    return errorResponse('NO_SEASON', 'No active season found.', 404);
   }
 
   const seasonParam = searchParams.get('season');

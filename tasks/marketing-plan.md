@@ -1,7 +1,7 @@
 # Eth·RPG Marketing Plan
 
 > Date: 2026-02-18
-> Goal: Within 7 days of launch — UV 500+, card generations 200+, share rate 20%+
+> Goal: Within 7 days of launch — UV 400+, card generations 150+, share rate 20%+, K >= 0.3
 
 ---
 
@@ -17,7 +17,7 @@
 | OG image (personalized) | ✅ Complete | generateMetadata in result layout.tsx |
 | Card download | ✅ Complete | Gold "Save Card" button with blob download |
 | Cache resilience | ✅ Complete | Self-healing on cache miss via pipeline.ts |
-| Event tracking | ❌ Not implemented | Cannot measure funnel |
+| Event tracking | ✅ Complete | 5-step funnel + OG load + UTM via custom API route |
 | Deployment | ✅ Complete | Vercel deployed |
 
 ### Viral Loop Check
@@ -29,7 +29,7 @@
 [5] Generates own card → ✅
 [6] Shares again → ✅
 ```
-**All 6 steps operational. Viral loop complete.**
+**All 6 steps operational. Share flow functional. Viral coefficient (K) to be measured from Day 3.**
 
 ---
 
@@ -83,15 +83,31 @@
    → Crypto history translated into fantasy → emotional resonance + humor
 ```
 
-### Viral Coefficient Target
+### Viral Coefficient Measurement Plan
 ```
-K (viral coefficient) = share rate x inflow per share x inflow conversion rate
+K (viral coefficient) = share_rate × inflow_per_share
 
-Target: K >= 0.5
-- Share rate: 20% (1 in 5 shares)
-- Inflow per share: 5 (CT average reach)
-- Inflow conversion rate: 50% (up to address input)
-- K = 0.2 x 5 x 0.5 = 0.5 ✓
+Where:
+- share_rate = funnel_share / funnel_generate_success (measured from admin dashboard)
+- inflow_per_share = utm_source=share page_views / funnel_share (measured from UTM data)
+
+Target: K >= 0.3 (minimum viable), stretch K >= 0.5
+
+Measurement schedule:
+- Day 1-2: Collect raw data (no K calculation — sample too small)
+- Day 3: First K-factor calculation (need 50+ shares for statistical validity)
+- Day 5: Second K-factor check
+- Day 7: Final K-factor for Go/No-Go decision
+
+If K < 0.3 on Day 3:
+  → Pivot copy/CTA (switch to top-performing variant)
+  → Emphasize card download over link sharing
+  → Add "Try your friend's wallet" CTA on result page
+
+Note: Do NOT assume K values before measurement. Previous estimate of K=0.5
+was based on unverified assumptions (CT reach of 5 per share, 50% landing
+conversion). Actual CT click-through rates are 1-3%, so real K may be 0.1-0.3.
+Plan for K=0.3, celebrate if higher.
 ```
 
 ---
@@ -275,20 +291,23 @@ card_download     — Card image downloaded
 ### UTM System
 ```
 Seeding posts:    ?utm_source={platform}&utm_medium=organic&utm_campaign=launch_seed
-Share links:      ?utm_source=share&utm_medium=card&utm_campaign=viral
+Share links:      ?utm_source=share&utm_medium=card&utm_campaign=viral_v{1-6}
 Product Hunt:     ?utm_source=producthunt&utm_medium=launch&utm_campaign=ph_launch
 Reddit/HN:        ?utm_source={platform}&utm_medium=post&utm_campaign=community
 ```
 
+**Copy A/B tracking**: Share links include variant ID in `utm_campaign` (e.g. `viral_v1` through `viral_v6`). This enables per-variant performance comparison via UTM data without UI changes. Default share button uses `viral_v1`; manual seeding posts use the variant number matching the copy set used.
+
 ### KPI Dashboard
 | Metric | Calculation | Day 7 Target | Day 30 Target |
 |--------|-------------|-------------|--------------|
-| UV (unique visits) | Unique page_view | 500 | 3,000 |
-| Cards generated | card_generated | 200 | 1,200 |
+| UV (unique visits) | Unique page_view | 400 | 2,000 |
+| Cards generated | card_generated | 150 | 800 |
 | Input conversion rate | Generations / visits | 40% | 40% |
 | Share rate | Shares / generations | 20% | 25% |
 | Download rate | Downloads / generations | 15% | 20% |
-| Viral coefficient (K) | Share inflow / shares | 0.5 | 0.7 |
+| Viral coefficient (K) | share_rate × inflow_per_share | 0.3 | 0.5 |
+| OG image impressions | og_image_load counter | — | — |
 | Top channel | UTM source | CT | CT |
 
 ### Tracking Implementation Options (zero budget)
@@ -389,19 +408,36 @@ Must-generate targets:
 
 ## 11. Success Criteria (Go/No-Go)
 
+### Channel-by-Channel UV Decomposition
+
+| Channel | Target UV | Basis |
+|---------|----------|-------|
+| CT (personal account) | 30-50 | ~1K followers × 3-5% CTR |
+| Farcaster (5 channels) | 20-30 | /ethereum channel reach |
+| Discord (10 servers) | 50-100 | 5-10 per server |
+| Telegram (5 groups) | 30-50 | 6-10 per group |
+| KOL amplification | 50-100 | 2-3 RTs × 30-50 clicks each |
+| Viral spread (K=0.3) | 50-80 | ~200 generations × 20% share × K |
+| KakaoTalk (5 rooms) | 20-30 | 4-6 per room |
+| **Total (conservative)** | **250-440** | |
+
+**Implication**: UV 500 is an optimistic target. Conservative estimate is 250-440.
+Adjust Go/No-Go accordingly — "Average" band is the realistic Day 7 outcome with
+seeding alone. Reaching "Success" requires viral amplification (K > 0.3).
+
 ### Day 7 Benchmark
 | Grade | Criteria | Decision |
 |-------|----------|----------|
-| 🟢 Success | UV 500+, generations 200+, share rate 20%+ | Proceed with Phase 2 expansion |
-| 🟡 Average | UV 200-500, generations 80-200, share rate 10-20% | Pivot copy/channels and retry |
+| 🟢 Success | UV 400+, generations 150+, share rate 20%+, K >= 0.3 | Proceed with Phase 2 expansion |
+| 🟡 Average | UV 200-400, generations 80-150, share rate 10-20% | Pivot copy/channels and retry |
 | 🔴 Failure | UV < 200, generations < 80, share rate < 10% | Reassess product itself (UX? Fun factor?) |
 
 ### Viral Coefficient Assessment
 | K Value | Meaning | Action |
 |---------|---------|--------|
 | K >= 1.0 | Self-sustaining growth | Server scaling, feature expansion |
-| 0.5 <= K < 1.0 | Seeding + viral hybrid | Continue seeding + improve share UX |
-| K < 0.5 | Seeding-dependent | Change copy, strengthen CTA, push downloads |
+| 0.3 <= K < 1.0 | Seeding + viral hybrid | Continue seeding + improve share UX |
+| K < 0.3 | Seeding-dependent | Change copy, strengthen CTA, push downloads |
 
 ---
 
@@ -415,8 +451,10 @@ Must-generate targets:
 [5] HIGH     — Fix OG/Card Satori rendering        ✅ DONE (d66f620)
 [6] HIGH     — OG preview testing                  ✅ DONE (production verified)
 [7] HIGH     — Generate 5 sample cards             ✅ DONE (vitalik/sassal/pranksy/hayden/jessepollak)
-[8] MEDIUM   — Vercel Analytics integration        ⬜ TODO
-[9] MEDIUM   — Insert UTM parameters in share links ⬜ TODO
+[8] MEDIUM   — Vercel Analytics integration        ✅ DONE (Analytics + SpeedInsights in layout)
+[9] MEDIUM   — Insert UTM parameters in share links ✅ DONE (utm.ts + ShareButtons)
+[10] MEDIUM  — Fix funnel dead counters             ✅ DONE (events route maps address_input_start/generate_start/card_generated)
+[11] MEDIUM  — OG image load tracking               ✅ DONE (og_image_load counter in OG route)
 ```
 
-**Launch blockers [1]-[7] resolved. Ready for seeding. Next: analytics + UTM.**
+**All items resolved. Funnel measurement fully operational.**

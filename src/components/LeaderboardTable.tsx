@@ -32,7 +32,7 @@ function ClassBadge({ classId }: { readonly classId: CharacterClassId }) {
       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
       style={{ backgroundColor: `${theme.primary}15`, color: theme.primary }}
     >
-      {theme.icon} {CLASS_LABELS[classId]}
+      <span aria-hidden="true">{theme.icon}</span> {CLASS_LABELS[classId]}
     </span>
   );
 }
@@ -42,7 +42,7 @@ function RankCell({ rank }: { readonly rank: number }) {
   return (
     <td className="px-3 py-3 text-center w-16">
       {badge ? (
-        <span className="text-lg">{badge}</span>
+        <span className="text-lg" aria-hidden="true">{badge}</span>
       ) : (
         <span className="tabular-nums text-sm" style={{ color: 'var(--color-text-muted)' }}>
           #{rank}
@@ -60,12 +60,24 @@ function PowerRow({ entry }: { readonly entry: PowerRankingEntry }) {
     <tr
       className="transition-colors duration-150 cursor-pointer"
       style={{ borderBottom: '1px solid var(--color-border)' }}
+      tabIndex={0}
+      role="link"
+      aria-label={`View ${formatDisplayName(entry.address, entry.ensName)} profile`}
       onClick={() => router.push(`/result/${entry.address}`)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/result/${entry.address}`); } }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
         (e.currentTarget as HTMLElement).style.boxShadow = `inset 0 0 20px ${theme.primary}05`;
       }}
       onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+        (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+      }}
+      onFocus={(e) => {
+        (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
+        (e.currentTarget as HTMLElement).style.boxShadow = `inset 0 0 20px ${theme.primary}05`;
+      }}
+      onBlur={(e) => {
         (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
         (e.currentTarget as HTMLElement).style.boxShadow = 'none';
       }}
@@ -93,11 +105,21 @@ function BattleRow({ entry }: { readonly entry: BattleRankingEntry }) {
     <tr
       className="transition-colors duration-150 cursor-pointer"
       style={{ borderBottom: '1px solid var(--color-border)' }}
+      tabIndex={0}
+      role="link"
+      aria-label={`View ${formatDisplayName(entry.address, entry.ensName)} profile`}
       onClick={() => router.push(`/result/${entry.address}`)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/result/${entry.address}`); } }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
       }}
       onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+      }}
+      onFocus={(e) => {
+        (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
+      }}
+      onBlur={(e) => {
         (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
       }}
     >
@@ -129,11 +151,21 @@ function ExplorerRow({ entry }: { readonly entry: ExplorerRankingEntry }) {
     <tr
       className="transition-colors duration-150 cursor-pointer"
       style={{ borderBottom: '1px solid var(--color-border)' }}
+      tabIndex={0}
+      role="link"
+      aria-label={`View ${formatDisplayName(entry.address, entry.ensName)} profile`}
       onClick={() => router.push(`/result/${entry.address}`)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); router.push(`/result/${entry.address}`); } }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
       }}
       onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+      }}
+      onFocus={(e) => {
+        (e.currentTarget as HTMLElement).style.backgroundColor = `${theme.primary}08`;
+      }}
+      onBlur={(e) => {
         (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
       }}
     >
@@ -232,7 +264,7 @@ export default function LeaderboardTable({
         className="rounded-xl overflow-hidden"
         style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
       >
-        <table className="w-full">
+        <table className="w-full" aria-label={`${type} leaderboard rankings`}>
           <thead>
             {type === 'power' && <PowerHeader />}
             {type === 'battle' && <BattleHeader />}

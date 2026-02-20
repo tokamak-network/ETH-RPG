@@ -104,6 +104,11 @@ export default function BattleArena({ turns, fighters, onComplete }: BattleArena
       </div>
       <div style={{ marginTop: 8, background: '#1a1a2e', borderRadius: 6, height: 10, overflow: 'hidden' }}>
         <div
+          role="progressbar"
+          aria-valuenow={Math.max(0, Math.round(hp))}
+          aria-valuemin={0}
+          aria-valuemax={maxHp}
+          aria-label={`${formatFighterName(fighter)} HP`}
           style={{
             height: '100%',
             width: `${Math.max(0, (hp / maxHp) * 100)}%`,
@@ -170,6 +175,7 @@ export default function BattleArena({ turns, fighters, onComplete }: BattleArena
           {currentAction && !isComplete && (
             <div
               key={visibleIndex}
+              aria-hidden="true"
               style={{
                 animation: `float-up ${BATTLE_TOKENS.timing.damageFloat}ms ease-out forwards`,
                 fontSize: 22,
@@ -191,6 +197,9 @@ export default function BattleArena({ turns, fighters, onComplete }: BattleArena
       {visibleTurns.length > 0 && (
         <div
           ref={logRef}
+          role="log"
+          aria-live="polite"
+          aria-label="Battle log"
           style={{
             marginTop: 12,
             maxHeight: LIVE_LOG_MAX_LINES * 36,
@@ -209,6 +218,7 @@ export default function BattleArena({ turns, fighters, onComplete }: BattleArena
       {!isComplete && (
         <div style={{ textAlign: 'center', marginTop: 12 }}>
           <button
+            type="button"
             onClick={handleSkip}
             style={{
               background: 'transparent',

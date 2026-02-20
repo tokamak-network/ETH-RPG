@@ -20,7 +20,7 @@ export default function TrustBanner() {
         {/* Right: nav links */}
         <div className="hidden sm:flex items-center justify-end gap-4">
           <a
-            href="#classes"
+            href="/#classes"
             className="text-xs transition-colors hover:text-text-primary"
             style={{ color: 'var(--color-text-muted)' }}
           >
@@ -34,7 +34,7 @@ export default function TrustBanner() {
             Leaderboard
           </a>
           <a
-            href="#faq"
+            href="/#faq"
             className="text-xs transition-colors hover:text-text-primary"
             style={{ color: 'var(--color-text-muted)' }}
           >

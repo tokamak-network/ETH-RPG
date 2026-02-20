@@ -109,4 +109,10 @@ describe('errorResponse', () => {
 
     expect(response.status).toBe(429);
   });
+
+  it('includes Cache-Control: private, no-store header', () => {
+    const response = errorResponse('API_ERROR', 'Server error', 500);
+
+    expect(response.headers.get('Cache-Control')).toBe('private, no-store');
+  });
 });

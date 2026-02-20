@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { BattleResponse, ApiErrorResponse } from '@/lib/types';
+import type { BattleResponse } from '@/lib/types';
 import { ERROR_MESSAGES, ErrorCode } from '@/lib/types';
+import { isApiErrorResponse } from '@/lib/api-guards';
 
 type BattleStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -29,18 +30,6 @@ const INITIAL_STATE: BattleState = {
   error: null,
   step: '',
 };
-
-function isApiErrorResponse(body: unknown): body is ApiErrorResponse {
-  return (
-    typeof body === 'object' &&
-    body !== null &&
-    'error' in body &&
-    typeof (body as ApiErrorResponse).error === 'object' &&
-    (body as ApiErrorResponse).error !== null &&
-    'code' in (body as ApiErrorResponse).error &&
-    'message' in (body as ApiErrorResponse).error
-  );
-}
 
 export function useBattle() {
   const [state, setState] = useState<BattleState>(INITIAL_STATE);

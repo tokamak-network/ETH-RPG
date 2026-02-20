@@ -1,7 +1,10 @@
 // GET /api/health — Server health check endpoint
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getCacheStats } from '@/lib/cache';
 import { getCounter } from '@/lib/metrics';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { getClientIp, errorResponse } from '@/lib/route-utils';
+import { ErrorCode } from '@/lib/types';
 
 interface EnvCheckResult {
   readonly name: string;
@@ -26,7 +29,13 @@ function determineStatus(envChecks: readonly EnvCheckResult[]): 'ok' | 'degraded
   return missingRequired ? 'degraded' : 'ok';
 }
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const clientIp = getClientIp(request);
+  const rateResult = await checkRateLimit(clientIp);
+  if (!rateResult.allowed) {
+    return errorResponse(ErrorCode.RATE_LIMITED, 'Too many requests. Please try again later.', 429);
+  }
+
   const cacheStats = getCacheStats();
   const envChecks = checkEnvVars();
   const status = determineStatus(envChecks);

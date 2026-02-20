@@ -1,7 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { NextRequest } from 'next/server';
 
 vi.mock('@/lib/cache', () => ({
   getCacheStats: vi.fn(),
+}));
+
+vi.mock('@/lib/rate-limit', () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 }),
 }));
 
 import { getCacheStats } from '@/lib/cache';
@@ -19,9 +24,15 @@ describe('GET /api/health', () => {
     process.env = { ...originalEnv };
   });
 
+  function createMockRequest(): NextRequest {
+    return new NextRequest('http://localhost:3000/api/health', {
+      headers: { 'x-forwarded-for': '127.0.0.1' },
+    });
+  }
+
   async function callHealth() {
     const { GET } = await import('@/app/api/health/route');
-    const response = await GET();
+    const response = await GET(createMockRequest());
     return { data: await response.json(), status: response.status };
   }
 

@@ -42,6 +42,6 @@ export function errorResponse(
 ): NextResponse {
   return NextResponse.json(
     { error: { code, message } },
-    { status },
+    { status, headers: { 'Cache-Control': 'private, no-store' } },
   );
 }
