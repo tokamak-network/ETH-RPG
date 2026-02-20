@@ -664,7 +664,6 @@ describe('Stat clamping at max values', () => {
 
     // Unclamped: round(50 + 180 * log10(5001)) ~= 716 -> clamped to 500
     expect(stats.int).toBe(INT_MAX);
-    expect(stats.int).toBeLessThanOrEqual(INT_MAX);
   });
 
   it('clamps DEX to DEX_MAX for extreme tx frequency', () => {
@@ -676,7 +675,6 @@ describe('Stat clamping at max values', () => {
     // txFrequency = 50000 / 0.25 = 200000
     // Unclamped: round(50 + 150 * log10(200001)) ~= 846 -> clamped to 550
     expect(stats.dex).toBe(DEX_MAX);
-    expect(stats.dex).toBeLessThanOrEqual(DEX_MAX);
   });
 
   it('clamps STR to STR_MAX for extreme swap+bridge counts', () => {
