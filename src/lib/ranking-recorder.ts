@@ -9,8 +9,7 @@ import type {
   AchievementTier,
 } from '@/lib/types';
 import {
-  getPlayerRecord,
-  upsertPlayerRecord,
+  atomicRecordBattleResult,
   recordBattleOutcome,
   getCurrentSeason,
 } from '@/lib/ranking-store';
@@ -24,19 +23,15 @@ function countAchievementsByTier(
   );
 }
 
-function buildPlayerRecord(
-  fighter: BattleFighter,
-  won: boolean,
-  existing: PlayerRecord | null,
-): PlayerRecord {
+function buildBaseRecord(fighter: BattleFighter): PlayerRecord {
   return {
     address: fighter.address.toLowerCase(),
     ...(fighter.ensName ? { ensName: fighter.ensName } : {}),
     classId: fighter.class.id,
     power: fighter.stats.power,
     level: fighter.stats.level,
-    wins: (existing?.wins ?? 0) + (won ? 1 : 0),
-    losses: (existing?.losses ?? 0) + (won ? 0 : 1),
+    wins: 0,
+    losses: 0,
     achievementCounts: countAchievementsByTier(fighter.achievements),
     lastSeenAt: Date.now(),
   };
@@ -54,15 +49,9 @@ export async function recordBattleForRanking(
     const fighter0Won = result.winner === 0;
     const fighter1Won = result.winner === 1;
 
-    // Fetch existing records in parallel (season-scoped)
-    const [existing0, existing1] = await Promise.all([
-      getPlayerRecord(season.id, fighter0.address),
-      getPlayerRecord(season.id, fighter1.address),
-    ]);
-
-    // Build updated records
-    const record0 = buildPlayerRecord(fighter0, fighter0Won, existing0);
-    const record1 = buildPlayerRecord(fighter1, fighter1Won, existing1);
+    // Build base records (metadata only — wins/losses handled atomically by Lua script)
+    const base0 = buildBaseRecord(fighter0);
+    const base1 = buildBaseRecord(fighter1);
 
     // Build battle records
     const battleRecord0: BattleRecord = {
@@ -87,10 +76,10 @@ export async function recordBattleForRanking(
       recordedAt: Date.now(),
     };
 
-    // Write all records in parallel (season-scoped)
+    // Atomic upsert + battle records in parallel
     await Promise.all([
-      upsertPlayerRecord(season.id, record0),
-      upsertPlayerRecord(season.id, record1),
+      atomicRecordBattleResult(season.id, base0, fighter0Won),
+      atomicRecordBattleResult(season.id, base1, fighter1Won),
       recordBattleOutcome(battleRecord0),
       recordBattleOutcome(battleRecord1),
     ]);

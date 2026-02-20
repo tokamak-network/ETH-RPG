@@ -5,20 +5,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Must use vi.hoisted() so mock variables are available when vi.mock factory runs
 const {
   mockGetCurrentSeason,
-  mockGetPlayerRecord,
-  mockUpsertPlayerRecord,
+  mockAtomicRecordBattleResult,
   mockRecordBattleOutcome,
 } = vi.hoisted(() => ({
   mockGetCurrentSeason: vi.fn(),
-  mockGetPlayerRecord: vi.fn(),
-  mockUpsertPlayerRecord: vi.fn(),
+  mockAtomicRecordBattleResult: vi.fn(),
   mockRecordBattleOutcome: vi.fn(),
 }));
 
 vi.mock('@/lib/ranking-store', () => ({
   getCurrentSeason: mockGetCurrentSeason,
-  getPlayerRecord: mockGetPlayerRecord,
-  upsertPlayerRecord: mockUpsertPlayerRecord,
+  atomicRecordBattleResult: mockAtomicRecordBattleResult,
   recordBattleOutcome: mockRecordBattleOutcome,
 }));
 
@@ -63,71 +60,42 @@ describe('recordBattleForRanking', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetCurrentSeason.mockResolvedValue(ACTIVE_SEASON);
-    mockGetPlayerRecord.mockResolvedValue(null);
-    mockUpsertPlayerRecord.mockResolvedValue(undefined);
+    mockAtomicRecordBattleResult.mockResolvedValue(undefined);
     mockRecordBattleOutcome.mockResolvedValue(undefined);
   });
 
-  it('records both players and battle outcomes for a fresh battle', async () => {
+  it('atomically records both players and battle outcomes', async () => {
     const fighter0 = makeFighter('0xaaa', 1000);
     const fighter1 = makeFighter('0xbbb', 900);
     const result = makeResult(0);
 
     await recordBattleForRanking(fighter0, fighter1, result);
 
-    // Should upsert both players with seasonId
-    expect(mockUpsertPlayerRecord).toHaveBeenCalledTimes(2);
+    // Should call atomic upsert for both players
+    expect(mockAtomicRecordBattleResult).toHaveBeenCalledTimes(2);
 
-    // Winner (0xaaa) should have 1 win, 0 losses
-    const winnerCall = mockUpsertPlayerRecord.mock.calls.find(
+    // Winner (0xaaa): seasonId='s1', baseRecord with wins=0/losses=0, won=true
+    const winnerCall = mockAtomicRecordBattleResult.mock.calls.find(
       (call: unknown[]) => (call[1] as { address: string }).address === '0xaaa',
     );
     expect(winnerCall).toBeDefined();
-    expect(winnerCall![0]).toBe('s1'); // seasonId
-    expect(winnerCall![1].wins).toBe(1);
+    expect(winnerCall![0]).toBe('s1');
+    expect(winnerCall![1].wins).toBe(0); // base record — Lua script increments
     expect(winnerCall![1].losses).toBe(0);
+    expect(winnerCall![2]).toBe(true); // won
 
-    // Loser (0xbbb) should have 0 wins, 1 loss
-    const loserCall = mockUpsertPlayerRecord.mock.calls.find(
+    // Loser (0xbbb): seasonId='s1', baseRecord with wins=0/losses=0, won=false
+    const loserCall = mockAtomicRecordBattleResult.mock.calls.find(
       (call: unknown[]) => (call[1] as { address: string }).address === '0xbbb',
     );
     expect(loserCall).toBeDefined();
-    expect(loserCall![0]).toBe('s1'); // seasonId
+    expect(loserCall![0]).toBe('s1');
     expect(loserCall![1].wins).toBe(0);
-    expect(loserCall![1].losses).toBe(1);
+    expect(loserCall![1].losses).toBe(0);
+    expect(loserCall![2]).toBe(false); // lost
 
     // Should record 2 battle outcomes
     expect(mockRecordBattleOutcome).toHaveBeenCalledTimes(2);
-  });
-
-  it('accumulates wins/losses for existing players', async () => {
-    mockGetPlayerRecord.mockImplementation(async (_seasonId: string, addr: string) => {
-      if (addr === '0xaaa') {
-        return {
-          address: '0xaaa',
-          classId: 'warrior',
-          power: 1000,
-          level: 10,
-          wins: 5,
-          losses: 3,
-          achievementCounts: { legendary: 0, epic: 0, rare: 0, common: 1 },
-          lastSeenAt: Date.now(),
-        };
-      }
-      return null;
-    });
-
-    const fighter0 = makeFighter('0xaaa', 1000);
-    const fighter1 = makeFighter('0xbbb', 900);
-    const result = makeResult(0);
-
-    await recordBattleForRanking(fighter0, fighter1, result);
-
-    const winnerCall = mockUpsertPlayerRecord.mock.calls.find(
-      (call: unknown[]) => (call[1] as { address: string }).address === '0xaaa',
-    );
-    expect(winnerCall![1].wins).toBe(6); // 5 + 1
-    expect(winnerCall![1].losses).toBe(3); // unchanged
   });
 
   it('does nothing when no active season', async () => {
@@ -139,7 +107,7 @@ describe('recordBattleForRanking', () => {
 
     await recordBattleForRanking(fighter0, fighter1, result);
 
-    expect(mockUpsertPlayerRecord).not.toHaveBeenCalled();
+    expect(mockAtomicRecordBattleResult).not.toHaveBeenCalled();
     expect(mockRecordBattleOutcome).not.toHaveBeenCalled();
   });
 
@@ -152,7 +120,7 @@ describe('recordBattleForRanking', () => {
 
     await recordBattleForRanking(fighter0, fighter1, result);
 
-    expect(mockUpsertPlayerRecord).not.toHaveBeenCalled();
+    expect(mockAtomicRecordBattleResult).not.toHaveBeenCalled();
   });
 
   it('counts achievement tiers from fighter data', async () => {
@@ -173,7 +141,7 @@ describe('recordBattleForRanking', () => {
 
     await recordBattleForRanking(fighter0, fighter1, result);
 
-    const call = mockUpsertPlayerRecord.mock.calls.find(
+    const call = mockAtomicRecordBattleResult.mock.calls.find(
       (call: unknown[]) => (call[1] as { address: string }).address === '0xaaa',
     );
     expect(call![1].achievementCounts).toEqual({
@@ -182,5 +150,16 @@ describe('recordBattleForRanking', () => {
       rare: 1,
       common: 2,
     });
+  });
+
+  it('silently fails on errors', async () => {
+    mockGetCurrentSeason.mockRejectedValue(new Error('KV down'));
+
+    const fighter0 = makeFighter('0xaaa');
+    const fighter1 = makeFighter('0xbbb');
+    const result = makeResult(0);
+
+    // Should not throw
+    await expect(recordBattleForRanking(fighter0, fighter1, result)).resolves.toBeUndefined();
   });
 });

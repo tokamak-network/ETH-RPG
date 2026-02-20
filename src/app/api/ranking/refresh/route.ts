@@ -95,9 +95,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       refreshedAt: new Date(now).toISOString(),
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    // Log internal details server-side, return generic message to client
+    console.error('[ranking/refresh] Failed:', error instanceof Error ? error.message : error);
     return NextResponse.json(
-      { error: { code: 'REFRESH_FAILED', message } },
+      { error: { code: 'REFRESH_FAILED', message: 'Leaderboard refresh failed.' } },
       { status: 500 },
     );
   }

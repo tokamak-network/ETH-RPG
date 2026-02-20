@@ -97,6 +97,49 @@ export async function getPlayerRecord(seasonId: string, address: string): Promis
   }
 }
 
+// Lua script: atomically read existing wins/losses, increment, merge with new metadata, write back.
+// Prevents race condition when two concurrent battles involve the same player.
+const ATOMIC_UPSERT_SCRIPT = `
+local existing = redis.call('GET', KEYS[1])
+local wins = 0
+local losses = 0
+if existing then
+  local old = cjson.decode(existing)
+  wins = old.wins or 0
+  losses = old.losses or 0
+end
+local record = cjson.decode(ARGV[1])
+if ARGV[2] == "1" then
+  record.wins = wins + 1
+  record.losses = losses
+else
+  record.wins = wins
+  record.losses = losses + 1
+end
+redis.call('SET', KEYS[1], cjson.encode(record))
+redis.call('SADD', KEYS[2], ARGV[3])
+return 1
+`;
+
+export async function atomicRecordBattleResult(
+  seasonId: string,
+  baseRecord: PlayerRecord,
+  won: boolean,
+): Promise<void> {
+  if (!isKvConfigured()) return;
+  try {
+    const key = playerKey(seasonId, baseRecord.address);
+    const indexKey = playerIndexKey(seasonId);
+    await kv.eval(
+      ATOMIC_UPSERT_SCRIPT,
+      [key, indexKey],
+      [JSON.stringify(baseRecord), won ? '1' : '0', baseRecord.address.toLowerCase()],
+    );
+  } catch {
+    // Silently fail
+  }
+}
+
 export async function getAllPlayerRecords(seasonId: string): Promise<readonly PlayerRecord[]> {
   if (!isKvConfigured()) return [];
   try {
