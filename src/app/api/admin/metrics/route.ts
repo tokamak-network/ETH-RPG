@@ -2,13 +2,8 @@
 // Protected by ADMIN_SECRET via Authorization header
 
 import { NextRequest, NextResponse } from 'next/server';
-import { timingSafeEqual } from 'crypto';
 import { getMetricsSnapshot } from '@/lib/metrics';
-
-function safeCompare(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
-}
+import { safeCompare } from '@/lib/kv-utils';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const authHeader = request.headers.get('authorization');

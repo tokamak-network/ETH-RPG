@@ -90,8 +90,8 @@ describe('computeBattleRanking', () => {
 
   it('sorts by ratingScore descending', () => {
     const players = [
-      makePlayer({ address: '0xaaa', wins: 10, losses: 5 }), // score=10*10+5*2+67=177
-      makePlayer({ address: '0xbbb', wins: 20, losses: 2 }), // score=20*10+2*2+91=295
+      makePlayer({ address: '0xaaa', wins: 10, losses: 5 }), // score=10*10-5*3+67=152
+      makePlayer({ address: '0xbbb', wins: 20, losses: 2 }), // score=20*10-2*3+91=285
     ];
 
     const result = computeBattleRanking(players);
@@ -105,11 +105,11 @@ describe('computeBattleRanking', () => {
     expect(result[0].winRate).toBe(70);
   });
 
-  it('handles zero wins', () => {
+  it('handles zero wins — losses reduce score', () => {
     const players = [makePlayer({ address: '0xaaa', wins: 0, losses: 5 })];
     const result = computeBattleRanking(players);
     expect(result[0].winRate).toBe(0);
-    expect(result[0].ratingScore).toBe(10); // 0*10 + 5*2 + 0 = 10
+    expect(result[0].ratingScore).toBe(-15); // 0*10 - 5*3 + 0 = -15
   });
 });
 

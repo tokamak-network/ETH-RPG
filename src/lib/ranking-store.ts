@@ -9,6 +9,7 @@ import type {
   LeaderboardType,
   LeaderboardResponse,
 } from '@/lib/types';
+import { isKvConfigured } from '@/lib/kv-utils';
 
 // --- Key patterns ---
 
@@ -18,8 +19,8 @@ function seasonKey(id: string): string {
   return `ranking:season:${id}`;
 }
 
-function playerKey(address: string): string {
-  return `ranking:player:${address.toLowerCase()}`;
+function playerKey(seasonId: string, address: string): string {
+  return `ranking:player:${seasonId}:${address.toLowerCase()}`;
 }
 
 function battleListKey(seasonId: string, address: string): string {
@@ -30,12 +31,8 @@ function leaderboardKey(seasonId: string, type: LeaderboardType): string {
   return `ranking:leaderboard:${seasonId}:${type}`;
 }
 
-const PLAYER_INDEX_KEY = 'ranking:player_index';
-
-// --- KV availability check ---
-
-function isKvConfigured(): boolean {
-  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+function playerIndexKey(seasonId: string): string {
+  return `ranking:player_index:${seasonId}`;
 }
 
 // --- Season operations ---
@@ -81,45 +78,40 @@ export async function getSeason(id: string): Promise<Season | null> {
 
 // --- Player record operations ---
 
-export async function upsertPlayerRecord(record: PlayerRecord): Promise<void> {
+export async function upsertPlayerRecord(seasonId: string, record: PlayerRecord): Promise<void> {
   if (!isKvConfigured()) return;
   try {
-    await kv.set(playerKey(record.address), record);
-    // Add to player index set
-    await kv.sadd(PLAYER_INDEX_KEY, record.address.toLowerCase());
+    await kv.set(playerKey(seasonId, record.address), record);
+    await kv.sadd(playerIndexKey(seasonId), record.address.toLowerCase());
   } catch {
     // Silently fail
   }
 }
 
-export async function getPlayerRecord(address: string): Promise<PlayerRecord | null> {
+export async function getPlayerRecord(seasonId: string, address: string): Promise<PlayerRecord | null> {
   if (!isKvConfigured()) return null;
   try {
-    return await kv.get<PlayerRecord>(playerKey(address));
+    return await kv.get<PlayerRecord>(playerKey(seasonId, address));
   } catch {
     return null;
   }
 }
 
-export async function getAllPlayerAddresses(): Promise<readonly string[]> {
+export async function getAllPlayerRecords(seasonId: string): Promise<readonly PlayerRecord[]> {
   if (!isKvConfigured()) return [];
   try {
-    const members = await kv.smembers<string[]>(PLAYER_INDEX_KEY);
-    return members ?? [];
-  } catch {
-    return [];
-  }
-}
-
-export async function getAllPlayerRecords(): Promise<readonly PlayerRecord[]> {
-  if (!isKvConfigured()) return [];
-  try {
-    const addresses = await getAllPlayerAddresses();
-    if (addresses.length === 0) return [];
-
-    const keys = addresses.map((addr) => playerKey(addr));
-    const records = await kv.mget<(PlayerRecord | null)[]>(...keys);
-    return (records ?? []).filter((r): r is PlayerRecord => r !== null);
+    const records: PlayerRecord[] = [];
+    let cursor: string | number = '0';
+    do {
+      const [nextCursor, batch] = await kv.sscan(playerIndexKey(seasonId), cursor, { count: 100 });
+      cursor = nextCursor;
+      if (batch.length > 0) {
+        const keys = (batch as string[]).map((addr) => playerKey(seasonId, addr));
+        const results = await kv.mget<(PlayerRecord | null)[]>(...keys);
+        records.push(...(results ?? []).filter((r): r is PlayerRecord => r !== null));
+      }
+    } while (cursor !== '0');
+    return records;
   } catch {
     return [];
   }

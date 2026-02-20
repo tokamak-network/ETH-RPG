@@ -2,26 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { MetricsSnapshot, HourlyBucket } from '@/lib/metrics';
-import { CLASS_THEMES } from '@/styles/themes';
+import { CLASS_THEMES, CLASS_LABELS } from '@/styles/themes';
 import type { CharacterClassId } from '@/lib/types';
 
 const REFRESH_INTERVAL_MS = 30_000;
+const SESSION_STORAGE_KEY = 'eth_rpg_admin_key';
 
 const CLASS_ORDER: readonly CharacterClassId[] = [
   'hunter', 'rogue', 'summoner', 'merchant',
   'priest', 'elder_wizard', 'guardian', 'warrior',
 ] as const;
-
-const CLASS_LABELS: Record<CharacterClassId, string> = {
-  hunter: 'Hunter',
-  rogue: 'Rogue',
-  summoner: 'Summoner',
-  merchant: 'Merchant',
-  priest: 'Priest',
-  elder_wizard: 'Elder Wizard',
-  guardian: 'Guardian',
-  warrior: 'Warrior',
-};
 
 function FunnelBar({ label, value, maxValue }: {
   readonly label: string;
@@ -156,27 +146,31 @@ export default function AdminPage() {
   const [snapshot, setSnapshot] = useState<MetricsSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [adminKey, setAdminKey] = useState<string | null>(null);
+  const [showKeyInput, setShowKeyInput] = useState(false);
+  const [keyInputValue, setKeyInputValue] = useState('');
 
-  // Extract admin key from URL
-  const getAdminKey = useCallback((): string | null => {
-    if (typeof window === 'undefined') return null;
-    const params = new URLSearchParams(window.location.search);
-    return params.get('key');
+  // On mount: check sessionStorage for saved key
+  useEffect(() => {
+    const storedKey = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (storedKey) {
+      setAdminKey(storedKey);
+    } else {
+      setShowKeyInput(true);
+    }
   }, []);
 
-  const fetchMetrics = useCallback(async () => {
-    const key = getAdminKey();
-    if (!key) {
-      setError('Missing admin key. Access via /admin?key=YOUR_SECRET');
-      return;
-    }
-
+  const fetchMetrics = useCallback(async (key: string) => {
     try {
       const res = await fetch('/api/admin/metrics', {
         headers: { 'Authorization': `Bearer ${key}` },
       });
       if (!res.ok) {
         if (res.status === 401) {
+          // Clear invalid key
+          sessionStorage.removeItem(SESSION_STORAGE_KEY);
+          setAdminKey(null);
+          setShowKeyInput(true);
           setError('Invalid admin key.');
         } else {
           setError(`Failed to fetch metrics (${res.status})`);
@@ -190,19 +184,64 @@ export default function AdminPage() {
     } catch {
       setError('Failed to connect to metrics API.');
     }
-  }, [getAdminKey]);
+  }, []);
 
+  // Fetch when adminKey is set
   useEffect(() => {
-    fetchMetrics();
-    const interval = setInterval(fetchMetrics, REFRESH_INTERVAL_MS);
+    if (!adminKey) return;
+    fetchMetrics(adminKey);
+    const interval = setInterval(() => fetchMetrics(adminKey), REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [fetchMetrics]);
+  }, [adminKey, fetchMetrics]);
 
-  if (error) {
+  const handleKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = keyInputValue.trim();
+    if (!trimmed) return;
+    sessionStorage.setItem(SESSION_STORAGE_KEY, trimmed);
+    setAdminKey(trimmed);
+    setShowKeyInput(false);
+    setError(null);
+  };
+
+  if (showKeyInput) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+        <form onSubmit={handleKeySubmit} className="text-center space-y-4">
+          <h1 className="text-xl font-bold" style={{ color: '#f4c430', fontFamily: 'var(--font-display)' }}>
+            Admin Access
+          </h1>
+          {error && <p className="text-sm" style={{ color: '#ef4444' }}>{error}</p>}
+          <input
+            type="password"
+            value={keyInputValue}
+            onChange={(e) => setKeyInputValue(e.target.value)}
+            placeholder="Enter admin key"
+            className="block w-64 px-4 py-2 rounded-lg text-sm"
+            style={{
+              backgroundColor: 'var(--color-surface-alt)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+            autoFocus
+          />
+          <button
+            type="submit"
+            className="px-6 py-2 rounded-lg text-sm font-semibold"
+            style={{ backgroundColor: '#f4c430', color: '#0a0a0f' }}
+          >
+            Authenticate
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  if (error && !snapshot) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
         <div className="text-center">
-          <h1 className="text-xl font-bold mb-2" style={{ color: '#ef4444' }}>Access Denied</h1>
+          <h1 className="text-xl font-bold mb-2" style={{ color: '#ef4444' }}>Error</h1>
           <p style={{ color: 'var(--color-text-muted)' }}>{error}</p>
         </div>
       </div>

@@ -47,7 +47,7 @@ function computeWinRate(wins: number, losses: number): number {
 }
 
 function computeRatingScore(wins: number, losses: number, winRate: number): number {
-  return wins * 10 + losses * 2 + winRate;
+  return wins * 10 - losses * 3 + winRate;
 }
 
 export function computeBattleRanking(

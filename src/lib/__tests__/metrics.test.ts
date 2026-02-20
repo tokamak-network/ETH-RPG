@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mockKv = vi.hoisted(() => ({
   incr: vi.fn().mockResolvedValue(1),
   get: vi.fn().mockResolvedValue(null),
+  mget: vi.fn().mockResolvedValue([]),
   hincrby: vi.fn().mockResolvedValue(1),
   hgetall: vi.fn().mockResolvedValue(null),
   lpush: vi.fn().mockResolvedValue(1),
@@ -100,7 +101,10 @@ describe('metrics', () => {
 
   describe('getMetricsSnapshot', () => {
     it('returns snapshot with all sections', async () => {
-      mockKv.get.mockResolvedValue(5);
+      // Counter mget returns 16 values (one per counter key)
+      mockKv.mget
+        .mockResolvedValueOnce(Array(16).fill(5))  // counter batch
+        .mockResolvedValueOnce(Array(72).fill(3));  // hourly batch
       mockKv.hgetall.mockResolvedValueOnce({ warrior: 10, rogue: 5 });
       mockKv.lrange.mockResolvedValueOnce([
         JSON.stringify({ name: 'test', timestamp: 1000 }),
@@ -113,10 +117,12 @@ describe('metrics', () => {
       expect(snapshot.recentEvents).toHaveLength(1);
       expect(snapshot.recentEvents[0].name).toBe('test');
       expect(snapshot.hourlyActivity).toHaveLength(72);
+      // Verify counters were populated from mget
+      expect(snapshot.counters.generate_total).toBe(5);
     });
 
     it('returns empty snapshot on kv error', async () => {
-      mockKv.get.mockRejectedValue(new Error('fail'));
+      mockKv.mget.mockRejectedValue(new Error('fail'));
       const snapshot = await getMetricsSnapshot();
       expect(snapshot.counters).toEqual({});
       expect(snapshot.recentEvents).toEqual([]);

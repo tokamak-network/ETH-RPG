@@ -54,10 +54,10 @@ export async function recordBattleForRanking(
     const fighter0Won = result.winner === 0;
     const fighter1Won = result.winner === 1;
 
-    // Fetch existing records in parallel
+    // Fetch existing records in parallel (season-scoped)
     const [existing0, existing1] = await Promise.all([
-      getPlayerRecord(fighter0.address),
-      getPlayerRecord(fighter1.address),
+      getPlayerRecord(season.id, fighter0.address),
+      getPlayerRecord(season.id, fighter1.address),
     ]);
 
     // Build updated records
@@ -87,10 +87,10 @@ export async function recordBattleForRanking(
       recordedAt: Date.now(),
     };
 
-    // Write all records in parallel
+    // Write all records in parallel (season-scoped)
     await Promise.all([
-      upsertPlayerRecord(record0),
-      upsertPlayerRecord(record1),
+      upsertPlayerRecord(season.id, record0),
+      upsertPlayerRecord(season.id, record1),
       recordBattleOutcome(battleRecord0),
       recordBattleOutcome(battleRecord1),
     ]);

@@ -9,7 +9,7 @@ import type {
   RankingEntry,
   CharacterClassId,
 } from '@/lib/types';
-import { CLASS_THEMES } from '@/styles/themes';
+import { CLASS_THEMES, CLASS_LABELS } from '@/styles/themes';
 
 interface LeaderboardTableProps {
   readonly type: LeaderboardType;
@@ -22,17 +22,6 @@ const RANK_BADGES: Record<number, string> = {
   1: '\u{1F947}',
   2: '\u{1F948}',
   3: '\u{1F949}',
-};
-
-const CLASS_LABELS: Record<CharacterClassId, string> = {
-  hunter: 'Hunter',
-  rogue: 'Rogue',
-  summoner: 'Summoner',
-  merchant: 'Merchant',
-  priest: 'Priest',
-  elder_wizard: 'Elder Wizard',
-  guardian: 'Guardian',
-  warrior: 'Warrior',
 };
 
 function formatAddress(address: string, ensName?: string): string {

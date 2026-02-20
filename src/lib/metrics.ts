@@ -3,6 +3,7 @@
 
 import { kv } from '@vercel/kv';
 import type { CharacterClassId } from '@/lib/types';
+import { isKvConfigured } from '@/lib/kv-utils';
 
 // --- Constants ---
 
@@ -33,11 +34,7 @@ export interface HourlyBucket {
   readonly count: number;
 }
 
-// --- KV availability check ---
-
-function isKvConfigured(): boolean {
-  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
-}
+// Re-exported from kv-utils for centralized KV config check
 
 // --- Counter operations ---
 
@@ -131,10 +128,9 @@ export async function getMetricsSnapshot(): Promise<MetricsSnapshot> {
       'funnel_generate_success', 'funnel_share',
     ];
 
-    const counterPromises = counterKeys.map(async (key) => {
-      const value = await kv.get<number>(`${KV_PREFIX}counter:${key}`);
-      return [key, value ?? 0] as const;
-    });
+    // Batch fetch all 16 counters in 1 mget call
+    const counterKeysFull = counterKeys.map((key) => `${KV_PREFIX}counter:${key}`);
+    const counterValuesPromise = kv.mget<(number | null)[]>(...counterKeysFull);
 
     // Fetch class distribution
     const classDistPromise = kv.hgetall<Record<string, number>>(CLASS_DIST_KEY);
@@ -142,7 +138,7 @@ export async function getMetricsSnapshot(): Promise<MetricsSnapshot> {
     // Fetch recent events
     const eventsPromise = kv.lrange<string>(EVENTS_KEY, 0, EVENT_RING_BUFFER_SIZE - 1);
 
-    // Fetch hourly activity (last 72 hours)
+    // Fetch hourly activity (last 72 hours) in 1 mget call
     const now = new Date();
     const hourlyKeys: string[] = [];
     for (let i = 0; i < 72; i++) {
@@ -150,19 +146,19 @@ export async function getMetricsSnapshot(): Promise<MetricsSnapshot> {
       hourlyKeys.push(d.toISOString().slice(0, 13));
     }
 
-    const hourlyPromises = hourlyKeys.map(async (hourKey) => {
-      const value = await kv.get<number>(`${HOURLY_PREFIX}${hourKey}`);
-      return { hour: hourKey, count: value ?? 0 };
-    });
+    const hourlyKeysFull = hourlyKeys.map((key) => `${HOURLY_PREFIX}${key}`);
+    const hourlyValuesPromise = kv.mget<(number | null)[]>(...hourlyKeysFull);
 
-    const [counterResults, classDistribution, rawEvents, hourlyResults] = await Promise.all([
-      Promise.all(counterPromises),
+    const [counterValues, classDistribution, rawEvents, hourlyValues] = await Promise.all([
+      counterValuesPromise,
       classDistPromise,
       eventsPromise,
-      Promise.all(hourlyPromises),
+      hourlyValuesPromise,
     ]);
 
+    const counterResults = counterKeys.map((key, i) => [key, (counterValues ?? [])[i] ?? 0] as const);
     const counters = Object.fromEntries(counterResults);
+    const hourlyResults = hourlyKeys.map((key, i) => ({ hour: key, count: (hourlyValues ?? [])[i] ?? 0 }));
 
     const recentEvents: MetricEvent[] = (rawEvents ?? []).map((raw) => {
       if (typeof raw === 'string') {

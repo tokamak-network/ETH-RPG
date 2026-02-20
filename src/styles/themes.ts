@@ -102,6 +102,17 @@ export const TIER_BORDER_COLORS: Record<AchievementTier, string> = {
   common: '#6b7280',
 } as const;
 
+export const CLASS_LABELS: Record<CharacterClassId, string> = {
+  hunter: 'Hunter',
+  rogue: 'Rogue',
+  summoner: 'Summoner',
+  merchant: 'Merchant',
+  priest: 'Priest',
+  elder_wizard: 'Elder Wizard',
+  guardian: 'Guardian',
+  warrior: 'Warrior',
+} as const;
+
 export const BATTLE_TOKENS = {
   colors: {
     player0: '#60a5fa',
