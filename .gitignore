@@ -42,3 +42,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 address.json
+
+# internal docs (not for repo)
+docs/team-announcement.txt
+docs/tokamak-contribution-answers.txt
