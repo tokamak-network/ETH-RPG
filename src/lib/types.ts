@@ -180,3 +180,81 @@ export interface CryptoEvent {
   readonly event: string;
   readonly rpgEvent: string;
 }
+
+// --- Season Ranking Types ---
+
+export type LeaderboardType = 'power' | 'battle' | 'explorer';
+
+export interface Season {
+  readonly id: string;          // "s1", "s2"
+  readonly number: number;
+  readonly name: string;        // "Genesis Season"
+  readonly startedAt: number;   // epoch ms
+  readonly endsAt: number;      // epoch ms
+  readonly isActive: boolean;
+}
+
+export interface PlayerRecord {
+  readonly address: string;
+  readonly ensName?: string;
+  readonly classId: CharacterClassId;
+  readonly power: number;
+  readonly level: number;
+  readonly wins: number;
+  readonly losses: number;
+  readonly achievementCounts: Readonly<Record<AchievementTier, number>>;
+  readonly lastSeenAt: number;
+}
+
+export interface BattleRecord {
+  readonly seasonId: string;
+  readonly address: string;
+  readonly opponentAddress: string;
+  readonly won: boolean;
+  readonly power: number;
+  readonly opponentPower: number;
+  readonly nonce: string;
+  readonly recordedAt: number;
+}
+
+export interface PowerRankingEntry {
+  readonly rank: number;
+  readonly address: string;
+  readonly ensName?: string;
+  readonly classId: CharacterClassId;
+  readonly power: number;
+  readonly level: number;
+}
+
+export interface BattleRankingEntry {
+  readonly rank: number;
+  readonly address: string;
+  readonly ensName?: string;
+  readonly classId: CharacterClassId;
+  readonly power: number;
+  readonly wins: number;
+  readonly losses: number;
+  readonly winRate: number;
+  readonly ratingScore: number;
+}
+
+export interface ExplorerRankingEntry {
+  readonly rank: number;
+  readonly address: string;
+  readonly ensName?: string;
+  readonly classId: CharacterClassId;
+  readonly power: number;
+  readonly achievementCount: number;
+  readonly explorerScore: number;
+}
+
+export type RankingEntry = PowerRankingEntry | BattleRankingEntry | ExplorerRankingEntry;
+
+export interface LeaderboardResponse {
+  readonly season: Season;
+  readonly type: LeaderboardType;
+  readonly updatedAt: number;
+  readonly entries: readonly RankingEntry[];
+  readonly totalPlayers: number;
+  readonly playerRank?: number;
+}

@@ -8,6 +8,7 @@ import { generateCharacterData, EmptyWalletError } from '@/lib/pipeline';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { isValidInput, getClientIp, errorResponse } from '@/lib/route-utils';
 import { ErrorCode } from '@/lib/types';
+import { trackGenerate, trackError } from '@/lib/metrics';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Rate limit check
@@ -52,6 +53,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const response = await generateCharacterData(address);
+
+    // Fire-and-forget: server-side metrics
+    trackGenerate(response.class.id, response.cached).catch(() => {});
+
     const cacheControl = response.cached
       ? 'public, max-age=300, s-maxage=3600'
       : 'private, no-cache';
@@ -60,6 +65,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     if (error instanceof EmptyWalletError) {
+      trackError('empty_wallet').catch(() => {});
       return errorResponse(
         ErrorCode.NO_TRANSACTIONS,
         'This wallet has no transactions. Please enter an address with activity history.',
@@ -70,6 +76,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const message = error instanceof Error ? error.message : 'Unknown error';
 
     Sentry.captureException(error);
+    trackError('api').catch(() => {});
 
     // Differentiate between known error types
     if (message.includes('ENS name') || message.includes('Invalid Ethereum')) {

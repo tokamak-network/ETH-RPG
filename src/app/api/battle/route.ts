@@ -11,6 +11,8 @@ import { getCachedBattle, setCachedBattle } from '@/lib/battle-cache';
 import { isValidInput, isValidNonce, getClientIp, errorResponse } from '@/lib/route-utils';
 import { ErrorCode } from '@/lib/types';
 import type { BattleFighter, BattleResponse } from '@/lib/types';
+import { trackBattle, trackError } from '@/lib/metrics';
+import { recordBattleForRanking } from '@/lib/ranking-recorder';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Rate limit
@@ -70,6 +72,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (nonce) {
     const cached = getCachedBattle(address1, address2, nonce);
     if (cached) {
+      trackBattle(true).catch(() => {});
       return NextResponse.json({ ...cached, cached: true }, {
         headers: { 'Cache-Control': 'public, max-age=86400, immutable' },
       });
@@ -116,11 +119,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Cache the result
     setCachedBattle(address1, address2, battleNonce, response);
 
+    // Fire-and-forget: server-side metrics + ranking
+    trackBattle(false).catch(() => {});
+    recordBattleForRanking(fighter0, fighter1, result).catch(() => {});
+
     return NextResponse.json(response, {
       headers: { 'Cache-Control': 'private, no-cache' },
     });
   } catch (error) {
     if (error instanceof EmptyWalletError) {
+      trackError('empty_wallet').catch(() => {});
       return errorResponse(
         ErrorCode.NO_TRANSACTIONS,
         'One of the wallets has no transactions.',
@@ -130,6 +138,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const message = error instanceof Error ? error.message : 'Unknown error';
     Sentry.captureException(error);
+    trackError('api').catch(() => {});
 
     if (message.includes('ENS name') || message.includes('Invalid Ethereum')) {
       return errorResponse(ErrorCode.INVALID_ADDRESS, message, 400);

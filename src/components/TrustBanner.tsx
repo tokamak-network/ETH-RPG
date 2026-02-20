@@ -27,6 +27,13 @@ export default function TrustBanner() {
             Classes
           </a>
           <a
+            href="/ranking"
+            className="text-xs transition-colors hover:text-text-primary"
+            style={{ color: 'var(--color-text-muted)' }}
+          >
+            Leaderboard
+          </a>
+          <a
             href="#faq"
             className="text-xs transition-colors hover:text-text-primary"
             style={{ color: 'var(--color-text-muted)' }}

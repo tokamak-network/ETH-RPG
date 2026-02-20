@@ -1,9 +1,8 @@
 // POST /api/events — Receive client-side analytics events.
-// Logs events in structured format for Vercel logs / Sentry.
-// Can be extended to forward to an external analytics service.
+// Records events in Vercel KV via metrics module.
 
 import { NextResponse } from 'next/server';
-import * as Sentry from '@sentry/nextjs';
+import { trackShare, trackFunnel, recordEvent, incrementCounter } from '@/lib/metrics';
 
 const MAX_EVENT_NAME_LENGTH = 100;
 const MAX_URL_LENGTH = 2048;
@@ -20,13 +19,13 @@ interface AnalyticsEvent {
 
 function sanitizeProperties(
   properties: Record<string, unknown> | undefined,
-): Record<string, unknown> | undefined {
+): Record<string, string | number | boolean> | undefined {
   if (!properties || typeof properties !== 'object') {
     return undefined;
   }
 
   const keys = Object.keys(properties).slice(0, MAX_PROPERTIES_KEYS);
-  const sanitized: Record<string, unknown> = {};
+  const sanitized: Record<string, string | number | boolean> = {};
   for (const key of keys) {
     const value = properties[key];
     if (typeof value === 'string') {
@@ -52,20 +51,24 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const safeUrl = typeof body.url === 'string' ? body.url.slice(0, MAX_URL_LENGTH) : undefined;
-    const safeReferrer = typeof body.referrer === 'string' ? body.referrer.slice(0, MAX_URL_LENGTH) : undefined;
     const safeProperties = sanitizeProperties(body.properties);
 
-    // Structured log — visible in Vercel function logs
-    Sentry.addBreadcrumb({
-      category: 'analytics',
-      message: body.event,
-      data: {
-        ...safeProperties,
-        url: safeUrl,
-        referrer: safeReferrer,
-      },
-      level: 'info',
-    });
+    // Route to appropriate metric tracking
+    if (body.event === 'share_click' && safeProperties?.platform) {
+      trackShare(String(safeProperties.platform)).catch(() => {});
+    } else if (body.event.startsWith('funnel_')) {
+      const step = body.event.replace('funnel_', '');
+      trackFunnel(step).catch(() => {});
+    } else if (body.event === 'page_view') {
+      const page = safeProperties?.page ?? safeUrl ?? 'unknown';
+      incrementCounter(`funnel_${String(page)}`).catch(() => {});
+    }
+
+    // Always record the raw event
+    recordEvent(body.event, {
+      ...safeProperties,
+      ...(safeUrl ? { url: safeUrl } : {}),
+    }).catch(() => {});
 
     return NextResponse.json({ ok: true }, { status: 202 });
   } catch {
