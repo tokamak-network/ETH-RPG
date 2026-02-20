@@ -54,8 +54,8 @@ export async function executeBattle(input: BattlePipelineInput): Promise<BattleR
     cached: false,
   };
 
-  // Cache the result
-  await setCachedBattle(address1, address2, battleNonce, response);
+  // Cache using resolved 0x addresses (consistent with URLs in the response)
+  await setCachedBattle(char1.address, char2.address, battleNonce, response);
 
   return response;
 }

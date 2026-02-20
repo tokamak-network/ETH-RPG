@@ -107,16 +107,11 @@ function mapTransferToItem(
   };
 }
 
-interface TransferResult {
-  readonly transfers: readonly AssetTransferItem[];
-  readonly hasMore: boolean;
-}
-
 async function fetchTransfers(
   alchemy: Alchemy,
   address: string,
   direction: 'from' | 'to',
-): Promise<TransferResult> {
+): Promise<readonly AssetTransferItem[]> {
   const params = {
     ...(direction === 'from'
       ? { fromAddress: address }
@@ -129,10 +124,7 @@ async function fetchTransfers(
 
   const response = await alchemy.core.getAssetTransfers(params);
 
-  return {
-    transfers: response.transfers.map(mapTransferToItem),
-    hasMore: !!response.pageKey,
-  };
+  return response.transfers.map(mapTransferToItem);
 }
 
 function extractTimestamps(
@@ -188,7 +180,7 @@ export async function fetchWalletData(
   const { address, ensName } = await resolveAddress(addressInput);
   const alchemy = getAlchemy();
 
-  const [balanceResult, txCount, fromResult, toResult] = await withTimeout(
+  const [balanceResult, txCount, fromTransfers, toTransfers] = await withTimeout(
     withRetry(
       () => Promise.all([
         alchemy.core.getBalance(address),
@@ -201,10 +193,9 @@ export async function fetchWalletData(
     ALCHEMY_TIMEOUT_MS,
   );
 
-  const allTransfers = [...fromResult.transfers, ...toResult.transfers];
-  const gasSpentEth = estimateGasSpent(fromResult.transfers, txCount);
+  const allTransfers = [...fromTransfers, ...toTransfers];
+  const gasSpentEth = estimateGasSpent(fromTransfers, txCount);
   const { firstTxTimestamp, lastTxTimestamp } = extractTimestamps(allTransfers);
-  const transfersCapped = fromResult.hasMore || toResult.hasMore;
 
   const balanceWei = BigInt(balanceResult.toString());
 
@@ -216,7 +207,6 @@ export async function fetchWalletData(
     firstTxTimestamp,
     lastTxTimestamp,
     gasSpentEth,
-    transfersCapped,
     ...(ensName ? { ensName } : {}),
   };
 }

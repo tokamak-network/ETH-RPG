@@ -2,15 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockKvGet = vi.fn();
 const mockKvSet = vi.fn();
-const mockKvIncr = vi.fn();
-const mockKvExpire = vi.fn();
+const mockKvEval = vi.fn();
 
 vi.mock('@vercel/kv', () => ({
   kv: {
     get: (...args: unknown[]) => mockKvGet(...args),
     set: (...args: unknown[]) => mockKvSet(...args),
-    incr: (...args: unknown[]) => mockKvIncr(...args),
-    expire: (...args: unknown[]) => mockKvExpire(...args),
+    eval: (...args: unknown[]) => mockKvEval(...args),
   },
 }));
 
@@ -100,24 +98,26 @@ describe('kv-cache', () => {
     const result = await kvIncr('key', 60);
 
     expect(result).toBeNull();
-    expect(mockKvIncr).not.toHaveBeenCalled();
+    expect(mockKvEval).not.toHaveBeenCalled();
   });
 
-  it('returns incremented count when configured', async () => {
+  it('returns incremented count via atomic Lua script', async () => {
     mockIsKvConfigured.mockReturnValue(true);
-    mockKvIncr.mockResolvedValue(3);
-    mockKvExpire.mockResolvedValue(1);
+    mockKvEval.mockResolvedValue(3);
 
     const result = await kvIncr('key', 60);
 
     expect(result).toBe(3);
-    expect(mockKvIncr).toHaveBeenCalledWith('key');
-    expect(mockKvExpire).toHaveBeenCalledWith('key', 60);
+    expect(mockKvEval).toHaveBeenCalledWith(
+      expect.stringContaining('INCR'),
+      ['key'],
+      [60],
+    );
   });
 
-  it('returns null when KV incr throws', async () => {
+  it('returns null when KV eval throws', async () => {
     mockIsKvConfigured.mockReturnValue(true);
-    mockKvIncr.mockRejectedValue(new Error('incr failed'));
+    mockKvEval.mockRejectedValue(new Error('eval failed'));
 
     const result = await kvIncr('key', 60);
 

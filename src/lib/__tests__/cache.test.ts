@@ -1,16 +1,21 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { makeGenerateResponse } from './fixtures';
 
-// Mock kv-cache to isolate L1 behavior
+// Controllable mocks for KV layer
+const mockKvCacheGet = vi.hoisted(() => vi.fn().mockResolvedValue(null));
+const mockKvCacheSet = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+
 vi.mock('@/lib/kv-cache', () => ({
-  kvCacheGet: vi.fn().mockResolvedValue(null),
-  kvCacheSet: vi.fn().mockResolvedValue(undefined),
+  kvCacheGet: (...args: unknown[]) => mockKvCacheGet(...args),
+  kvCacheSet: (...args: unknown[]) => mockKvCacheSet(...args),
 }));
 
 describe('cache', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.resetModules();
+    mockKvCacheGet.mockResolvedValue(null);
+    mockKvCacheSet.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -237,5 +242,52 @@ describe('cache', () => {
     const result = await getCached('0xabc');
     expect(result).toBeNull();
     expect(getCacheStats().size).toBe(0);
+  });
+
+  // --- L2 KV hit tests ---
+
+  // 16. L1 miss + L2 hit → returns data and promotes to L1
+  it('returns data from KV (L2) when L1 misses', async () => {
+    const kvData = makeGenerateResponse({ address: '0xfromkv', lore: 'From KV' });
+    mockKvCacheGet.mockResolvedValue(kvData);
+
+    const { getCached, getCacheStats } = await freshCache();
+
+    const result = await getCached('0xfromkv');
+
+    expect(result).toEqual(kvData);
+    expect(getCacheStats().size).toBe(1); // promoted to L1
+  });
+
+  // 17. L2 hit promotes to L1 — second access is L1 hit (no KV call)
+  it('serves from L1 on second access after L2 promotion', async () => {
+    const kvData = makeGenerateResponse({ address: '0xfromkv' });
+    mockKvCacheGet.mockResolvedValueOnce(kvData);
+
+    const { getCached } = await freshCache();
+
+    // First call: L2 hit
+    await getCached('0xfromkv');
+
+    // Reset mock to return null — L2 should not be called again
+    mockKvCacheGet.mockResolvedValue(null);
+
+    // Second call: L1 hit
+    const result = await getCached('0xfromkv');
+
+    expect(result).toEqual(kvData);
+  });
+
+  // 18. L2 hit counts as a cache hit in stats
+  it('counts L2 hit as a cache hit in stats', async () => {
+    const kvData = makeGenerateResponse({ address: '0xfromkv' });
+    mockKvCacheGet.mockResolvedValue(kvData);
+
+    const { getCached, getCacheStats } = await freshCache();
+
+    await getCached('0xfromkv');
+
+    const stats = getCacheStats();
+    expect(stats.hitRate).toBe(1);
   });
 });

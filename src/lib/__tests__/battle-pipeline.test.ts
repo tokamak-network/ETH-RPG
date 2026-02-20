@@ -87,6 +87,32 @@ describe('executeBattle', () => {
     expect(mockSimulateBattle).toHaveBeenCalledOnce();
   });
 
+  it('caches using resolved addresses, not raw inputs', async () => {
+    // Raw inputs are ENS names, but generateCharacterData resolves to 0x addresses
+    const char1 = makeGenerateResponse({ address: '0xresolved1' });
+    const char2 = makeGenerateResponse({ address: '0xresolved2' });
+    mockGenerateCharacterData
+      .mockResolvedValueOnce(char1)
+      .mockResolvedValueOnce(char2);
+
+    const battleResult = makeBattleResult();
+    mockSimulateBattle.mockReturnValue(battleResult);
+
+    await executeBattle({
+      address1: 'alice.eth',
+      address2: 'bob.eth',
+      nonce: 'test-nonce',
+    });
+
+    // Cache should use resolved 0x addresses, not ENS names
+    expect(mockSetCachedBattle).toHaveBeenCalledWith(
+      '0xresolved1',
+      '0xresolved2',
+      'test-nonce',
+      expect.objectContaining({ cached: false }),
+    );
+  });
+
   it('propagates errors from generateCharacterData', async () => {
     mockGenerateCharacterData.mockRejectedValue(new Error('Alchemy down'));
 

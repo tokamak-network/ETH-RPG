@@ -2,10 +2,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { makeBattleResult } from './fixtures';
 import type { BattleResponse } from '@/lib/types';
 
-// Mock kv-cache to isolate L1 behavior
+// Controllable mocks for KV layer
+const mockKvCacheGet = vi.hoisted(() => vi.fn().mockResolvedValue(null));
+const mockKvCacheSet = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
+
 vi.mock('@/lib/kv-cache', () => ({
-  kvCacheGet: vi.fn().mockResolvedValue(null),
-  kvCacheSet: vi.fn().mockResolvedValue(undefined),
+  kvCacheGet: (...args: unknown[]) => mockKvCacheGet(...args),
+  kvCacheSet: (...args: unknown[]) => mockKvCacheSet(...args),
 }));
 
 function makeBattleResponse(overrides?: Partial<BattleResponse>): BattleResponse {
@@ -22,6 +25,8 @@ describe('battle-cache', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.resetModules();
+    mockKvCacheGet.mockResolvedValue(null);
+    mockKvCacheSet.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -127,5 +132,36 @@ describe('battle-cache', () => {
 
     const result = await getCachedBattle('0xabc', '0xdef', 'nonce1');
     expect(result).toEqual(v2);
+  });
+
+  // --- L2 KV hit tests ---
+
+  it('returns data from KV (L2) when L1 misses', async () => {
+    const kvData = makeBattleResponse();
+    mockKvCacheGet.mockResolvedValue(kvData);
+
+    const { getCachedBattle } = await freshCache();
+
+    const result = await getCachedBattle('0xabc', '0xdef', 'nonce-kv');
+
+    expect(result).toEqual(kvData);
+  });
+
+  it('serves from L1 on second access after L2 promotion', async () => {
+    const kvData = makeBattleResponse();
+    mockKvCacheGet.mockResolvedValueOnce(kvData);
+
+    const { getCachedBattle } = await freshCache();
+
+    // First call: L2 hit → promotes to L1
+    await getCachedBattle('0xabc', '0xdef', 'nonce-kv');
+
+    // Reset mock — L2 should not be called again
+    mockKvCacheGet.mockResolvedValue(null);
+
+    // Second call: L1 hit
+    const result = await getCachedBattle('0xabc', '0xdef', 'nonce-kv');
+
+    expect(result).toEqual(kvData);
   });
 });

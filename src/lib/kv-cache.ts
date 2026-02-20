@@ -23,12 +23,21 @@ export async function kvCacheSet<T>(key: string, data: T, ttlSeconds: number): P
   }
 }
 
-/** Atomic increment with TTL. Returns new count, or null if KV unavailable. */
+/**
+ * Atomic increment with TTL via Lua script.
+ * Guarantees TTL is always set — no window where incr succeeds but expire fails.
+ * Returns new count, or null if KV unavailable.
+ */
+const INCR_WITH_EXPIRE_LUA = `
+local count = redis.call('INCR', KEYS[1])
+redis.call('EXPIRE', KEYS[1], ARGV[1])
+return count
+`;
+
 export async function kvIncr(key: string, ttlSeconds: number): Promise<number | null> {
   if (!isKvConfigured()) return null;
   try {
-    const count = await kv.incr(key);
-    await kv.expire(key, ttlSeconds);
+    const count = await kv.eval<[number], number>(INCR_WITH_EXPIRE_LUA, [key], [ttlSeconds]);
     return count;
   } catch {
     return null;
