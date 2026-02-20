@@ -5,17 +5,23 @@ import {
   LEVEL_MIN,
   LEVEL_MAX,
   HP_BASE,
+  HP_MAX,
   HP_LOG_MULTIPLIER,
   MP_BASE,
+  MP_MAX,
   MP_LOG_MULTIPLIER,
   STR_BASE,
+  STR_MAX,
   STR_LOG_MULTIPLIER,
   INT_BASE,
+  INT_MAX,
   INT_LOG_MULTIPLIER,
   DEX_BASE,
+  DEX_MAX,
   DEX_LOG_MULTIPLIER,
   DEX_FREQUENCY_FLOOR_YEARS,
   LUCK_BASE,
+  LUCK_MAX,
   LUCK_LOG_MULTIPLIER,
   POWER_LEVEL_WEIGHT,
   POWER_STR_WEIGHT,
@@ -412,7 +418,7 @@ describe('BigInt balance conversion', () => {
     expect(stats.hp).toBe(expectedHP);
   });
 
-  it('handles very large balances (10000 ETH)', () => {
+  it('clamps HP to HP_MAX for very large balances (10000 ETH)', () => {
     const tenKEthWei = BigInt(10000) * BigInt(10) ** BigInt(18);
     const raw = makeWalletRawData({ balance: tenKEthWei });
     const classification = makeClassification();
@@ -420,9 +426,8 @@ describe('BigInt balance conversion', () => {
     const stats = calculateStats(raw, classification);
 
     // toBalanceEth(10000e18) = 10000.0
-    // HP = round(100 + 250 * log10(10001)) ~= round(100 + 1000.0) = 1100
-    const expectedHP = Math.round(HP_BASE + HP_LOG_MULTIPLIER * Math.log10(1 + 10000));
-    expect(stats.hp).toBe(expectedHP);
+    // Unclamped HP = round(100 + 250 * log10(10001)) ~= 1100 -> clamped to 900
+    expect(stats.hp).toBe(HP_MAX);
   });
 });
 
@@ -644,5 +649,100 @@ describe('Class power bonus', () => {
     expect(elderWizard.int).toBe(hunter.int);
     expect(elderWizard.dex).toBe(hunter.dex);
     expect(elderWizard.luck).toBe(hunter.luck);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 13. Stat clamping — extreme values never exceed max
+// ---------------------------------------------------------------------------
+describe('Stat clamping at max values', () => {
+  it('clamps INT to INT_MAX for whale-level uniqueContracts', () => {
+    const raw = makeWalletRawData();
+    const classification = makeClassification({ uniqueContracts: 5000 });
+
+    const stats = calculateStats(raw, classification);
+
+    // Unclamped: round(50 + 180 * log10(5001)) ~= 716 -> clamped to 500
+    expect(stats.int).toBe(INT_MAX);
+    expect(stats.int).toBeLessThanOrEqual(INT_MAX);
+  });
+
+  it('clamps DEX to DEX_MAX for extreme tx frequency', () => {
+    const raw = makeWalletRawData({ txCount: 50000, firstTxTimestamp: null });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // txFrequency = 50000 / 0.25 = 200000
+    // Unclamped: round(50 + 150 * log10(200001)) ~= 846 -> clamped to 550
+    expect(stats.dex).toBe(DEX_MAX);
+    expect(stats.dex).toBeLessThanOrEqual(DEX_MAX);
+  });
+
+  it('clamps STR to STR_MAX for extreme swap+bridge counts', () => {
+    const raw = makeWalletRawData();
+    const classification = makeClassification({ dexSwapCount: 5000, bridgeCount: 500 });
+
+    const stats = calculateStats(raw, classification);
+
+    // Unclamped: round(50 + 180 * log10(5501)) ~= 723 -> clamped to 550
+    expect(stats.str).toBe(STR_MAX);
+  });
+
+  it('clamps MP to MP_MAX for extreme gas spending', () => {
+    const raw = makeWalletRawData({ gasSpentEth: 100000 });
+    const classification = makeClassification();
+
+    const stats = calculateStats(raw, classification);
+
+    // Unclamped: round(80 + 220 * log10(100001)) ~= 1180 -> clamped to 600
+    expect(stats.mp).toBe(MP_MAX);
+  });
+
+  it('clamps LUCK to LUCK_MAX for extreme event counts', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(FIXED_NOW);
+
+    const twentyYearsAgo = FIXED_NOW - 20 * MS_PER_YEAR;
+    const raw = makeWalletRawData({
+      firstTxTimestamp: twentyYearsAgo,
+      lastTxTimestamp: FIXED_NOW,
+    });
+    const classification = makeClassification();
+    mockGetRelevantEvents.mockReturnValue(Array.from({ length: 50 }, (_, i) => `event${i}`));
+
+    const stats = calculateStats(raw, classification);
+
+    // rareEvents = 50 + 20 = 70
+    // Unclamped: round(50 + 180 * log10(71)) ~= 383 -> clamped to 300
+    expect(stats.luck).toBe(LUCK_MAX);
+  });
+
+  it('no stat exceeds its max in a vitalik-scale wallet', () => {
+    vi.spyOn(Date, 'now').mockReturnValue(FIXED_NOW);
+
+    const tenYearsAgo = FIXED_NOW - 10 * MS_PER_YEAR;
+    const raw = makeWalletRawData({
+      txCount: 10000,
+      balance: BigInt(50000) * BigInt(10) ** BigInt(18),
+      gasSpentEth: 500,
+      firstTxTimestamp: tenYearsAgo,
+      lastTxTimestamp: FIXED_NOW,
+    });
+    const classification = makeClassification({
+      dexSwapCount: 2000,
+      bridgeCount: 200,
+      uniqueContracts: 3000,
+    });
+    mockGetRelevantEvents.mockReturnValue(Array.from({ length: 30 }, (_, i) => `event${i}`));
+
+    const stats = calculateStats(raw, classification);
+
+    expect(stats.hp).toBeLessThanOrEqual(HP_MAX);
+    expect(stats.mp).toBeLessThanOrEqual(MP_MAX);
+    expect(stats.str).toBeLessThanOrEqual(STR_MAX);
+    expect(stats.int).toBeLessThanOrEqual(INT_MAX);
+    expect(stats.dex).toBeLessThanOrEqual(DEX_MAX);
+    expect(stats.luck).toBeLessThanOrEqual(LUCK_MAX);
+    expect(stats.level).toBeLessThanOrEqual(LEVEL_MAX);
   });
 });

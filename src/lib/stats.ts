@@ -10,27 +10,33 @@ export const LEVEL_MAX = 60;
 
 // --- HP constants ---
 export const HP_BASE = 100;
+export const HP_MAX = 900;
 export const HP_LOG_MULTIPLIER = 250;
 
 // --- MP constants ---
 export const MP_BASE = 80;
+export const MP_MAX = 600;
 export const MP_LOG_MULTIPLIER = 220;
 
 // --- STR constants ---
 export const STR_BASE = 50;
+export const STR_MAX = 550;
 export const STR_LOG_MULTIPLIER = 180;
 
 // --- INT constants ---
 export const INT_BASE = 50;
+export const INT_MAX = 500;
 export const INT_LOG_MULTIPLIER = 180;
 
 // --- DEX (Dexterity) constants ---
 export const DEX_BASE = 50;
+export const DEX_MAX = 550;
 export const DEX_LOG_MULTIPLIER = 150;
 export const DEX_FREQUENCY_FLOOR_YEARS = 0.25;
 
 // --- LUCK constants ---
 export const LUCK_BASE = 50;
+export const LUCK_MAX = 300;
 export const LUCK_LOG_MULTIPLIER = 180;
 
 // --- Power weight constants ---
@@ -64,30 +70,36 @@ function calculateLevel(txCount: number): number {
 }
 
 function calculateHP(balanceEth: number): number {
-  return Math.round(HP_BASE + HP_LOG_MULTIPLIER * Math.log10(1 + balanceEth));
+  const raw = Math.round(HP_BASE + HP_LOG_MULTIPLIER * Math.log10(1 + balanceEth));
+  return clamp(raw, HP_BASE, HP_MAX);
 }
 
 function calculateMP(gasSpentEth: number): number {
-  return Math.round(MP_BASE + MP_LOG_MULTIPLIER * Math.log10(1 + gasSpentEth));
+  const raw = Math.round(MP_BASE + MP_LOG_MULTIPLIER * Math.log10(1 + gasSpentEth));
+  return clamp(raw, MP_BASE, MP_MAX);
 }
 
 function calculateSTR(dexSwapCount: number, bridgeCount: number): number {
-  return Math.round(STR_BASE + STR_LOG_MULTIPLIER * Math.log10(1 + dexSwapCount + bridgeCount));
+  const raw = Math.round(STR_BASE + STR_LOG_MULTIPLIER * Math.log10(1 + dexSwapCount + bridgeCount));
+  return clamp(raw, STR_BASE, STR_MAX);
 }
 
 function calculateINT(uniqueContracts: number): number {
-  return Math.round(INT_BASE + INT_LOG_MULTIPLIER * Math.log10(1 + uniqueContracts));
+  const raw = Math.round(INT_BASE + INT_LOG_MULTIPLIER * Math.log10(1 + uniqueContracts));
+  return clamp(raw, INT_BASE, INT_MAX);
 }
 
 function calculateDEX(txCount: number, walletAgeYears: number): number {
   const effectiveAge = Math.max(walletAgeYears, DEX_FREQUENCY_FLOOR_YEARS);
   const txFrequency = txCount / effectiveAge;
-  return Math.round(DEX_BASE + DEX_LOG_MULTIPLIER * Math.log10(1 + txFrequency));
+  const raw = Math.round(DEX_BASE + DEX_LOG_MULTIPLIER * Math.log10(1 + txFrequency));
+  return clamp(raw, DEX_BASE, DEX_MAX);
 }
 
 function calculateLUCK(relevantEventCount: number, walletAgeYears: number): number {
   const rareEvents = relevantEventCount + walletAgeYears;
-  return Math.round(LUCK_BASE + LUCK_LOG_MULTIPLIER * Math.log10(1 + rareEvents));
+  const raw = Math.round(LUCK_BASE + LUCK_LOG_MULTIPLIER * Math.log10(1 + rareEvents));
+  return clamp(raw, LUCK_BASE, LUCK_MAX);
 }
 
 function calculatePower(

@@ -1,5 +1,6 @@
 // Class-specific visual themes for card rendering and UI
 import type { CharacterClassId, AchievementTier } from '@/lib/types';
+import { HP_MAX, MP_MAX, STR_MAX, INT_MAX, DEX_MAX, LUCK_MAX } from '@/lib/stats';
 
 export interface ClassTheme {
   readonly primary: string;
@@ -87,12 +88,12 @@ export const STAT_COLORS = {
 } as const;
 
 export const STAT_MAX_VALUES = {
-  hp: 900,
-  mp: 600,
-  str: 550,
-  int: 500,
-  dex: 550,
-  luck: 300,
+  hp: HP_MAX,
+  mp: MP_MAX,
+  str: STR_MAX,
+  int: INT_MAX,
+  dex: DEX_MAX,
+  luck: LUCK_MAX,
 } as const;
 
 export const TIER_BORDER_COLORS: Record<AchievementTier, string> = {
