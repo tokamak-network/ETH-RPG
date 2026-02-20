@@ -127,6 +127,23 @@ describe('metrics', () => {
       expect(snapshot.counters).toEqual({});
       expect(snapshot.recentEvents).toEqual([]);
     });
+
+    it('skips malformed JSON in recent events', async () => {
+      mockKv.mget
+        .mockResolvedValueOnce(Array(16).fill(0))   // counter batch
+        .mockResolvedValueOnce(Array(72).fill(0));   // hourly batch
+      mockKv.hgetall.mockResolvedValueOnce(null);
+      mockKv.lrange.mockResolvedValueOnce([
+        'invalid json{{{',
+        JSON.stringify({ name: 'valid', timestamp: 1000 }),
+        JSON.stringify({ name: 123 }),
+      ]);
+
+      const snapshot = await getMetricsSnapshot();
+
+      expect(snapshot.recentEvents).toHaveLength(1);
+      expect(snapshot.recentEvents[0].name).toBe('valid');
+    });
   });
 
   describe('convenience functions', () => {

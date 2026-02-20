@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import type {
   LeaderboardType,
@@ -64,25 +64,24 @@ interface ClickableRowProps {
 function ClickableRow({ address, classId, label, withShadow, children }: ClickableRowProps) {
   const router = useRouter();
   const theme = CLASS_THEMES[classId];
+  const [hovered, setHovered] = useState(false);
   const navigate = () => router.push(`/result/${address}`);
-  const setHover = (el: HTMLElement, on: boolean) => {
-    el.style.backgroundColor = on ? `${theme.primary}08` : 'transparent';
-    if (withShadow) {
-      el.style.boxShadow = on ? `inset 0 0 20px ${theme.primary}05` : 'none';
-    }
-  };
   return (
     <tr
       className="transition-colors duration-150 cursor-pointer"
-      style={{ borderBottom: '1px solid var(--color-border)' }}
+      style={{
+        borderBottom: '1px solid var(--color-border)',
+        backgroundColor: hovered ? `${theme.primary}08` : 'transparent',
+        boxShadow: hovered && withShadow ? `inset 0 0 20px ${theme.primary}05` : 'none',
+      }}
       tabIndex={0}
       aria-label={label}
       onClick={navigate}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(); } }}
-      onMouseEnter={(e) => setHover(e.currentTarget, true)}
-      onMouseLeave={(e) => setHover(e.currentTarget, false)}
-      onFocus={(e) => setHover(e.currentTarget, true)}
-      onBlur={(e) => setHover(e.currentTarget, false)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
     >
       {children}
     </tr>
