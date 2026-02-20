@@ -50,15 +50,19 @@ export default function AddressInput({ onSubmit, isLoading }: AddressInputProps)
     <form onSubmit={handleSubmit} className="w-full max-w-lg mx-auto">
       <div className="flex flex-col gap-3">
         <div
-          className="flex flex-col sm:flex-row gap-2 p-2 rounded-xl transition-all duration-200"
+          className="flex flex-col sm:flex-row gap-2 p-2 rounded-xl transition-all duration-200 focus-within:ring-2 focus-within:ring-accent-gold/50"
           style={{
             backgroundColor: 'var(--color-bg-tertiary)',
             border: '1px solid var(--color-border)',
           }}
         >
           <div className="flex-1 flex items-center gap-2 px-2">
+            <label htmlFor="address-input" className="sr-only">
+              Ethereum address or ENS name
+            </label>
             <span className="text-text-muted text-sm shrink-0" aria-hidden="true">{'\u{1F50D}'}</span>
             <input
+              id="address-input"
               type="text"
               value={address}
               onChange={(e) => handleChange(e.target.value)}
@@ -66,6 +70,7 @@ export default function AddressInput({ onSubmit, isLoading }: AddressInputProps)
               disabled={isLoading}
               spellCheck={false}
               autoComplete="off"
+              aria-describedby="address-error"
               className="flex-1 py-3 bg-transparent text-white placeholder-text-muted font-mono text-base sm:text-sm focus:outline-none disabled:opacity-50"
             />
           </div>
@@ -82,7 +87,7 @@ export default function AddressInput({ onSubmit, isLoading }: AddressInputProps)
           </button>
         </div>
         {showError && (
-          <p className="text-accent-red text-xs pl-1">
+          <p id="address-error" role="alert" className="text-accent-red text-xs pl-1">
             Please enter a valid Ethereum address (0x...) or ENS name (.eth).
           </p>
         )}

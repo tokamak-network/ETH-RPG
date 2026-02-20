@@ -102,26 +102,6 @@ export const TIER_BORDER_COLORS: Record<AchievementTier, string> = {
   common: '#6b7280',
 } as const;
 
-export const DESIGN_TOKENS = {
-  colors: {
-    bgPrimary: '#0a0a0f',
-    bgSecondary: '#12121a',
-    bgTertiary: '#1a1a2e',
-    accentGold: '#f4c430',
-    accentBlue: '#4a9eff',
-    textPrimary: '#e8e8ed',
-    textSecondary: '#9ca3af',
-    textMuted: '#6b7280',
-    border: '#2a2a3e',
-    borderAccent: '#f4c430',
-  },
-  fonts: {
-    display: "'Cinzel', serif",
-    body: "'Inter', 'Noto Sans KR', sans-serif",
-    mono: "'JetBrains Mono', monospace",
-  },
-} as const;
-
 export const BATTLE_TOKENS = {
   colors: {
     player0: '#60a5fa',

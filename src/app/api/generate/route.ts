@@ -52,7 +52,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const response = await generateCharacterData(address);
-    return NextResponse.json(response);
+    const cacheControl = response.cached
+      ? 'public, max-age=300, s-maxage=3600'
+      : 'private, no-cache';
+    return NextResponse.json(response, {
+      headers: { 'Cache-Control': cacheControl },
+    });
   } catch (error) {
     if (error instanceof EmptyWalletError) {
       return errorResponse(

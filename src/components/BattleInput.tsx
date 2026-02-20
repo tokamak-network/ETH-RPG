@@ -58,13 +58,14 @@ export default function BattleInput({ onSubmit, isLoading, defaultAddress1 = '' 
         {/* Challenger input */}
         <div>
           <label
+            htmlFor="battle-challenger"
             className="block text-xs font-semibold uppercase tracking-wider mb-2"
             style={{ color: 'var(--color-text-muted)' }}
           >
             Challenger
           </label>
           <div
-            className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 focus-within:ring-2 focus-within:ring-accent-gold/50"
             style={{
               backgroundColor: 'var(--color-bg-tertiary)',
               border: showError1
@@ -74,6 +75,7 @@ export default function BattleInput({ onSubmit, isLoading, defaultAddress1 = '' 
           >
             <span className="text-text-muted text-sm shrink-0" aria-hidden="true">{'\u2694\uFE0F'}</span>
             <input
+              id="battle-challenger"
               type="text"
               value={address1}
               onChange={(e) => handleChange1(e.target.value)}
@@ -81,11 +83,12 @@ export default function BattleInput({ onSubmit, isLoading, defaultAddress1 = '' 
               disabled={isLoading}
               spellCheck={false}
               autoComplete="off"
+              aria-describedby="battle-error-1"
               className="flex-1 py-2 bg-transparent text-white placeholder-text-muted font-mono text-sm focus:outline-none disabled:opacity-50"
             />
           </div>
           {showError1 && (
-            <p className="text-xs mt-1 pl-1" style={{ color: 'var(--color-accent-red)' }}>
+            <p id="battle-error-1" role="alert" className="text-xs mt-1 pl-1" style={{ color: 'var(--color-accent-red)' }}>
               Please enter a valid Ethereum address or ENS name.
             </p>
           )}
@@ -106,13 +109,14 @@ export default function BattleInput({ onSubmit, isLoading, defaultAddress1 = '' 
         {/* Opponent input */}
         <div>
           <label
+            htmlFor="battle-opponent"
             className="block text-xs font-semibold uppercase tracking-wider mb-2"
             style={{ color: 'var(--color-text-muted)' }}
           >
             Opponent
           </label>
           <div
-            className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl transition-all duration-200 focus-within:ring-2 focus-within:ring-accent-gold/50"
             style={{
               backgroundColor: 'var(--color-bg-tertiary)',
               border: showError2
@@ -122,6 +126,7 @@ export default function BattleInput({ onSubmit, isLoading, defaultAddress1 = '' 
           >
             <span className="text-text-muted text-sm shrink-0" aria-hidden="true">{'\u{1F6E1}\uFE0F'}</span>
             <input
+              id="battle-opponent"
               type="text"
               value={address2}
               onChange={(e) => handleChange2(e.target.value)}
@@ -129,11 +134,12 @@ export default function BattleInput({ onSubmit, isLoading, defaultAddress1 = '' 
               disabled={isLoading}
               spellCheck={false}
               autoComplete="off"
+              aria-describedby="battle-error-2"
               className="flex-1 py-2 bg-transparent text-white placeholder-text-muted font-mono text-sm focus:outline-none disabled:opacity-50"
             />
           </div>
           {showError2 && (
-            <p className="text-xs mt-1 pl-1" style={{ color: 'var(--color-accent-red)' }}>
+            <p id="battle-error-2" role="alert" className="text-xs mt-1 pl-1" style={{ color: 'var(--color-accent-red)' }}>
               Please enter a valid Ethereum address or ENS name.
             </p>
           )}
@@ -141,7 +147,7 @@ export default function BattleInput({ onSubmit, isLoading, defaultAddress1 = '' 
 
         {/* Same address error */}
         {showSameError && (
-          <p className="text-xs text-center" style={{ color: 'var(--color-accent-red)' }}>
+          <p role="alert" className="text-xs text-center" style={{ color: 'var(--color-accent-red)' }}>
             Cannot battle yourself. Please enter two different addresses.
           </p>
         )}

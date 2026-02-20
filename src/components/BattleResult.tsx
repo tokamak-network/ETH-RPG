@@ -212,14 +212,14 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
   return (
     <div className="w-full max-w-2xl mx-auto">
       {/* Fighter cards side by side */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <FighterCard
           fighter={result.fighters[0]}
           index={0}
           isWinner={result.winner === 0}
           advantage={result.matchup.fighter0Advantage}
         />
-        <div className="flex items-center shrink-0">
+        <div className="flex items-center justify-center shrink-0 py-2 sm:py-0">
           <span
             className="text-2xl font-bold"
             style={{ color: 'var(--color-accent-gold)', fontFamily: 'var(--font-display)' }}

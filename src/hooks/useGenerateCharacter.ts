@@ -99,7 +99,7 @@ export function useGenerateCharacter() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ address }),
-          signal: controller.signal,
+          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30_000)]),
         });
 
         const body: unknown = await response.json();
@@ -127,16 +127,20 @@ export function useGenerateCharacter() {
           step: '',
         });
       } catch (err: unknown) {
-        // Ignore abort errors
+        // Ignore user-initiated abort errors
         if (err instanceof DOMException && err.name === 'AbortError') {
           return;
         }
+
+        const isTimeout = err instanceof DOMException && err.name === 'TimeoutError';
 
         clearStepInterval();
         setState({
           status: 'error',
           data: null,
-          error: ERROR_MESSAGES[ErrorCode.API_ERROR],
+          error: isTimeout
+            ? 'The request timed out. Please try again.'
+            : ERROR_MESSAGES[ErrorCode.API_ERROR],
           step: '',
         });
       }

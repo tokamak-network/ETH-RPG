@@ -49,10 +49,12 @@ export default function FAQ() {
               className="rounded-lg border border-border bg-bg-secondary overflow-hidden"
             >
               <button
+                id={`faq-button-${index}`}
                 type="button"
                 onClick={() => handleToggle(index)}
                 className="w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium text-text-primary hover:bg-bg-tertiary transition-colors"
                 aria-expanded={isOpen}
+                aria-controls={`faq-panel-${index}`}
               >
                 <span>{item.question}</span>
                 <span
@@ -65,13 +67,19 @@ export default function FAQ() {
                   &#x25BC;
                 </span>
               </button>
-              {isOpen && (
-                <div className="px-4 pb-3">
-                  <p className="text-sm text-text-secondary leading-relaxed">
+              <div
+                id={`faq-panel-${index}`}
+                role="region"
+                aria-labelledby={`faq-button-${index}`}
+                className="grid transition-[grid-template-rows] duration-200"
+                style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
+              >
+                <div className="overflow-hidden">
+                  <p className="px-4 pb-3 text-sm text-text-secondary leading-relaxed">
                     {item.answer}
                   </p>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}

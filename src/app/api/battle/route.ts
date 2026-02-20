@@ -70,7 +70,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (nonce) {
     const cached = getCachedBattle(address1, address2, nonce);
     if (cached) {
-      return NextResponse.json({ ...cached, cached: true });
+      return NextResponse.json({ ...cached, cached: true }, {
+        headers: { 'Cache-Control': 'public, max-age=86400, immutable' },
+      });
     }
   }
 
@@ -114,7 +116,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Cache the result
     setCachedBattle(address1, address2, battleNonce, response);
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, {
+      headers: { 'Cache-Control': 'private, no-cache' },
+    });
   } catch (error) {
     if (error instanceof EmptyWalletError) {
       return errorResponse(

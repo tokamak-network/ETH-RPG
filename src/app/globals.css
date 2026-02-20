@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap');
-
 @import "tailwindcss";
 
 :root {
@@ -34,10 +32,8 @@
   --color-class-guardian: #f97316;
   --color-class-warrior: #94a3b8;
 
-  /* Fonts */
-  --font-display: 'Cinzel', serif;
-  --font-body: 'Inter', 'Noto Sans KR', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  /* Fonts — set by next/font via CSS custom properties on <html> */
+  /* --font-display, --font-body, --font-mono are injected by next/font in layout.tsx */
 
   /* Background/Foreground for Tailwind */
   --background: #0a0a0f;
@@ -62,13 +58,14 @@
   --color-border-accent: var(--color-border-accent);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+  --font-kr: var(--font-kr);
   --font-mono: var(--font-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body);
+  font-family: var(--font-body), var(--font-kr), sans-serif;
   min-height: 100vh;
 }
 

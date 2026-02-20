@@ -62,7 +62,7 @@ export default function BattleResultPage() {
     <div className="min-h-screen flex flex-col bg-atmosphere">
       <TrustBanner />
 
-      <main className="relative z-10 flex-1 flex flex-col items-center px-4 py-8">
+      <main className="relative z-10 flex-1 flex flex-col items-center px-4 py-8" aria-live="polite" aria-busy={status === 'loading'}>
         {/* Loading */}
         {status === 'loading' && (
           <div className="flex-1 flex items-center justify-center w-full">
