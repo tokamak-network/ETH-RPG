@@ -46,3 +46,6 @@ address.json
 # internal docs (not for repo)
 docs/team-announcement.txt
 docs/tokamak-contribution-answers.txt
+
+# claude code settings
+.claude/settings.json
