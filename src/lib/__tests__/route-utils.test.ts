@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { NextRequest } from 'next/server';
-import { isValidInput, isValidAddress, getClientIp, errorResponse } from '@/lib/route-utils';
+import { isValidInput, isValidAddress, isValidNonce, getClientIp, errorResponse } from '@/lib/route-utils';
 
 describe('isValidInput', () => {
   it('accepts a valid Ethereum address', () => {
@@ -40,6 +40,32 @@ describe('isValidAddress', () => {
 
   it('rejects invalid input', () => {
     expect(isValidAddress('not-valid')).toBe(false);
+  });
+});
+
+describe('isValidNonce', () => {
+  it('accepts a valid UUID v4', () => {
+    expect(isValidNonce('a1b2c3d4-e5f6-7890-abcd-ef1234567890')).toBe(true);
+  });
+
+  it('accepts uppercase UUID', () => {
+    expect(isValidNonce('A1B2C3D4-E5F6-7890-ABCD-EF1234567890')).toBe(true);
+  });
+
+  it('rejects an empty string', () => {
+    expect(isValidNonce('')).toBe(false);
+  });
+
+  it('rejects a non-UUID string', () => {
+    expect(isValidNonce('not-a-uuid')).toBe(false);
+  });
+
+  it('rejects a UUID without dashes', () => {
+    expect(isValidNonce('a1b2c3d4e5f67890abcdef1234567890')).toBe(false);
+  });
+
+  it('rejects an excessively long string', () => {
+    expect(isValidNonce('a'.repeat(1000))).toBe(false);
   });
 });
 

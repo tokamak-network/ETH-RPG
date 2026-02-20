@@ -5,7 +5,7 @@ import { simulateBattle } from '@/lib/battle';
 import { getCachedBattle } from '@/lib/battle-cache';
 import { getSpriteSrc } from '@/lib/sprite-data';
 import { shortenAddress } from '@/lib/format-utils';
-import { isValidAddress } from '@/lib/route-utils';
+import { isValidAddress, isValidNonce } from '@/lib/route-utils';
 import { CLASS_THEMES } from '@/styles/themes';
 import type { BattleFighter, BattleResult, CharacterClassId } from '@/lib/types';
 
@@ -347,8 +347,8 @@ export async function GET(
     );
   }
 
-  // No nonce: generic preview
-  if (!nonce) {
+  // No nonce or invalid nonce: generic preview
+  if (!nonce || !isValidNonce(nonce)) {
     return new ImageResponse(
       <GenericPreview addr1={addr1} addr2={addr2} />,
       { width: CARD_WIDTH, height: CARD_HEIGHT, headers: ERROR_CACHE_HEADERS },

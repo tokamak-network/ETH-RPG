@@ -8,7 +8,7 @@ import { generateCharacterData, EmptyWalletError } from '@/lib/pipeline';
 import { simulateBattle } from '@/lib/battle';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { getCachedBattle, setCachedBattle } from '@/lib/battle-cache';
-import { isValidInput, getClientIp, errorResponse } from '@/lib/route-utils';
+import { isValidInput, isValidNonce, getClientIp, errorResponse } from '@/lib/route-utils';
 import { ErrorCode } from '@/lib/types';
 import type { BattleFighter, BattleResponse } from '@/lib/types';
 
@@ -43,7 +43,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     address2 = body.address2.trim().toLowerCase();
 
     if (typeof body.nonce === 'string' && body.nonce.trim().length > 0) {
-      nonce = body.nonce.trim();
+      const trimmedNonce = body.nonce.trim();
+      if (!isValidNonce(trimmedNonce)) {
+        return errorResponse(ErrorCode.INVALID_ADDRESS, 'Invalid battle nonce format.', 400);
+      }
+      nonce = trimmedNonce;
     }
   } catch {
     return errorResponse(ErrorCode.INVALID_ADDRESS, 'Invalid request format.', 400);

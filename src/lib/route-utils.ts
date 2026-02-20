@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/;
 const ENS_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9.-]*\.eth$/;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_INPUT_LENGTH = 256;
 
 /** Validate that input is a valid Ethereum address or ENS name. */
@@ -26,6 +27,11 @@ export function getClientIp(request: NextRequest): string {
     return forwarded.split(',')[0].trim();
   }
   return request.headers.get('x-real-ip') ?? '127.0.0.1';
+}
+
+/** Validate that a nonce is a valid UUID v4 format. */
+export function isValidNonce(nonce: string): boolean {
+  return UUID_REGEX.test(nonce);
 }
 
 /** Build a standardized JSON error response. */
