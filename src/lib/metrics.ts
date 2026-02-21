@@ -127,7 +127,7 @@ export async function getMetricsSnapshot(): Promise<MetricsSnapshot> {
       'funnel_generate_success', 'funnel_share', 'og_image_load',
     ];
 
-    // Batch fetch all 16 counters in 1 mget call
+    // Batch fetch all 19 counters in 1 mget call
     const counterKeysFull = counterKeys.map((key) => `${KV_PREFIX}counter:${key}`);
     const counterValuesPromise = kv.mget<(number | null)[]>(...counterKeysFull);
 

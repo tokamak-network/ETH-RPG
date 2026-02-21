@@ -11,6 +11,8 @@ function useCountdown(endsAt: number): { days: number; hours: number; minutes: n
   const [remaining, setRemaining] = useState(() => Math.max(0, endsAt - Date.now()));
 
   useEffect(() => {
+    // Immediately sync when endsAt changes (e.g. season loaded from API)
+    setRemaining(Math.max(0, endsAt - Date.now()));
     const interval = setInterval(() => {
       setRemaining(Math.max(0, endsAt - Date.now()));
     }, 60_000); // Update every minute

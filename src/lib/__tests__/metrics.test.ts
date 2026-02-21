@@ -101,9 +101,9 @@ describe('metrics', () => {
 
   describe('getMetricsSnapshot', () => {
     it('returns snapshot with all sections', async () => {
-      // Counter mget returns 16 values (one per counter key)
+      // Counter mget returns 19 values (one per counter key)
       mockKv.mget
-        .mockResolvedValueOnce(Array(16).fill(5))  // counter batch
+        .mockResolvedValueOnce(Array(19).fill(5))  // counter batch
         .mockResolvedValueOnce(Array(72).fill(3));  // hourly batch
       mockKv.hgetall.mockResolvedValueOnce({ warrior: 10, rogue: 5 });
       mockKv.lrange.mockResolvedValueOnce([
@@ -130,7 +130,7 @@ describe('metrics', () => {
 
     it('skips malformed JSON in recent events', async () => {
       mockKv.mget
-        .mockResolvedValueOnce(Array(16).fill(0))   // counter batch
+        .mockResolvedValueOnce(Array(19).fill(0))   // counter batch
         .mockResolvedValueOnce(Array(72).fill(0));   // hourly batch
       mockKv.hgetall.mockResolvedValueOnce(null);
       mockKv.lrange.mockResolvedValueOnce([

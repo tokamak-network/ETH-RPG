@@ -5,7 +5,7 @@ import type { MetricsSnapshot, HourlyBucket } from '@/lib/metrics';
 import { CLASS_THEMES, CLASS_LABELS } from '@/styles/themes';
 import type { CharacterClassId } from '@/lib/types';
 
-const REFRESH_INTERVAL_MS = 30_000;
+const REFRESH_INTERVAL_MS = 120_000;
 const SESSION_STORAGE_KEY = 'eth_rpg_admin_key';
 
 const CLASS_ORDER: readonly CharacterClassId[] = [
@@ -274,7 +274,7 @@ export default function AdminPage() {
           </div>
           {lastRefresh && (
             <div className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-              Last refresh: {lastRefresh.toLocaleTimeString()} · Auto-refreshes every 30s
+              Last refresh: {lastRefresh.toLocaleTimeString()} · Auto-refreshes every 2m
             </div>
           )}
         </div>
@@ -286,7 +286,7 @@ export default function AdminPage() {
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <CounterCard label="Total Generations" value={c.generate_total ?? 0} />
-            <CounterCard label="Fresh / Cached" value={c.generate_fresh ?? 0} />
+            <CounterCard label="Fresh Generations" value={c.generate_fresh ?? 0} />
             <CounterCard label="Total Battles" value={c.battle_total ?? 0} />
             <CounterCard label="Total Shares" value={(c.share_twitter ?? 0) + (c.share_farcaster ?? 0) + (c.share_clipboard ?? 0)} />
           </div>
