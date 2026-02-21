@@ -57,7 +57,8 @@ export function appendUtmToUrl(url: string, overrides?: UtmParams): string {
     // Default share attribution
     utm_source: 'share',
     utm_medium: 'card',
-    utm_campaign: 'viral',
+    // viral_v1 = organic share default; manual seeding uses viral_v2~v6 per marketing-plan.md Section 6
+    utm_campaign: 'viral_v1',
     // Override with stored inbound UTM if exists
     ...stored,
     // Override with explicit params

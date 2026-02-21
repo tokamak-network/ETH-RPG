@@ -6,6 +6,7 @@ import { CLASS_THEMES } from '@/styles/themes';
 import { shortenAddress } from '@/lib/format-utils';
 import { trackEvent } from '@/lib/analytics';
 import { appendUtmToUrl } from '@/lib/utm';
+import { isKoreanLocale } from '@/lib/locale';
 import AchievementRow from './AchievementRow';
 import { PixelCharacter } from './pixel-sprites';
 
@@ -39,6 +40,9 @@ function buildBattleShareText(data: BattleResponse): string {
   const loser = data.result.fighters[data.result.winner === 0 ? 1 : 0];
   const winnerName = getDisplayName(winner);
   const loserName = getDisplayName(loser);
+  if (isKoreanLocale()) {
+    return `\u2694\uFE0F \uC9C0\uAC11 \uBC30\uD2C0!\n${winner.class.name} (${winnerName})\uC774 ${loser.class.name} (${loserName})\uC744 \uACA9\uD30C\n${data.result.totalTurns}\uD134 \u2014 HP ${data.result.winnerHpPercent}% \uB0A8\uC74C`;
+  }
   return `\u2694\uFE0F Wallet Battle!\n${winner.class.name} (${winnerName}) defeated ${loser.class.name} (${loserName})\n${data.result.totalTurns} turns \u2014 ${data.result.winnerHpPercent}% HP left`;
 }
 
@@ -144,6 +148,7 @@ function FighterCard({
 export default function BattleResultDisplay({ data, onRematch }: BattleResultProps) {
   const [copied, setCopied] = useState(false);
   const [discordCopied, setDiscordCopied] = useState(false);
+  const [kakaoTalkCopied, setKakaoTalkCopied] = useState(false);
   const { result } = data;
   const winner = result.fighters[result.winner];
   const winnerTheme = CLASS_THEMES[winner.class.id];
@@ -183,6 +188,18 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
       '_blank',
       'noopener,noreferrer',
     );
+  }, [shareText, baseShareUrl]);
+
+  const handleKakaoTalk = useCallback(async () => {
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'kakaotalk', utm_medium: 'social', utm_campaign: 'battle' });
+    trackEvent('share_click', { platform: 'kakaotalk', context: 'battle' });
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n${url}`);
+      setKakaoTalkCopied(true);
+      setTimeout(() => setKakaoTalkCopied(false), 2000);
+    } catch {
+      // Clipboard API may fail in some environments
+    }
   }, [shareText, baseShareUrl]);
 
   const handleDiscord = useCallback(async () => {
@@ -301,6 +318,15 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
           >
             <span aria-hidden="true">{'\u2708\uFE0F'}</span>
             <span>Telegram</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleKakaoTalk}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
+          >
+            <span aria-hidden="true">{'\uD83D\uDCAC'}</span>
+            <span>{kakaoTalkCopied ? 'Copied!' : 'KakaoTalk'}</span>
           </button>
 
           <button

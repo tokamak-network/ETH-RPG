@@ -120,7 +120,7 @@ describe('utm', () => {
 
       expect(result).toContain('utm_source=share');
       expect(result).toContain('utm_medium=card');
-      expect(result).toContain('utm_campaign=viral');
+      expect(result).toContain('utm_campaign=viral_v1');
     });
 
     it('merges stored UTM params over defaults', async () => {

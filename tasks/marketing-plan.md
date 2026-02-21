@@ -47,7 +47,7 @@
 | # | Task | Status | Commit |
 |---|------|--------|--------|
 | 3 | Self-healing on cache miss in OG/card routes | ✅ Done | `1ff80b6` |
-| 4 | Telegram/KakaoTalk share buttons | Remaining | — |
+| 4 | Telegram/KakaoTalk share buttons | ✅ Done | current commit |
 
 ---
 
@@ -189,6 +189,18 @@ My Power: {power}... what's yours?
 9. Friends With Benefits — English, culture crypto
 10. Arbitrum — English, L2 users
 ```
+
+**Server-by-Server Posting Rules**
+| Server | Risk | Channel | Notes |
+|--------|------|---------|-------|
+| DeFi Korea | Low | #general allowed | Korean, high relevance |
+| NFT Korea | Low | #general allowed | Korean, NFT community |
+| Bankless DAO | High | #shill or #showcase ONLY | #general promo prohibited |
+| Ethereum Official | High | #showcase ONLY | No project promotion in #general |
+| Uniswap | High | #shill or #off-topic | Main channel promotion blocked |
+| Optimism / Base / Arbitrum | Medium | Check server rules first | Policies vary by L2 |
+| Lido | Medium | #off-topic | Staking-focused server |
+| FWB | High | No posting possible | Token-gated membership required |
 
 **DM/Post Strategy**
 - Post directly in server #general or #off-topic (if allowed)
@@ -460,3 +472,34 @@ seeding alone. Reaching "Success" requires viral amplification (K > 0.3).
 ```
 
 **All items resolved. Funnel measurement fully operational.**
+
+---
+
+## 13. Day 7+ Retention Strategy
+
+### Week 2: Battle Mode Activation
+- **Famous Wallet Battle Series**: vitalik.eth vs sassal.eth and other famous wallet matchups
+- Share battle results on CT/Farcaster → "Challenge me" CTA
+- Battle share links tagged with UTM battle campaign
+
+### Week 3: Ranking Season Launch
+- **Genesis Season** opens — first Top 10 leaderboard revealed
+- Season-end rank titles (Gold/Silver/Bronze)
+- Encourage ranking page sharing
+
+### Week 4: Community Building
+- Weekly highlights (highest power this week, rare classes, etc.)
+- Class callouts ("This week's top Rogue", etc.)
+- Evaluate opening Discord/Telegram community channels
+
+### Retention KPIs (from strategy-gamification.md)
+| Metric | Target | Benchmark |
+|--------|--------|-----------|
+| D1 return rate | 15% | Mobile F2P game D1 25-35% — adjusted down for wallet-less web tool |
+| D7 return rate | 5% | Crypto game D7 5-15% (DappRadar 2024) |
+| D30 return rate | 2% | Lower end of typical crypto games |
+
+### If Below Target
+- D1 < 15%: Add "Check stat changes in 24 hours" CTA to result page
+- D7 < 5%: Boost battle mode promo, consider push notifications (with consent)
+- D30 < 2%: Shorten season reset cycle (4 weeks → 2 weeks), add new content

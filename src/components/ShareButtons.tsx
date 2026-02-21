@@ -4,12 +4,16 @@ import { useState, useCallback, useRef } from 'react';
 import type { GenerateResponse } from '@/lib/types';
 import { trackEvent } from '@/lib/analytics';
 import { appendUtmToUrl } from '@/lib/utm';
+import { isKoreanLocale } from '@/lib/locale';
 
 interface ShareButtonsProps {
   readonly data: GenerateResponse;
 }
 
 function buildShareText(data: GenerateResponse): string {
+  if (isKoreanLocale()) {
+    return `\uB0B4 \uC9C0\uAC11 \uC804\uD22C\uB825 ${data.stats.power.toLocaleString()}\u2026 \uB108\uB294 \uBA87\uC774\uB0D0 \uD83D\uDDE1\uFE0F\n${data.class.name} | Lv.${data.stats.level}`;
+  }
   return `My wallet power ${data.stats.power.toLocaleString()}\u2026 What\u2019s yours? \uD83D\uDDE1\uFE0F\n${data.class.name} | Lv.${data.stats.level}`;
 }
 
@@ -51,6 +55,7 @@ function openTelegramShare(text: string, url: string): void {
 export default function ShareButtons({ data }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
   const [discordCopied, setDiscordCopied] = useState(false);
+  const [kakaoTalkCopied, setKakaoTalkCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
   const downloadLinkRef = useRef<HTMLAnchorElement>(null);
@@ -75,6 +80,18 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
     const url = appendUtmToUrl(baseShareUrl, { utm_source: 'telegram', utm_medium: 'social' });
     trackEvent('share_click', { platform: 'telegram', power });
     openTelegramShare(shareText, url);
+  }, [shareText, baseShareUrl, power]);
+
+  const handleKakaoTalk = useCallback(async () => {
+    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'kakaotalk', utm_medium: 'social' });
+    trackEvent('share_click', { platform: 'kakaotalk', power });
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n${url}`);
+      setKakaoTalkCopied(true);
+      setTimeout(() => setKakaoTalkCopied(false), 2000);
+    } catch {
+      // Clipboard API may fail in some environments
+    }
   }, [shareText, baseShareUrl, power]);
 
   const handleDiscord = useCallback(async () => {
@@ -172,6 +189,15 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
         >
           <span aria-hidden="true">{'\u2708\uFE0F'}</span>
           <span>Telegram</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleKakaoTalk}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary"
+        >
+          <span aria-hidden="true">{'\uD83D\uDCAC'}</span>
+          <span>{kakaoTalkCopied ? 'Copied!' : 'KakaoTalk'}</span>
         </button>
 
         <button

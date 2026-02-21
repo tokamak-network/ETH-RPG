@@ -13,17 +13,17 @@
 | 코어 기능 (주소→카드) | ✅ 완료 | 8종 직업, 6종 스탯, AI 서사 |
 | 프론트엔드 UX | ✅ 완료 | 랜딩→입력→로딩→카드→공유 플로우 |
 | 카드 비주얼 | ✅ 완료 | 다크 판타지, 픽셀아트, 3D 뒤집기 |
-| 공유 버튼 | ⚠️ 부분 | Twitter, Farcaster, 링크복사만 |
-| OG 이미지 (개인화) | ❌ 미완 | result 페이지에 generateMetadata 없음 |
-| 카드 다운로드 | ❌ 미구현 | cardImageUrl 생성은 되지만 다운로드 버튼 없음 |
+| 공유 버튼 | ✅ 완료 | Twitter, Farcaster, Telegram, KakaoTalk, Discord, 링크복사, 다운로드 |
+| OG 이미지 (개인화) | ✅ 완료 | result layout.tsx generateMetadata 구현 |
+| 카드 다운로드 | ✅ 완료 | Gold "Save Card" 버튼 + blob 다운로드 |
 | 이벤트 트래킹 | ✅ 완료 | 5단계 퍼널 + OG 로드 + UTM (커스텀 API route) |
-| 배포 | ❌ 미완 | Vercel 배포 및 도메인 미연결 |
+| 배포 | ✅ 완료 | Vercel 배포 완료 |
 
 ### 바이럴 루프 점검
 ```
 [1] 유저가 카드를 봄 → ✅ (카드 렌더링 완료)
 [2] 공유 버튼 클릭 → ✅ (Twitter/Farcaster)
-[3] 받는 사람이 링크 프리뷰에서 카드를 봄 → ❌ (OG 미개인화)
+[3] 받는 사람이 링크 프리뷰에서 카드를 봄 → ✅ (개인화 OG 메타데이터)
 [4] "나도 해볼래" 클릭 → ✅ (링크 동작)
 [5] 자기 카드 생성 → ✅
 [6] 다시 공유 → ✅
@@ -34,19 +34,19 @@
 
 ## 2. 런칭 전 기술 수정 (MUST-DO)
 
-### P0: 바이럴 루프 완성 (예상 2-3시간)
+### P0: 바이럴 루프 완성 — ✅ DONE
 
-| # | 작업 | 파일 | 효과 |
+| # | 작업 | 상태 | 커밋 |
 |---|------|------|------|
-| 1 | result 페이지 `generateMetadata()` 추가 | `src/app/result/[address]/page.tsx` → layout 분리 | 공유 링크에 "Lv.42 사냥꾼 \| 전투력 12,345" + 개인 카드 이미지 노출 |
-| 2 | "카드 저장" 다운로드 버튼 | `src/components/ShareButtons.tsx` | 이미지 직접 업로드 시 노출 2-3배 증가 |
+| 1 | result 페이지 `generateMetadata()` 추가 | ✅ Done | `8982d81` |
+| 2 | "카드 저장" 다운로드 버튼 | ✅ Done | `8982d81` |
 
-### P1: 안정성 (선택, 런칭 후 가능)
+### P1: 안정성 — ✅ DONE
 
-| # | 작업 | 효과 |
-|---|------|------|
-| 3 | 캐시 미스 시 OG/card 라우트에서 재생성 | 서버 재시작 후에도 공유 링크 유지 |
-| 4 | 텔레그램/카카오톡 공유 버튼 | 한국 크립토 커뮤니티 커버 |
+| # | 작업 | 상태 | 커밋 |
+|---|------|------|------|
+| 3 | 캐시 미스 시 OG/card 라우트에서 재생성 | ✅ Done | `1ff80b6` |
+| 4 | 텔레그램/카카오톡 공유 버튼 | ✅ Done | 현재 커밋 |
 
 ---
 
@@ -188,6 +188,18 @@ My Power: {power}... what's yours?
 9. Friends With Benefits — 영문, 문화 크립토
 10. Arbitrum — 영문, L2 유저
 ```
+
+**서버별 포스팅 규칙**
+| 서버 | 리스크 | 채널 | 비고 |
+|------|--------|------|------|
+| DeFi Korea | 낮음 | #general 허용 | 한국어, 관련도 높음 |
+| NFT Korea | 낮음 | #general 허용 | 한국어, NFT 커뮤니티 |
+| Bankless DAO | 높음 | #shill 또는 #showcase만 | #general 프로모 금지 |
+| Ethereum Official | 높음 | #showcase만 | #general에서 프로젝트 홍보 금지 |
+| Uniswap | 높음 | #shill 또는 #off-topic | 메인 채널 홍보 불가 |
+| Optimism / Base / Arbitrum | 중간 | 서버 규칙 먼저 확인 | L2별 정책 상이 |
+| Lido | 중간 | #off-topic | 스테이킹 포커스 서버 |
+| FWB | 높음 | 포스팅 불가 | 토큰 게이트 멤버십 필수 |
 
 **DM/포스트 전략**
 - 서버 #general 또는 #off-topic에 직접 포스팅 (허용 시)
@@ -445,14 +457,48 @@ Go/No-Go 기준 조정 필요 — "보통" 등급이 시딩만으로의 현실�
 ## 12. 즉시 실행 액션 (우선순위순)
 
 ```
-[1] CRITICAL — OG 메타데이터 수정 (바이럴 루프 필수)
-[2] CRITICAL — 카드 다운로드 버튼 추가
-[3] HIGH    — Vercel 배포 + 도메인 연결
-[4] HIGH    — 샘플 카드 5장 생성 (유명 지갑)
-[5] HIGH    — OG 프리뷰 테스트 (Twitter Card Validator)
-[6] MEDIUM  — Vercel Analytics 연동
-[7] MEDIUM  — 공유 링크에 UTM 파라미터 삽입
+[1] CRITICAL — OG 메타데이터 수정                    ✅ DONE (8982d81)
+[2] CRITICAL — 카드 다운로드 버튼 추가                ✅ DONE (8982d81)
+[3] HIGH     — 캐시 복원력 (self-healing)             ✅ DONE (1ff80b6)
+[4] HIGH     — Vercel 배포 + 도메인 연결              ✅ DONE
+[5] HIGH     — OG/Card Satori 렌더링 수정             ✅ DONE (d66f620)
+[6] HIGH     — OG 프리뷰 테스트                       ✅ DONE (프로덕션 검증 완료)
+[7] HIGH     — 샘플 카드 5장 생성                     ✅ DONE (vitalik/sassal/pranksy/hayden/jessepollak)
+[8] MEDIUM   — Vercel Analytics 연동                  ✅ DONE (Analytics + SpeedInsights in layout)
+[9] MEDIUM   — 공유 링크 UTM 파라미터 삽입            ✅ DONE (utm.ts + ShareButtons)
+[10] MEDIUM  — 퍼널 데드 카운터 수정                   ✅ DONE (events route)
+[11] MEDIUM  — OG 이미지 로드 트래킹                   ✅ DONE (og_image_load counter in OG route)
 ```
 
-**[1], [2]가 완료되지 않으면 런칭하지 않는다.**
-바이럴 루프가 끊긴 상태로 시딩하면 노력 대비 효과가 1/3 이하로 떨어진다.
+**모든 항목 완료. 퍼널 측정 완전 가동 중.**
+
+---
+
+## 13. Day 7+ 리텐션 전략
+
+### Week 2: 배틀 모드 활성화
+- **유명 지갑 배틀 시리즈**: vitalik.eth vs sassal.eth 등 유명 지갑 대결 콘텐츠
+- CT/Farcaster에 배틀 결과 공유 → "너도 도전해봐" CTA
+- 배틀 공유 링크에 UTM 배틀 캠페인 태그
+
+### Week 3: 랭킹 시즌 런칭
+- **Genesis Season** 개막 — 최초 Top 10 리더보드 공개
+- 시즌 종료 시 순위별 칭호 부여 (Gold/Silver/Bronze)
+- 랭킹 페이지 공유 유도
+
+### Week 4: 커뮤니티 빌딩
+- 주간 하이라이트 발행 (이번 주 가장 높은 전투력, 희귀 클래스 등)
+- 클래스별 콜아웃 ("이번 주의 Rogue" 등)
+- Discord/Telegram 커뮤니티 채널 개설 검토
+
+### 리텐션 KPI (strategy-gamification.md 기준)
+| 지표 | 목표 | 벤치마크 |
+|------|------|----------|
+| D1 재방문율 | 15% | 모바일 F2P 게임 D1 25-35% — 지갑 연결 없는 웹 도구로 하향 |
+| D7 재방문율 | 5% | 크립토 게임 D7 5-15% (DappRadar 2024) |
+| D30 재방문율 | 2% | 일반 크립토 게임 하단 |
+
+### 목표 미달 시 대응
+- D1 < 15%: 결과 페이지에 "24시간 후 스탯 변화 확인" CTA 추가
+- D7 < 5%: 배틀 모드 프로모 강화, 푸시 알림(동의 시) 검토
+- D30 < 2%: 시즌 리셋 주기 단축 (4주 → 2주), 새 콘텐츠 추가
