@@ -1,6 +1,15 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { determineClass } from '@/lib/class';
-import { makeWalletRawData, makeClassification } from './fixtures';
+import { classifyTransactions } from '@/lib/classifier';
+import {
+  makeWalletRawData,
+  makeClassification,
+  makeTransfer,
+  makeDexTransfer,
+  UNISWAP_V3_POSITIONS,
+  ENS_BASE_REGISTRAR,
+  RANDOM_CONTRACT,
+} from './fixtures';
 
 const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
 
@@ -324,6 +333,63 @@ describe('determineClass', () => {
       const result = determineClass(raw, classification);
 
       expect(result.id).toBe('priest');
+    });
+  });
+
+  // -------------------------------------------------------
+  // Integration: classifier → class pipeline
+  // -------------------------------------------------------
+  describe('classifier → class integration', () => {
+    it('wallet with 30% utility NFTs is NOT classified as Hunter', () => {
+      // 10 transfers: 3 utility NFTs (excluded) + 3 DEX swaps + 4 plain
+      const transfers = [
+        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),
+        makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),
+        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),
+        makeDexTransfer(),
+        makeDexTransfer(),
+        makeDexTransfer(),
+        makeTransfer({ category: 'external' }),
+        makeTransfer({ category: 'external' }),
+        makeTransfer({ category: 'external' }),
+        makeTransfer({ category: 'external' }),
+      ];
+
+      const classification = classifyTransactions(transfers);
+      const raw = makeWalletRawData({ transfers, txCount: transfers.length });
+      const result = determineClass(raw, classification);
+
+      // Without utility exclusion, nftRatio would be 3/10 = 0.30 → Hunter.
+      // With exclusion, nftRatio = 0/10 = 0, dexRatio = 3/10 = 0.30 → Rogue.
+      expect(classification.nftRatio).toBe(0);
+      expect(classification.dexRatio).toBeCloseTo(0.3);
+      expect(result.id).not.toBe('hunter');
+      expect(result.id).toBe('rogue');
+    });
+
+    it('wallet with mixed utility + real NFTs gets correct class', () => {
+      // 10 transfers: 2 utility NFTs (excluded) + 3 real NFTs + 5 plain
+      const transfers = [
+        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),
+        makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),
+        makeTransfer({ category: 'external' }),
+        makeTransfer({ category: 'external' }),
+        makeTransfer({ category: 'external' }),
+        makeTransfer({ category: 'external' }),
+        makeTransfer({ category: 'external' }),
+      ];
+
+      const classification = classifyTransactions(transfers);
+      const raw = makeWalletRawData({ transfers, txCount: transfers.length });
+      const result = determineClass(raw, classification);
+
+      // Without exclusion: nftRatio = 5/10 = 0.50 → Hunter.
+      // With exclusion: nftRatio = 3/10 = 0.30, still >= 0.25 → Hunter (real NFTs).
+      expect(classification.nftRatio).toBeCloseTo(0.3);
+      expect(result.id).toBe('hunter');
     });
   });
 });
