@@ -30,12 +30,13 @@
 - [x] **OG preview testing** — Personalized cards confirmed working in shared link previews
   - vitalik.eth: Hunter Lv.33, Power 60,570 — renders with stats, lore, class icon
 
-- [x] **Generate 5 sample cards** — Famous wallet cards for seeding content
-  - vitalik.eth → Hunter Lv.33 | Power 60,570
-  - sassal.eth → Summoner Lv.31 | Power 64,850
-  - pranksy.eth → Priest Lv.49 | Power 77,230
-  - hayden.eth → Priest Lv.11 | Power 35,710
-  - jessepollak.eth → Hunter Lv.28 | Power 51,170
+- [x] **Generate 6 sample cards** — Famous wallet cards for seeding content (re-verified 2026-02-22)
+  - vitalik.eth → Hunter Lv.33 | Power 62,380
+  - sassal.eth → Hunter Lv.31 | Power 58,495
+  - pranksy.eth → Hunter Lv.49 | Power 70,140
+  - jessepollak.eth → Hunter Lv.28 | Power 47,695
+  - hayden.eth → Priest Lv.11 | Power 34,395
+  - stani.eth → Priest Lv.32 | Power 62,025
 
 ---
 
@@ -126,5 +127,6 @@
   - `lib/utm.ts` — `captureUtm()` (URL → sessionStorage), `appendUtmToUrl()` (auto-insert per platform)
   - Share URLs include `utm_source={platform}&utm_medium=social&utm_campaign=viral|battle`
 - [ ] Share copy A/B testing (6 sets in Korean/English)
-- [ ] Product Hunt launch registration
-- [ ] Reddit r/ethereum Show-off post
+- [x] Product Hunt launch registration — draft ready in `tasks/launch-posts.md` §1
+- [x] Reddit r/ethereum Show-off post — draft ready in `tasks/launch-posts.md` §5
+- [x] Re-generate famous wallet cards — verified post utility-NFT fix (cache v3), no class changes for these wallets
