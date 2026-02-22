@@ -208,10 +208,12 @@ body {
   gap: 0.75rem;
   background-color: var(--color-bg-secondary);
   border: 2px solid var(--reveal-color, var(--color-border));
+  opacity: 1;
   animation: reveal-glow 1.5s ease-in-out infinite;
 }
 
 .reveal-card-enter {
+  opacity: 0;
   animation: reveal-enter 0.4s ease-out forwards, reveal-glow 1.5s ease-in-out 0.4s infinite;
 }
 
