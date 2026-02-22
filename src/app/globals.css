@@ -217,6 +217,26 @@ body {
   animation: reveal-enter 0.4s ease-out forwards, reveal-glow 1.5s ease-in-out 0.4s infinite;
 }
 
+/* Anticipation pulse before reveal */
+@keyframes reveal-anticipate {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.reveal-card-anticipate {
+  animation: reveal-glow 1.5s ease-in-out infinite, reveal-anticipate 0.4s ease-in-out;
+}
+
+/* Exit fade-out + scale-down */
+@keyframes reveal-exit {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.9); }
+}
+
+.reveal-card-exit {
+  animation: reveal-exit 0.3s ease-in forwards;
+}
+
 .card-glow {
   transition: box-shadow 0.3s ease;
 }
@@ -404,7 +424,9 @@ body {
   }
 
   .reveal-card,
-  .reveal-card-enter {
+  .reveal-card-enter,
+  .reveal-card-anticipate,
+  .reveal-card-exit {
     animation: none;
     opacity: 1;
   }
