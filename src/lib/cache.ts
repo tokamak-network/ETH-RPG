@@ -7,11 +7,12 @@ const CACHE_TTL_SECONDS = 86400;
 const MAX_CACHE_SIZE = 10_000;
 const EVICTION_BATCH_SIZE = 1_000;
 
-// Bump this version whenever CharacterStats shape changes (e.g. adding DEX).
+// Bump this version whenever CharacterStats shape changes (e.g. adding DEX)
+// or classification logic changes (e.g. utility NFT exclusion).
 // Cached entries with a different version are treated as stale.
-const CACHE_SCHEMA_VERSION = 2;
+const CACHE_SCHEMA_VERSION = 3;
 
-const KV_KEY_PREFIX = 'cache:v2:';
+const KV_KEY_PREFIX = 'cache:v3:';
 
 interface CacheEntry {
   readonly data: GenerateResponse;
