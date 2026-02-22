@@ -48,13 +48,18 @@ const PROTOCOL_MAP: Record<string, ProtocolType> = {
   '0x6c3ea9036406852006290770bedfcaba0e23a0e8': 'STABLE', // PYUSD
 } as const;
 
-// Utility NFTs that inflate nftRatio but aren't true "collectible" NFT activity.
-// These are excluded from nftCount but still counted for contractInteractions/uniqueContracts.
-const UTILITY_NFT_CONTRACTS: ReadonlySet<string> = new Set([
-  '0xc36442b4a4522e871399cd717abdd847ab11fe88', // Uniswap V3 Positions
-  '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85', // ENS Base Registrar
-  '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401', // ENS Name Wrapper
-  '0x22c1f6050e56d2876009903609a2cc3fef83b415', // POAP
+// NFT marketplace contracts — only erc721/erc1155 transfers involving these
+// are counted as "collectible NFT activity" for Hunter classification.
+// PROTOCOL_MAP NFT entries handle the `matchedProtocol === 'NFT'` path;
+// this set handles the category-based path (erc721/erc1155 + marketplace).
+const NFT_MARKETPLACE_CONTRACTS: ReadonlySet<string> = new Set([
+  '0x00000000000000adc04c56bf30ac9d3c0aaf14dc', // Seaport 1.5
+  '0x00000000006c3852cbef3e08e8df289169ede581', // Seaport 1.1
+  '0x7be8076f4ea4a4ad08075c2508e481d6c946d12b', // OpenSea Legacy (Wyvern)
+  '0x00000000000001ad428e4906ae43d8f9852d0dd6', // Blur
+  '0x59728544b08ab483533076417fbbb2fd0b17ce3a', // LooksRare
+  '0x74312363e45dcaba76c59ec49a7aa8a65a67eed3', // X2Y2
+  '0x2b2e8cda09bba9660dca5cb6233787738ad68329', // Sudoswap
 ]);
 
 function getProtocolType(address: string | null): ProtocolType | null {
@@ -66,6 +71,13 @@ function getProtocolType(address: string | null): ProtocolType | null {
 
 function isNftCategory(category: AssetTransferItem['category']): boolean {
   return category === 'erc721' || category === 'erc1155';
+}
+
+function isNftMarketplaceTransfer(transfer: AssetTransferItem): boolean {
+  if (!isNftCategory(transfer.category)) return false;
+  const to = transfer.to?.toLowerCase() ?? '';
+  const from = transfer.from?.toLowerCase() ?? '';
+  return NFT_MARKETPLACE_CONTRACTS.has(to) || NFT_MARKETPLACE_CONTRACTS.has(from);
 }
 
 export function classifyTransactions(
@@ -99,17 +111,14 @@ export function classifyTransactions(
       contractInteractions += 1;
     }
 
-    const isUtilityNft = transfer.contractAddress !== null &&
-      UTILITY_NFT_CONTRACTS.has(transfer.contractAddress.toLowerCase());
-
-    if (!isUtilityNft && (isNftCategory(transfer.category) || matchedProtocol === 'NFT')) {
-      nftCount += 1;
-    } else if (matchedProtocol === 'DEX') {
+    if (matchedProtocol === 'DEX') {
       dexCount += 1;
     } else if (matchedProtocol === 'BRIDGE') {
       bridgeCount += 1;
     } else if (matchedProtocol === 'STABLE') {
       stableCount += 1;
+    } else if (matchedProtocol === 'NFT' || isNftMarketplaceTransfer(transfer)) {
+      nftCount += 1;
     }
   }
 

@@ -26,8 +26,10 @@ import {
   RANDOM_CONTRACT,
   UNISWAP_V3_POSITIONS,
   ENS_BASE_REGISTRAR,
-  ENS_NAME_WRAPPER,
   POAP,
+  X2Y2,
+  SUDOSWAP,
+  SEAPORT_V1_1,
 } from './fixtures';
 
 describe('classifyTransactions', () => {
@@ -51,20 +53,20 @@ describe('classifyTransactions', () => {
 
   // 2. NFT detection
   describe('NFT detection', () => {
-    it('detects erc721 category as NFT', () => {
+    it('does NOT count erc721 as NFT without marketplace involvement', () => {
       const result = classifyTransactions([
         makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),
       ]);
 
-      expect(result.nftRatio).toBe(1);
+      expect(result.nftRatio).toBe(0);
     });
 
-    it('detects erc1155 category as NFT', () => {
+    it('does NOT count erc1155 as NFT without marketplace involvement', () => {
       const result = classifyTransactions([
         makeTransfer({ category: 'erc1155', contractAddress: RANDOM_CONTRACT }),
       ]);
 
-      expect(result.nftRatio).toBe(1);
+      expect(result.nftRatio).toBe(0);
     });
 
     it('detects Seaport protocol as NFT', () => {
@@ -309,85 +311,93 @@ describe('classifyTransactions', () => {
     });
   });
 
-  // 11. Utility NFT exclusion
-  describe('Utility NFT exclusion', () => {
-    it('excludes Uniswap V3 Positions from nftCount', () => {
+  // 11. NFT marketplace whitelist
+  describe('NFT marketplace whitelist', () => {
+    it('counts erc721 sent TO a marketplace as NFT', () => {
       const result = classifyTransactions([
-        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),
-      ]);
-
-      expect(result.nftRatio).toBe(0);
-    });
-
-    it('excludes ENS Base Registrar from nftCount', () => {
-      const result = classifyTransactions([
-        makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),
-      ]);
-
-      expect(result.nftRatio).toBe(0);
-    });
-
-    it('excludes ENS Name Wrapper from nftCount', () => {
-      const result = classifyTransactions([
-        makeTransfer({ category: 'erc1155', contractAddress: ENS_NAME_WRAPPER }),
-      ]);
-
-      expect(result.nftRatio).toBe(0);
-    });
-
-    it('excludes POAP from nftCount', () => {
-      const result = classifyTransactions([
-        makeTransfer({ category: 'erc721', contractAddress: POAP }),
-      ]);
-
-      expect(result.nftRatio).toBe(0);
-    });
-
-    it('still counts utility NFTs in contractInteractions', () => {
-      const result = classifyTransactions([
-        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),
-        makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),
-      ]);
-
-      expect(result.nftRatio).toBe(0);
-      expect(result.contractInteractions).toBe(2);
-      expect(result.uniqueContracts).toBe(2);
-    });
-
-    it('still counts regular erc721 as NFT', () => {
-      const result = classifyTransactions([
-        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT, to: X2Y2 }),
       ]);
 
       expect(result.nftRatio).toBe(1);
     });
 
-    it('handles case-insensitive utility NFT matching', () => {
+    it('counts erc721 received FROM a marketplace as NFT', () => {
       const result = classifyTransactions([
-        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS.toUpperCase() }),
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT, from: SUDOSWAP, to: RANDOM_ADDRESS }),
+      ]);
+
+      expect(result.nftRatio).toBe(1);
+    });
+
+    it('counts erc1155 via marketplace as NFT', () => {
+      const result = classifyTransactions([
+        makeTransfer({ category: 'erc1155', contractAddress: RANDOM_CONTRACT, to: SEAPORT_V1_1 }),
+      ]);
+
+      expect(result.nftRatio).toBe(1);
+    });
+
+    it('does NOT count erc721 without marketplace as NFT', () => {
+      const result = classifyTransactions([
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),
       ]);
 
       expect(result.nftRatio).toBe(0);
     });
 
-    it('excludes utility NFT even when sent via a known NFT marketplace', () => {
+    it('does NOT count erc1155 without marketplace as NFT', () => {
       const result = classifyTransactions([
-        makeTransfer({
-          category: 'erc721',
-          contractAddress: UNISWAP_V3_POSITIONS,
-          to: SEAPORT,
-        }),
+        makeTransfer({ category: 'erc1155', contractAddress: RANDOM_CONTRACT }),
       ]);
 
       expect(result.nftRatio).toBe(0);
     });
 
-    it('computes correct nftRatio when mixing utility and real NFTs', () => {
+    it('protocol match (DEX) takes priority over erc721 category', () => {
+      // erc721 token sent TO a DEX router — should count as DEX, not NFT
+      const result = classifyTransactions([
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT, to: UNISWAP_V2 }),
+      ]);
+
+      expect(result.nftRatio).toBe(0);
+      expect(result.dexRatio).toBe(1);
+    });
+
+    it('protocol match (BRIDGE) takes priority over erc721 category', () => {
+      const result = classifyTransactions([
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT, to: OPTIMISM_BRIDGE }),
+      ]);
+
+      expect(result.nftRatio).toBe(0);
+      expect(result.bridgeRatio).toBe(1);
+    });
+
+    it('utility NFTs (Uniswap V3, ENS, POAP) are NOT counted as NFT without marketplace', () => {
       const result = classifyTransactions([
         makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),
         makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),
-        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),
-        makeTransfer({ category: 'external' }),
+        makeTransfer({ category: 'erc721', contractAddress: POAP }),
+      ]);
+
+      expect(result.nftRatio).toBe(0);
+      expect(result.contractInteractions).toBe(3);
+      expect(result.uniqueContracts).toBe(3);
+    });
+
+    it('handles case-insensitive marketplace matching', () => {
+      const result = classifyTransactions([
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT, to: X2Y2.toUpperCase() }),
+      ]);
+
+      expect(result.nftRatio).toBe(1);
+    });
+
+    it('computes correct nftRatio with mix of marketplace and non-marketplace erc721', () => {
+      const result = classifyTransactions([
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT, to: X2Y2 }),       // NFT
+        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),             // not NFT
+        makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),               // not NFT
+        makeTransfer({ category: 'external' }),                                                   // plain
       ]);
 
       expect(result.nftRatio).toBeCloseTo(1 / 4);

@@ -6,9 +6,10 @@ import {
   makeClassification,
   makeTransfer,
   makeDexTransfer,
+  makeNftTransfer,
   UNISWAP_V3_POSITIONS,
   ENS_BASE_REGISTRAR,
-  RANDOM_CONTRACT,
+  X2Y2,
 } from './fixtures';
 
 const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
@@ -340,8 +341,8 @@ describe('determineClass', () => {
   // Integration: classifier → class pipeline
   // -------------------------------------------------------
   describe('classifier → class integration', () => {
-    it('wallet with 30% utility NFTs is NOT classified as Hunter', () => {
-      // 10 transfers: 3 utility NFTs (excluded) + 3 DEX swaps + 4 plain
+    it('wallet with 30% non-marketplace erc721s is NOT classified as Hunter', () => {
+      // 10 transfers: 3 erc721 (no marketplace) + 3 DEX swaps + 4 plain
       const transfers = [
         makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),
         makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),
@@ -367,14 +368,14 @@ describe('determineClass', () => {
       expect(result.id).toBe('rogue');
     });
 
-    it('wallet with mixed utility + real NFTs gets correct class', () => {
-      // 10 transfers: 2 utility NFTs (excluded) + 3 real NFTs + 5 plain
+    it('wallet with mixed non-marketplace + marketplace NFTs gets correct class', () => {
+      // 10 transfers: 2 non-marketplace erc721 + 3 marketplace NFTs + 5 plain
       const transfers = [
-        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),
-        makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),
-        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),
-        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),
-        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),
+        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),   // no marketplace
+        makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),      // no marketplace
+        makeNftTransfer(),                                                               // via Seaport (PROTOCOL_MAP)
+        makeNftTransfer(),                                                               // via Seaport (PROTOCOL_MAP)
+        makeTransfer({ category: 'erc721', to: X2Y2 }),                                 // via X2Y2 marketplace
         makeTransfer({ category: 'external' }),
         makeTransfer({ category: 'external' }),
         makeTransfer({ category: 'external' }),
@@ -386,8 +387,7 @@ describe('determineClass', () => {
       const raw = makeWalletRawData({ transfers, txCount: transfers.length });
       const result = determineClass(raw, classification);
 
-      // Without exclusion: nftRatio = 5/10 = 0.50 → Hunter.
-      // With exclusion: nftRatio = 3/10 = 0.30, still >= 0.25 → Hunter (real NFTs).
+      // 3 marketplace NFTs / 10 total = 0.30 → Hunter (>= 0.25).
       expect(classification.nftRatio).toBeCloseTo(0.3);
       expect(result.id).toBe('hunter');
     });
