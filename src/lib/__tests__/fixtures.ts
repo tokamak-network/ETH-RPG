@@ -32,6 +32,12 @@ export const USDC = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
 export const USDT = '0xdac17f958d2ee523a2206206994597c13d831ec7';
 export const DAI = '0x6b175474e89094c44da98b954eedeac495271d0f';
 
+// Utility NFT contracts (excluded from nftCount)
+export const UNISWAP_V3_POSITIONS = '0xc36442b4a4522e871399cd717abdd847ab11fe88';
+export const ENS_BASE_REGISTRAR = '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85';
+export const ENS_NAME_WRAPPER = '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401';
+export const POAP = '0x22c1f6050e56d2876009903609a2cc3fef83b415';
+
 export const RANDOM_ADDRESS = '0x1234567890abcdef1234567890abcdef12345678';
 export const RANDOM_CONTRACT = '0xabcdef1234567890abcdef1234567890abcdef12';
 

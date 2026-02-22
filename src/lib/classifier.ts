@@ -48,6 +48,15 @@ const PROTOCOL_MAP: Record<string, ProtocolType> = {
   '0x6c3ea9036406852006290770bedfcaba0e23a0e8': 'STABLE', // PYUSD
 } as const;
 
+// Utility NFTs that inflate nftRatio but aren't true "collectible" NFT activity.
+// These are excluded from nftCount but still counted for contractInteractions/uniqueContracts.
+const UTILITY_NFT_CONTRACTS: ReadonlySet<string> = new Set([
+  '0xc36442b4a4522e871399cd717abdd847ab11fe88', // Uniswap V3 Positions
+  '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85', // ENS Base Registrar
+  '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401', // ENS Name Wrapper
+  '0x22c1f6050e56d2876009903609a2cc3fef83b415', // POAP
+]);
+
 function getProtocolType(address: string | null): ProtocolType | null {
   if (address === null) {
     return null;
@@ -90,7 +99,10 @@ export function classifyTransactions(
       contractInteractions += 1;
     }
 
-    if (isNftCategory(transfer.category) || matchedProtocol === 'NFT') {
+    const isUtilityNft = transfer.contractAddress !== null &&
+      UTILITY_NFT_CONTRACTS.has(transfer.contractAddress.toLowerCase());
+
+    if (!isUtilityNft && (isNftCategory(transfer.category) || matchedProtocol === 'NFT')) {
       nftCount += 1;
     } else if (matchedProtocol === 'DEX') {
       dexCount += 1;
