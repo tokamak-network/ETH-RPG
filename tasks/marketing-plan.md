@@ -114,9 +114,25 @@ Plan for K=0.3, celebrate if higher.
 
 ## 5. Channel Execution Plan
 
-### Phase 1: Soft Launch (Day 1-2)
+### Phase 1: Internal QA (Day 1)
 
-#### A. Crypto Twitter (CT)
+Share the link with 5-10 friends/testers. Collect bug reports and UX feedback. Fix any critical issues found. Prepare Product Hunt submission (screenshots, maker comment, tagline). Generate 5 sample cards (famous wallets) if not done. Final OG preview check (Twitter Card Validator, Farcaster).
+
+---
+
+### Phase 2: Global Launch (Day 2-3)
+
+#### A. Product Hunt
+**Preparation**
+- English title: "Eth·RPG — Turn your Ethereum wallet into an RPG hero"
+- Tagline: "Paste address → get your hero card in 10 seconds"
+- 5 screenshots: landing, loading, card front, card back, share
+- Maker comment: tech stack + why I built it
+- Categories: Web3, Gaming, AI
+
+**Timing**: Tuesday-Thursday morning (PT 00:01 launch)
+
+#### B. Crypto Twitter (CT)
 **Goal**: Acquire 50 initial seed users
 
 **First post (personal or project account)**
@@ -138,7 +154,7 @@ My Power {power}... what's yours?
 [Card image attached]
 ```
 
-**Famous Wallet Tag Posts (Day 1-3, 2-3 posts/day)**
+**Famous Wallet Tag Posts (Day 2-3, 2-3 posts/day)**
 - Post pre-generated cards for famous wallets (vitalik.eth, etc.) on CT
 - Tag the wallet owner: "@vitalikbuterin Power 89,432 Elder Wizard"
 - Even without RT, followers click out of curiosity → inflow
@@ -150,7 +166,7 @@ My Power {power}... what's yours?
 #EthRPG #WalletRPG #onchain #ethereum
 ```
 
-#### B. Farcaster/Warpcast
+#### C. Farcaster/Warpcast
 **Goal**: 30 on-chain natives
 
 **Cast**
@@ -175,7 +191,30 @@ My Power: {power}... what's yours?
 | /nft | "NFT collectors = Hunters" |
 | /korean | Korean-language post |
 
-#### C. Crypto Discord (10 servers/day)
+#### D. Reddit
+- r/ethereum: "I built a tool that turns ETH wallets into RPG characters" (Show-off)
+- r/web3: cross-post
+- r/IndieHackers: building story
+
+#### E. Hacker News
+- "Show HN: Eth·RPG – Ethereum wallet → RPG character card"
+- Emphasize technical details (on-chain analysis, Claude AI lore)
+
+#### F. Secondary CT Content (Day 3)
+- "Famous Wallet Power Ranking" series
+  - vitalik.eth: Lv.?? Elder Wizard 🔮
+  - sassal.eth: Lv.?? Guardian 🛡️
+  - 5-10 famous addresses total
+- Monitor user RT/recasts + respond
+- Bug/feedback response
+
+---
+
+### Phase 3: Korean Wave (Day 4-5)
+
+Ride the tail of global traffic momentum.
+
+#### G. Crypto Discord (10 servers)
 **Target Servers (priority order)**
 ```
 1. DeFi Korea — Korean, active, highest relevance
@@ -207,11 +246,7 @@ My Power: {power}... what's yours?
 - Admin DM: "Let me make a card for your wallet first" (personalization appeal)
 - Prevent spam perception: adjust tone per server, post only once per server
 
----
-
-### Phase 2: Expansion (Day 3-5)
-
-#### D. Korean Telegram (5 groups)
+#### H. Korean Telegram (5 groups)
 ```
 1. Ethereum Korea — main target
 2. DeFi Korea Telegram — DeFi users
@@ -220,42 +255,15 @@ My Power: {power}... what's yours?
 5. Web3 Builders Korea — developers + builders
 ```
 
-#### E. Secondary CT Content
-- "Famous Wallet Power Ranking" series
-  - vitalik.eth: Lv.?? Elder Wizard 🔮
-  - sassal.eth: Lv.?? Guardian 🛡️
-  - 5-10 famous addresses total
-- "Class Characteristics" infographic
-  - "If you're a Rogue... you swap faster than anyone on DEX"
-- User submission RT (retweet cards posted by users)
-
-#### F. KakaoTalk Open Chat
+#### I. KakaoTalk Open Chat
 - Search for crypto open chat rooms (KakaoTalk search: Ethereum, NFT, coin)
 - Share in a natural tone: "Tried this and it was fun"
 - Limit to 5 rooms per day (spam prevention)
 
----
-
-### Phase 3: Global Expansion (Week 2)
-
-#### G. Product Hunt
-**Preparation**
-- English title: "Eth·RPG — Turn your Ethereum wallet into an RPG hero"
-- Tagline: "Paste address → get your hero card in 10 seconds"
-- 5 screenshots: landing, loading, card front, card back, share
-- Maker comment: tech stack + why I built it
-- Categories: Web3, Gaming, AI
-
-**Timing**: Tuesday-Thursday morning (PT 00:01 launch)
-
-#### H. Reddit
-- r/ethereum: "I built a tool that turns ETH wallets into RPG characters" (Show-off)
-- r/web3: cross-post
-- r/IndieHackers: building story
-
-#### I. Hacker News
-- "Show HN: Eth·RPG – Ethereum wallet → RPG character card"
-- Emphasize technical details (on-chain analysis, Claude AI lore)
+#### J. Secondary CT Content
+- "Class Characteristics" infographic
+  - "If you're a Rogue... you swap faster than anyone on DEX"
+- User submission RT (retweet cards posted by users)
 
 ---
 
@@ -369,40 +377,51 @@ Must-generate targets:
 | D-1 PM | Finalize 6 share copy sets | Growth |
 | D-1 PM | Finalize seeding target list of 20 + prepare post texts | Growth |
 
-### Launch (Day 1)
+### Day 1: Internal QA
 | Time | Task |
 |------|------|
-| 09:00 | CT first post (card image + link) |
+| AM | Share link with 5-10 friends/testers, collect bug/UX feedback |
+| AM | Final OG preview check (Twitter Card Validator, Farcaster) |
+| PM | Fix any critical bugs found |
+| PM | Prepare PH submission (screenshots, maker comment, tagline) |
+| PM | Generate 5 sample cards (famous wallets) if not done |
+
+### Day 2: Global Launch
+| Time | Task |
+|------|------|
+| 00:01 PT | Product Hunt launch |
+| 09:00 | CT first post (card image + link + PH link) |
 | 09:30 | Farcaster /ethereum channel cast |
-| 10:00 | Discord seeding begins (5 servers) |
-| 12:00 | Telegram seeding (3 groups) |
+| 10:00 | Reddit r/ethereum post |
+| 12:00 | Hacker News Show HN post |
 | 14:00 | Famous wallet tag posts 2-3 (vitalik.eth, sassal.eth, etc.) |
 | 18:00 | First funnel data check |
 | 21:00 | User response monitoring + hotfix |
 
-### Day 2-3
+### Day 3: Global Momentum
 | Task |
 |------|
-| Additional Discord seeding (5 servers/day) |
-| Monitor user RT/recasts + respond |
-| "Famous Wallet Power Ranking" secondary content post |
+| PH ranking monitoring + community responses |
+| Additional Farcaster channels (/defi, /nft, /base) |
+| "Famous Wallet Power Ranking" content post |
 | Bug/feedback response |
-| KakaoTalk open chat seeding (5 rooms) |
+| Monitor user RT/recasts + respond |
 
-### Day 4-5
+### Day 4-5: Korean Wave
 | Task |
 |------|
+| Discord seeding (10 servers, follow posting rules) |
+| Korean Telegram seeding (5 groups) |
+| KakaoTalk open chat seeding (5 rooms) |
 | Secondary CT content ("Class Characteristics" infographic) |
 | User submission RT + community engagement |
-| Mid-point funnel data review |
-| Compare share copy performance → focus on top performers |
 
-### Day 6-7
+### Day 6-7: Review & Optimize
 | Task |
 |------|
-| Product Hunt launch registration |
-| Reddit r/ethereum post |
-| Hacker News Show HN |
+| Mid-point funnel data review |
+| Compare share copy performance → focus on top performers |
+| First K-factor calculation (need 50+ shares) |
 | First performance data report |
 
 ---
