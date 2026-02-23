@@ -8,19 +8,13 @@ vi.mock('@/lib/metrics', () => ({
   incrementCounter: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
-  checkRateLimit: vi.fn(),
-}));
-
 // Let route-utils and types run real (same as generate.test.ts)
 
 import { trackShare, trackFunnel, recordEvent } from '@/lib/metrics';
-import { checkRateLimit } from '@/lib/rate-limit';
 
 const mockTrackShare = vi.mocked(trackShare);
 const mockTrackFunnel = vi.mocked(trackFunnel);
 const mockRecordEvent = vi.mocked(recordEvent);
-const mockCheckRateLimit = vi.mocked(checkRateLimit);
 
 function createRequest(body: unknown): Request {
   return new Request('http://localhost:3000/api/events', {
@@ -49,7 +43,6 @@ describe('POST /api/events', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    mockCheckRateLimit.mockResolvedValue({ allowed: true, remaining: 4, resetAt: Date.now() + 60000 });
     const mod = await import('@/app/api/events/route');
     POST = mod.POST as unknown as (request: Request) => Promise<Response>;
   });
@@ -98,16 +91,6 @@ describe('POST /api/events', () => {
 
     expect(response.status).toBe(400);
     expect(data.error.code).toBe('INVALID_EVENT');
-  });
-
-  it('returns 429 RATE_LIMITED when rate limited', async () => {
-    mockCheckRateLimit.mockResolvedValue({ allowed: false, remaining: 0, resetAt: Date.now() + 60000 });
-
-    const response = await POST(createRequest({ event: 'page_view' }));
-    const data = await response.json();
-
-    expect(response.status).toBe(429);
-    expect(data.error.code).toBe('RATE_LIMITED');
   });
 
   it('routes share_click events to trackShare', async () => {

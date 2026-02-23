@@ -3,8 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { trackShare, trackFunnel, recordEvent, incrementCounter } from '@/lib/metrics';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { getClientIp, errorResponse } from '@/lib/route-utils';
+import { errorResponse } from '@/lib/route-utils';
 import { ErrorCode } from '@/lib/types';
 
 const MAX_EVENT_NAME_LENGTH = 100;
@@ -41,13 +40,9 @@ function sanitizeProperties(
   return sanitized;
 }
 
+// No rate limiting — analytics telemetry, fire-and-forget KV writes only.
+// Shares no budget with generate/battle which call expensive external APIs.
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const clientIp = getClientIp(request);
-  const rateResult = await checkRateLimit(clientIp);
-  if (!rateResult.allowed) {
-    return errorResponse(ErrorCode.RATE_LIMITED, 'Too many requests. Please try again later.', 429);
-  }
-
   try {
     const body = await request.json() as AnalyticsEvent;
 
