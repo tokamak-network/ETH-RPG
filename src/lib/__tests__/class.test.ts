@@ -9,7 +9,7 @@ import {
   makeNftTransfer,
   UNISWAP_V3_POSITIONS,
   ENS_BASE_REGISTRAR,
-  X2Y2,
+  RANDOM_CONTRACT,
 } from './fixtures';
 
 const MS_PER_YEAR = 365.25 * 24 * 60 * 60 * 1000;
@@ -20,11 +20,11 @@ afterEach(() => {
 
 describe('determineClass', () => {
   // -------------------------------------------------------
-  // 1. Hunter -- nftRatio >= 0.25 AND nftRatio > dexRatio
+  // 1. Hunter -- txCount >= 50 AND nftRatio >= 0.25 AND nftRatio > (dex+stable+bridge)
   // -------------------------------------------------------
   describe('Hunter', () => {
-    it('returns hunter when nftRatio equals threshold (0.25) and nftRatio > dexRatio', () => {
-      const raw = makeWalletRawData();
+    it('returns hunter when nftRatio equals threshold (0.25) and nftRatio > (dex+stable+bridge)', () => {
+      const raw = makeWalletRawData({ txCount: 100 });
       const classification = makeClassification({ nftRatio: 0.25 });
 
       const result = determineClass(raw, classification);
@@ -34,7 +34,7 @@ describe('determineClass', () => {
     });
 
     it('does NOT return hunter when nftRatio is below threshold (0.24)', () => {
-      const raw = makeWalletRawData();
+      const raw = makeWalletRawData({ txCount: 100 });
       const classification = makeClassification({ nftRatio: 0.24 });
 
       const result = determineClass(raw, classification);
@@ -42,9 +42,69 @@ describe('determineClass', () => {
       expect(result.id).not.toBe('hunter');
     });
 
-    it('does NOT return hunter when nftRatio >= threshold but nftRatio <= dexRatio', () => {
-      const raw = makeWalletRawData();
-      const classification = makeClassification({ nftRatio: 0.25, dexRatio: 0.25 });
+    it('does NOT return hunter when nftRatio >= threshold but nftRatio <= (dex+stable+bridge)', () => {
+      const raw = makeWalletRawData({ txCount: 100 });
+      const classification = makeClassification({
+        nftRatio: 0.30,
+        dexRatio: 0.15,
+        stableRatio: 0.10,
+        bridgeRatio: 0.06,
+      });
+
+      // 0.30 <= 0.15 + 0.10 + 0.06 = 0.31 → NOT hunter
+      const result = determineClass(raw, classification);
+
+      expect(result.id).not.toBe('hunter');
+    });
+
+    it('does NOT return hunter when txCount < 50 and nftRatio < 50%', () => {
+      const raw = makeWalletRawData({ txCount: 49 });
+      const classification = makeClassification({ nftRatio: 0.30 });
+
+      const result = determineClass(raw, classification);
+
+      expect(result.id).not.toBe('hunter');
+    });
+
+    it('returns hunter when txCount exactly equals 50', () => {
+      const raw = makeWalletRawData({ txCount: 50 });
+      const classification = makeClassification({ nftRatio: 0.30 });
+
+      const result = determineClass(raw, classification);
+
+      expect(result.id).toBe('hunter');
+    });
+
+    it('returns hunter when NFT-dominant (>= 50%) with txCount >= 10', () => {
+      const raw = makeWalletRawData({ txCount: 12 });
+      const classification = makeClassification({ nftRatio: 0.60 });
+
+      const result = determineClass(raw, classification);
+
+      expect(result.id).toBe('hunter');
+    });
+
+    it('does NOT return hunter when NFT-dominant but txCount < 10', () => {
+      const raw = makeWalletRawData({ txCount: 9 });
+      const classification = makeClassification({ nftRatio: 0.60 });
+
+      const result = determineClass(raw, classification);
+
+      expect(result.id).not.toBe('hunter');
+    });
+
+    it('returns hunter when NFT exactly 50% and txCount exactly 10', () => {
+      const raw = makeWalletRawData({ txCount: 10 });
+      const classification = makeClassification({ nftRatio: 0.50 });
+
+      const result = determineClass(raw, classification);
+
+      expect(result.id).toBe('hunter');
+    });
+
+    it('does NOT return hunter when NFT 49% and txCount 12 (below dominant threshold)', () => {
+      const raw = makeWalletRawData({ txCount: 12 });
+      const classification = makeClassification({ nftRatio: 0.49 });
 
       const result = determineClass(raw, classification);
 
@@ -113,9 +173,9 @@ describe('determineClass', () => {
   // 4. Merchant -- stableRatio >= 0.25
   // -------------------------------------------------------
   describe('Merchant', () => {
-    it('returns merchant when stableRatio equals threshold (0.25)', () => {
+    it('returns merchant when stableRatio equals threshold (0.20)', () => {
       const raw = makeWalletRawData();
-      const classification = makeClassification({ stableRatio: 0.25 });
+      const classification = makeClassification({ stableRatio: 0.20 });
 
       const result = determineClass(raw, classification);
 
@@ -125,12 +185,12 @@ describe('determineClass', () => {
   });
 
   // -------------------------------------------------------
-  // 5. Priest -- gasSpentEth > 0.3 AND contractInteractions > 30
+  // 5. Priest -- txCount >= 50 AND gasSpentEth > 1.0 AND contractInteractions > 150
   // -------------------------------------------------------
   describe('Priest', () => {
-    it('returns priest when both gas and contract interaction conditions are met', () => {
-      const raw = makeWalletRawData({ gasSpentEth: 0.5 });
-      const classification = makeClassification({ contractInteractions: 31 });
+    it('returns priest when all three conditions are met', () => {
+      const raw = makeWalletRawData({ txCount: 100, gasSpentEth: 1.5 });
+      const classification = makeClassification({ contractInteractions: 151 });
 
       const result = determineClass(raw, classification);
 
@@ -138,9 +198,27 @@ describe('determineClass', () => {
       expect(result.nameEn).toBe('Priest');
     });
 
+    it('does NOT return priest when txCount < 50', () => {
+      const raw = makeWalletRawData({ txCount: 49, gasSpentEth: 1.5 });
+      const classification = makeClassification({ contractInteractions: 151 });
+
+      const result = determineClass(raw, classification);
+
+      expect(result.id).not.toBe('priest');
+    });
+
+    it('returns priest when txCount exactly equals 50', () => {
+      const raw = makeWalletRawData({ txCount: 50, gasSpentEth: 1.5 });
+      const classification = makeClassification({ contractInteractions: 151 });
+
+      const result = determineClass(raw, classification);
+
+      expect(result.id).toBe('priest');
+    });
+
     it('does NOT return priest when only gasSpentEth condition is met', () => {
-      const raw = makeWalletRawData({ gasSpentEth: 0.5 });
-      const classification = makeClassification({ contractInteractions: 30 });
+      const raw = makeWalletRawData({ gasSpentEth: 1.5 });
+      const classification = makeClassification({ contractInteractions: 150 });
 
       const result = determineClass(raw, classification);
 
@@ -148,8 +226,8 @@ describe('determineClass', () => {
     });
 
     it('does NOT return priest when only contractInteractions condition is met', () => {
-      const raw = makeWalletRawData({ gasSpentEth: 0.3 });
-      const classification = makeClassification({ contractInteractions: 31 });
+      const raw = makeWalletRawData({ gasSpentEth: 1.0 });
+      const classification = makeClassification({ contractInteractions: 151 });
 
       const result = determineClass(raw, classification);
 
@@ -306,11 +384,12 @@ describe('determineClass', () => {
   // -------------------------------------------------------
   describe('priority ordering', () => {
     it('Hunter wins over Rogue when both conditions are met', () => {
-      const raw = makeWalletRawData();
+      const raw = makeWalletRawData({ txCount: 100 });
       const classification = makeClassification({
-        nftRatio: 0.25,
-        dexRatio: 0.20,
+        nftRatio: 0.30,
+        dexRatio: 0.25,
       });
+      // nft(0.30) > dex+stable+bridge(0.25+0+0) → Hunter wins over Rogue
 
       const result = determineClass(raw, classification);
 
@@ -325,10 +404,10 @@ describe('determineClass', () => {
       const raw = makeWalletRawData({
         firstTxTimestamp: fourYearsAgo,
         txCount: 100,       // qualifies for Elder Wizard (100/4 = 25 < 30)
-        gasSpentEth: 0.5,   // qualifies for Priest (> 0.3)
+        gasSpentEth: 1.5,   // qualifies for Priest (> 1.0)
       });
       const classification = makeClassification({
-        contractInteractions: 31, // qualifies for Priest (> 30)
+        contractInteractions: 151, // qualifies for Priest (> 150)
       });
 
       const result = determineClass(raw, classification);
@@ -341,8 +420,10 @@ describe('determineClass', () => {
   // Integration: classifier → class pipeline
   // -------------------------------------------------------
   describe('classifier → class integration', () => {
-    it('wallet with 30% non-marketplace erc721s is NOT classified as Hunter', () => {
-      // 10 transfers: 3 erc721 (no marketplace) + 3 DEX swaps + 4 plain
+    it('wallet with 30% erc721 utility NFTs + 30% DEX is classified as Rogue (utility NFTs excluded)', () => {
+      // 10 transfers: 3 erc721 (utility → excluded) + 3 DEX swaps + 4 plain
+      // nftRatio = 0/10 = 0.00 (utility NFTs excluded), dexRatio = 3/10 = 0.30
+      // Rogue (dexRatio >= 0.20) wins
       const transfers = [
         makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),
         makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),
@@ -360,36 +441,60 @@ describe('determineClass', () => {
       const raw = makeWalletRawData({ transfers, txCount: transfers.length });
       const result = determineClass(raw, classification);
 
-      // Without utility exclusion, nftRatio would be 3/10 = 0.30 → Hunter.
-      // With exclusion, nftRatio = 0/10 = 0, dexRatio = 3/10 = 0.30 → Rogue.
-      expect(classification.nftRatio).toBe(0);
+      // Utility NFTs excluded → nftRatio = 0
+      expect(classification.nftRatio).toBeCloseTo(0);
       expect(classification.dexRatio).toBeCloseTo(0.3);
-      expect(result.id).not.toBe('hunter');
       expect(result.id).toBe('rogue');
     });
 
-    it('wallet with mixed non-marketplace + marketplace NFTs gets correct class', () => {
-      // 10 transfers: 2 non-marketplace erc721 + 3 marketplace NFTs + 5 plain
+    it('wallet with majority erc721 NFTs is classified as Hunter (txCount >= 50)', () => {
+      // 10 transfers: 2 Seaport + 1 bare erc721 + 2 utility (excluded) + 2 DEX + 3 plain
+      // nftRatio = 3/10 = 0.30 (utility excluded), dexRatio = 2/10 = 0.20
+      // Hunter: txCount >= 50 AND nftRatio >= 0.25 AND nftRatio > (dex+stable+bridge) → ✓
       const transfers = [
-        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),   // no marketplace
-        makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),      // no marketplace
         makeNftTransfer(),                                                               // via Seaport (PROTOCOL_MAP)
         makeNftTransfer(),                                                               // via Seaport (PROTOCOL_MAP)
-        makeTransfer({ category: 'erc721', to: X2Y2 }),                                 // via X2Y2 marketplace
-        makeTransfer({ category: 'external' }),
-        makeTransfer({ category: 'external' }),
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),          // bare erc721
+        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),     // utility → excluded
+        makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),       // utility → excluded
+        makeDexTransfer(),
+        makeDexTransfer(),
         makeTransfer({ category: 'external' }),
         makeTransfer({ category: 'external' }),
         makeTransfer({ category: 'external' }),
       ];
 
       const classification = classifyTransactions(transfers);
-      const raw = makeWalletRawData({ transfers, txCount: transfers.length });
+      // txCount=50 to pass min tx gate (transfers are for ratio calc, txCount is separate)
+      const raw = makeWalletRawData({ transfers, txCount: 50 });
       const result = determineClass(raw, classification);
 
-      // 3 marketplace NFTs / 10 total = 0.30 → Hunter (>= 0.25).
+      // 3 real NFTs / 10 total = 0.30 (>= 0.25 threshold, > 0.20 dex+0+0) → Hunter
       expect(classification.nftRatio).toBeCloseTo(0.3);
       expect(result.id).toBe('hunter');
+    });
+
+    it('wallet with majority erc721 NFTs but txCount < 50 is NOT Hunter', () => {
+      const transfers = [
+        makeNftTransfer(),
+        makeNftTransfer(),
+        makeTransfer({ category: 'erc721', contractAddress: RANDOM_CONTRACT }),
+        makeTransfer({ category: 'erc721', contractAddress: UNISWAP_V3_POSITIONS }),
+        makeTransfer({ category: 'erc721', contractAddress: ENS_BASE_REGISTRAR }),
+        makeDexTransfer(),
+        makeDexTransfer(),
+        makeTransfer({ category: 'external' }),
+        makeTransfer({ category: 'external' }),
+        makeTransfer({ category: 'external' }),
+      ];
+
+      const classification = classifyTransactions(transfers);
+      // txCount=10 < 50 → fails min tx gate
+      const raw = makeWalletRawData({ transfers, txCount: 10 });
+      const result = determineClass(raw, classification);
+
+      expect(classification.nftRatio).toBeCloseTo(0.3);
+      expect(result.id).not.toBe('hunter');
     });
   });
 });

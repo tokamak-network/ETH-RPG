@@ -30,13 +30,16 @@
 - [x] **OG preview testing** — Personalized cards confirmed working in shared link previews
   - vitalik.eth: Hunter Lv.33, Power 60,570 — renders with stats, lore, class icon
 
-- [x] **Generate 6 sample cards** — Famous wallet cards for seeding content (re-verified 2026-02-22)
-  - vitalik.eth → Hunter Lv.33 | Power 62,380
-  - sassal.eth → Hunter Lv.31 | Power 58,495
+- [x] **Generate sample cards — all 8 classes represented** (verified 2026-02-22)
   - pranksy.eth → Hunter Lv.49 | Power 70,140
-  - jessepollak.eth → Hunter Lv.28 | Power 47,695
-  - hayden.eth → Priest Lv.11 | Power 34,395
+  - vitalik.eth → Hunter Lv.33 | Power 62,380
+  - degentrader.eth → Rogue Lv.34 | Power 62,055
+  - zksync.eth → Summoner Lv.4 | Power 50,050
+  - lefteris.eth → Merchant Lv.25 | Power 47,535
   - stani.eth → Priest Lv.32 | Power 62,025
+  - 0xfoobar.eth → Elder Wizard Lv.17 | Power 34,835
+  - ricmoo.eth → Guardian Lv.19 | Power 47,650
+  - wilsoncusack.eth → Warrior Lv.14 | Power 23,700
 
 ---
 
@@ -127,6 +130,7 @@
   - `lib/utm.ts` — `captureUtm()` (URL → sessionStorage), `appendUtmToUrl()` (auto-insert per platform)
   - Share URLs include `utm_source={platform}&utm_medium=social&utm_campaign=viral|battle`
 - [ ] Share copy A/B testing (6 sets in Korean/English)
+- [ ] Contract/treasury address detection — txCount=1 protocol addresses (ens.eth, lido.eth, etc.) are classified as human wallets. Consider `isContract()` check or txCount < 5 exclusion gate to prevent misclassification.
 - [x] Product Hunt launch registration — draft ready in `tasks/launch-posts.md` §1
 - [x] Reddit r/ethereum Show-off post — draft ready in `tasks/launch-posts.md` §5
 - [x] Re-generate famous wallet cards — verified post utility-NFT fix (cache v3), no class changes for these wallets

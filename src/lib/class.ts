@@ -3,13 +3,17 @@ import type { WalletRawData, TxClassification, ClassResult } from '@/lib/types';
 import { toBalanceEth, toWalletAgeYears } from '@/lib/conversions';
 
 // --- Class threshold constants ---
+export const HUNTER_MIN_TX_COUNT = 50;
+export const HUNTER_NFT_DOMINANT_THRESHOLD = 0.50;
+export const HUNTER_NFT_DOMINANT_MIN_TX = 10;
 export const HUNTER_NFT_RATIO_THRESHOLD = 0.25;
 export const ROGUE_DEX_RATIO_THRESHOLD = 0.20;
 export const SUMMONER_BRIDGE_COUNT_THRESHOLD = 8;
 export const SUMMONER_BRIDGE_RATIO_THRESHOLD = 0.12;
-export const MERCHANT_STABLE_RATIO_THRESHOLD = 0.25;
-export const PRIEST_GAS_SPENT_THRESHOLD = 0.3;
-export const PRIEST_CONTRACT_INTERACTION_THRESHOLD = 30;
+export const MERCHANT_STABLE_RATIO_THRESHOLD = 0.20;
+export const PRIEST_MIN_TX_COUNT = 50;
+export const PRIEST_GAS_SPENT_THRESHOLD = 1.0;
+export const PRIEST_CONTRACT_INTERACTION_THRESHOLD = 150;
 export const ELDER_WIZARD_AGE_YEARS_THRESHOLD = 4;
 export const ELDER_WIZARD_TX_PER_YEAR_THRESHOLD = 30;
 export const ELDER_WIZARD_BALANCE_ETH_CEILING = 10.0;
@@ -34,10 +38,12 @@ type ClassMatcher = (
 ) => ClassResult | null;
 
 const classMatchers: readonly ClassMatcher[] = [
-  // 1. Hunter -- NFT ratio >= 25% AND nftRatio > dexRatio (prevents multi-activity capture)
-  (_raw, classification) =>
+  // 1. Hunter -- (txCount >= 50, or txCount >= 10 if NFT-dominant) AND NFT ratio >= 25% AND nftRatio > (dex+stable+bridge)
+  (raw, classification) =>
+    (raw.txCount >= HUNTER_MIN_TX_COUNT ||
+      (classification.nftRatio >= HUNTER_NFT_DOMINANT_THRESHOLD && raw.txCount >= HUNTER_NFT_DOMINANT_MIN_TX)) &&
     classification.nftRatio >= HUNTER_NFT_RATIO_THRESHOLD &&
-    classification.nftRatio > classification.dexRatio
+    classification.nftRatio > classification.dexRatio + classification.stableRatio + classification.bridgeRatio
       ? HUNTER
       : null,
 
@@ -56,8 +62,9 @@ const classMatchers: readonly ClassMatcher[] = [
   (_raw, classification) =>
     classification.stableRatio >= MERCHANT_STABLE_RATIO_THRESHOLD ? MERCHANT : null,
 
-  // 5. Priest -- high gas spent AND many contract interactions
+  // 5. Priest -- txCount >= 50 AND high gas spent AND many contract interactions
   (raw, classification) =>
+    raw.txCount >= PRIEST_MIN_TX_COUNT &&
     raw.gasSpentEth > PRIEST_GAS_SPENT_THRESHOLD &&
     classification.contractInteractions > PRIEST_CONTRACT_INTERACTION_THRESHOLD
       ? PRIEST

@@ -8,11 +8,11 @@ const MAX_CACHE_SIZE = 10_000;
 const EVICTION_BATCH_SIZE = 1_000;
 
 // Bump this version whenever CharacterStats shape changes (e.g. adding DEX)
-// or classification logic changes (e.g. NFT marketplace whitelist).
+// or classification logic changes (e.g. NFT category fallback rebalance).
 // Cached entries with a different version are treated as stale.
-const CACHE_SCHEMA_VERSION = 4;
+const CACHE_SCHEMA_VERSION = 10;
 
-const KV_KEY_PREFIX = 'cache:v4:';
+const KV_KEY_PREFIX = 'cache:v10:';
 
 interface CacheEntry {
   readonly data: GenerateResponse;
