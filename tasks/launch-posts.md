@@ -1,6 +1,6 @@
 # Day 2 Launch Posts — Ready-to-Use Drafts
 
-> Site URL: https://eth-rpg-omega.vercel.app
+> Site URL: https://ethrpg.app
 > PH URL: (to be filled after submission)
 
 ---
@@ -66,7 +66,7 @@ No wallet connect. No signing. Read-only.
 
 What class is your wallet?
 
-https://eth-rpg-omega.vercel.app?utm_source=twitter&utm_medium=organic&utm_campaign=launch_seed
+https://ethrpg.app?utm_source=twitter&utm_medium=organic&utm_campaign=launch_seed
 
 [Attach: your own card image]
 ```
@@ -80,20 +80,34 @@ https://eth-rpg-omega.vercel.app?utm_source=twitter&utm_medium=organic&utm_campa
 
 ## 3. Crypto Twitter — Famous Wallet Tag Posts
 
-### Famous Wallet Data (verified 2026-02-22, post utility-NFT fix, cache v3)
+### Famous Wallet Data (verified 2026-02-23, post class-rebalance v10)
 
-| Wallet | Level | Class | Power | Notable |
-|--------|-------|-------|-------|---------|
-| vitalik.eth | 33 | Hunter | 62,380 | INT 500, DEX 550 |
-| sassal.eth | 31 | Hunter | 58,495 | INT 500, LUCK 281 |
-| pranksy.eth | 49 | Hunter | 70,140 | Highest power, HP 564, MP 549, DEX 550 |
-| jessepollak.eth | 28 | Hunter | 47,695 | INT 454, LUCK 289 |
-| hayden.eth | 11 | Priest | 34,395 | Uniswap founder, INT 500, LUCK 225 |
-| stani.eth | 32 | Priest | 62,025 | Aave founder, INT 500, DEX 423 |
+**All 8 classes represented:**
+
+| Wallet | Level | Class | Power | Who / Notable |
+|--------|-------|-------|-------|---------------|
+| pranksy.eth | 49 | Hunter | 69,640 | NFT collector legend |
+| vitalik.eth | 33 | Hunter | 61,545 | Ethereum founder |
+| degentrader.eth | 34 | Rogue | 63,555 | DeFi trader |
+| sassal.eth | 31 | Summoner | 57,995 | ETH educator |
+| griff.eth | 38 | Merchant | 69,875 | Giveth founder |
+| stani.eth | 32 | Priest | 62,505 | Aave founder |
+| 0xfoobar.eth | 17 | Elder Wizard | 31,335 | Security researcher |
+| ricmoo.eth | 19 | Guardian | 45,150 | ethers.js creator |
+| wilsoncusack.eth | 14 | Warrior | 23,680 | Base/Coinbase engineer |
+
+**Other notable results:**
+| Wallet | Level | Class | Power | Who |
+|--------|-------|-------|-------|-----|
+| jessepollak.eth | 28 | Hunter | 47,195 | Base creator |
+| matthuang.eth | 12 | Hunter | 28,980 | Paradigm co-founder |
+| rleshner.eth | 35 | Priest | 67,905 | Compound founder |
+| barrysilbert.eth | 22 | Elder Wizard | 44,550 | DCG founder |
+| samczsun.eth | 19 | Guardian | 48,530 | Security researcher |
 
 ### Post A (vitalik.eth):
 ```
-.@VitalikButerin is a Lv.33 Hunter with Power 62,380
+.@VitalikButerin is a Lv.33 Hunter with Power 61,545
 
 INT 500 and DEX 550 — the stats don't lie
 
@@ -101,38 +115,38 @@ The AI says he's "a relentless hunter of ancient relics"
 
 What class is YOUR wallet?
 
-https://eth-rpg-omega.vercel.app?utm_source=twitter&utm_medium=organic&utm_campaign=launch_seed
+https://ethrpg.app?utm_source=twitter&utm_medium=organic&utm_campaign=launch_seed
 
 [Attach: vitalik card image]
 ```
 
 ### Post B (stani.eth):
 ```
-.@StaniKulechov is a Lv.32 Priest with Power 62,025
+.@StaniKulechov is a Lv.32 Priest with Power 62,505
 
 The Aave founder channels sacred mana into broken contracts — sounds about right
 
-Try yours: https://eth-rpg-omega.vercel.app?utm_source=twitter&utm_medium=organic&utm_campaign=launch_seed
+Try yours: https://ethrpg.app?utm_source=twitter&utm_medium=organic&utm_campaign=launch_seed
 
 [Attach: stani card image]
 ```
 
 ### Post C (pranksy.eth):
 ```
-.@pranaborern Lv.49 Hunter, Power 70,140 — highest we've seen so far
+.@pranaborern Lv.49 Hunter, Power 69,640 — highest we've seen so far
 
 The legendary NFT collector lives up to the Hunter class
 
-Can anyone beat 70K? https://eth-rpg-omega.vercel.app?utm_source=twitter&utm_medium=organic&utm_campaign=launch_seed
+Can anyone beat 69K? https://ethrpg.app?utm_source=twitter&utm_medium=organic&utm_campaign=launch_seed
 
 [Attach: pranksy card image]
 ```
 
-### Backup posts (sassal, jessepollak, hayden):
+### Backup posts (sassal, jessepollak, griff):
 ```
-Post D: .@sasaborern Lv.31 Hunter, Power 58,495 — vitalik.eth vs sassal.eth, who wins?
-Post E: .@jessepollak Lv.28 Hunter, Power 47,695 — Even the Base creator has an RPG destiny
-Post F: .@haaborern Lv.11 Priest, Power 34,395 — Uniswap's creator is a Priest who pours mana into contracts
+Post D: .@sasaborern Lv.31 Summoner, Power 57,995 — The ETH educator bridges worlds as a Summoner
+Post E: .@jessepollak Lv.28 Hunter, Power 47,195 — Even the Base creator has an RPG destiny
+Post F: .@griffgreen Lv.38 Merchant, Power 69,875 — The Giveth founder trades at Power 69K. Can you beat that?
 ```
 
 ---
@@ -148,7 +162,7 @@ No wallet connect. No signing. Just vibes.
 
 What class is your wallet?
 
-https://eth-rpg-omega.vercel.app?utm_source=farcaster&utm_medium=organic&utm_campaign=launch_seed
+https://ethrpg.app?utm_source=farcaster&utm_medium=organic&utm_campaign=launch_seed
 ```
 
 **Channel**: /ethereum
@@ -190,7 +204,7 @@ I built Eth·RPG, a free tool that analyzes your Ethereum wallet's on-chain hist
 
 **Tech:** Next.js, Alchemy SDK for on-chain data, Claude AI for lore, @vercel/og for card rendering. Everything server-side.
 
-Try it: https://eth-rpg-omega.vercel.app?utm_source=reddit&utm_medium=post&utm_campaign=community
+Try it: https://ethrpg.app?utm_source=reddit&utm_medium=post&utm_campaign=community
 
 Would love feedback. What class did you get?
 ```
@@ -203,7 +217,7 @@ Would love feedback. What class did you get?
 
 **Body**:
 ```
-https://eth-rpg-omega.vercel.app?utm_source=hackernews&utm_medium=post&utm_campaign=community
+https://ethrpg.app?utm_source=hackernews&utm_medium=post&utm_campaign=community
 
 Eth·RPG takes any Ethereum address and generates an RPG character card from on-chain data.
 
@@ -237,15 +251,13 @@ Stack: Next.js, TypeScript, Alchemy SDK, Claude API, @vercel/og, Vercel KV, Tail
 
 ## Notes
 
-- Save card images from production: visit `https://eth-rpg-omega.vercel.app/result/{address}` and use the "Save Card" button
+- Save card images from production: visit `https://ethrpg.app/result/{address}` and use the "Save Card" button
 - Card image API URLs for direct download:
-  - vitalik: `https://eth-rpg-omega.vercel.app/api/card/0xd8da6bf26964af9d7eed9e03e53415d37aa96045`
-  - stani: `https://eth-rpg-omega.vercel.app/api/card/0x7d077b10cb2f18a88d5a5a70e538d8c0cc4b57c7` (verify address)
-  - pranksy: `https://eth-rpg-omega.vercel.app/api/card/0xd387a6e4e84a6c86bd90c158c6028a58cc8ac459`
+  - vitalik: `https://ethrpg.app/api/card/0xd8da6bf26964af9d7eed9e03e53415d37aa96045`
+  - stani: `https://ethrpg.app/api/card/0x7d077b10cb2f18a88d5a5a70e538d8c0cc4b57c7` (verify address)
+  - pranksy: `https://ethrpg.app/api/card/0xd387a6e4e84a6c86bd90c158c6028a58cc8ac459`
 - PH submission must be done BEFORE 00:01 PT on launch day (queue it the night before)
 - Reddit: post from an account with karma history in r/ethereum — new accounts get filtered
 - HN: keep the body technical and concise — HN audience values substance over hype
-- Class diversity note: 4/6 wallets are Hunter even after utility NFT fix (verified with
-  fresh generation, cache v3). These wallets have genuine high NFT activity beyond
-  utility NFTs. Need to find Rogue/Guardian/Merchant/Elder Wizard examples for
-  "Class Characteristics" content.
+- Class diversity: All 8 classes now represented with famous wallet examples.
+  Summoner is the rarest class (zksync.eth was the only one found in ~60 wallets tested).

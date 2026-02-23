@@ -30,16 +30,16 @@
 - [x] **OG preview testing** — Personalized cards confirmed working in shared link previews
   - vitalik.eth: Hunter Lv.33, Power 60,570 — renders with stats, lore, class icon
 
-- [x] **Generate sample cards — all 8 classes represented** (verified 2026-02-22)
-  - pranksy.eth → Hunter Lv.49 | Power 70,140
-  - vitalik.eth → Hunter Lv.33 | Power 62,380
-  - degentrader.eth → Rogue Lv.34 | Power 62,055
-  - zksync.eth → Summoner Lv.4 | Power 50,050
-  - lefteris.eth → Merchant Lv.25 | Power 47,535
-  - stani.eth → Priest Lv.32 | Power 62,025
-  - 0xfoobar.eth → Elder Wizard Lv.17 | Power 34,835
-  - ricmoo.eth → Guardian Lv.19 | Power 47,650
-  - wilsoncusack.eth → Warrior Lv.14 | Power 23,700
+- [x] **Generate sample cards — all 8 classes represented** (verified 2026-02-23, v10)
+  - pranksy.eth → Hunter Lv.49 | Power 69,640
+  - vitalik.eth → Hunter Lv.33 | Power 61,545
+  - degentrader.eth → Rogue Lv.34 | Power 63,555
+  - sassal.eth → Summoner Lv.31 | Power 57,995
+  - griff.eth → Merchant Lv.38 | Power 69,875
+  - stani.eth → Priest Lv.32 | Power 62,505
+  - 0xfoobar.eth → Elder Wizard Lv.17 | Power 31,335
+  - ricmoo.eth → Guardian Lv.19 | Power 45,150
+  - wilsoncusack.eth → Warrior Lv.14 | Power 23,680
 
 ---
 
