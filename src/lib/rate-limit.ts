@@ -1,10 +1,14 @@
 // IP-based sliding-window rate limiter — KV primary, in-memory fallback
 import { kvIncr } from '@/lib/kv-cache';
 
-const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW = 60 * 1000;
 const RATE_LIMIT_WINDOW_SECONDS = 60;
 const STALE_ENTRY_THRESHOLD = RATE_LIMIT_WINDOW * 2;
+
+// Write endpoints (generate, battle): strict limit
+const WRITE_LIMIT = 5;
+// Read endpoints (leaderboard, season): relaxed limit
+const READ_LIMIT = 30;
 
 interface RateLimitEntry {
   readonly count: number;
@@ -29,27 +33,27 @@ function cleanStaleEntries(): void {
   }
 }
 
-function checkMemoryRateLimit(ip: string): RateLimitResult {
+function checkMemoryRateLimit(key: string, max: number): RateLimitResult {
   cleanStaleEntries();
 
   const now = Date.now();
-  const existing = limiter.get(ip);
+  const existing = limiter.get(key);
 
   if (!existing || now >= existing.resetAt) {
     const resetAt = now + RATE_LIMIT_WINDOW;
     const entry: RateLimitEntry = { count: 1, resetAt };
-    limiter.set(ip, entry);
+    limiter.set(key, entry);
 
     return {
       allowed: true,
-      remaining: RATE_LIMIT_MAX - 1,
+      remaining: max - 1,
       resetAt,
     };
   }
 
   const newCount = existing.count + 1;
 
-  if (newCount > RATE_LIMIT_MAX) {
+  if (newCount > max) {
     return {
       allowed: false,
       remaining: 0,
@@ -61,29 +65,47 @@ function checkMemoryRateLimit(ip: string): RateLimitResult {
     count: newCount,
     resetAt: existing.resetAt,
   };
-  limiter.set(ip, updatedEntry);
+  limiter.set(key, updatedEntry);
 
   return {
     allowed: true,
-    remaining: RATE_LIMIT_MAX - newCount,
+    remaining: max - newCount,
     resetAt: existing.resetAt,
   };
 }
 
+/** Default (write) rate limit: 5 req/min */
 export async function checkRateLimit(ip: string): Promise<RateLimitResult> {
-  // Try KV first (shared across instances)
-  const kvCount = await kvIncr(`ratelimit:${ip}`, RATE_LIMIT_WINDOW_SECONDS);
+  const kvKey = `ratelimit:${ip}`;
+  const kvCount = await kvIncr(kvKey, RATE_LIMIT_WINDOW_SECONDS);
 
   if (kvCount !== null) {
     const now = Date.now();
-    const allowed = kvCount <= RATE_LIMIT_MAX;
+    const allowed = kvCount <= WRITE_LIMIT;
     return {
       allowed,
-      remaining: Math.max(0, RATE_LIMIT_MAX - kvCount),
+      remaining: Math.max(0, WRITE_LIMIT - kvCount),
       resetAt: now + RATE_LIMIT_WINDOW,
     };
   }
 
-  // Fallback: in-memory rate limiter
-  return checkMemoryRateLimit(ip);
+  return checkMemoryRateLimit(kvKey, WRITE_LIMIT);
+}
+
+/** Read-only rate limit: 30 req/min (leaderboard, season, etc.) */
+export async function checkReadRateLimit(ip: string): Promise<RateLimitResult> {
+  const kvKey = `ratelimit:read:${ip}`;
+  const kvCount = await kvIncr(kvKey, RATE_LIMIT_WINDOW_SECONDS);
+
+  if (kvCount !== null) {
+    const now = Date.now();
+    const allowed = kvCount <= READ_LIMIT;
+    return {
+      allowed,
+      remaining: Math.max(0, READ_LIMIT - kvCount),
+      resetAt: now + RATE_LIMIT_WINDOW,
+    };
+  }
+
+  return checkMemoryRateLimit(kvKey, READ_LIMIT);
 }

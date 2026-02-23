@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getLeaderboardSnapshot, getCurrentSeason } from '@/lib/ranking-store';
 import { findPlayerRank } from '@/lib/ranking-engine';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkReadRateLimit } from '@/lib/rate-limit';
 import { getClientIp, errorResponse } from '@/lib/route-utils';
 import { ErrorCode } from '@/lib/types';
 import type { LeaderboardType, LeaderboardResponse } from '@/lib/types';
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = request.nextUrl;
 
   const clientIp = getClientIp(request);
-  const rateResult = await checkRateLimit(clientIp);
+  const rateResult = await checkReadRateLimit(clientIp);
   if (!rateResult.allowed) {
     return errorResponse(ErrorCode.RATE_LIMITED, 'Too many requests. Please try again later.', 429);
   }

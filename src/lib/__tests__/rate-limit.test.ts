@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const RATE_LIMIT_MAX = 5;
+const WRITE_LIMIT = 5;
+const READ_LIMIT = 30;
 const RATE_LIMIT_WINDOW = 60_000;
 const STALE_ENTRY_THRESHOLD = RATE_LIMIT_WINDOW * 2;
 const BASE_TIME = 1_000_000;
@@ -44,7 +45,7 @@ describe('rate-limit', () => {
 
     const expectedRemaining = [4, 3, 2, 1, 0];
 
-    for (let i = 0; i < RATE_LIMIT_MAX; i++) {
+    for (let i = 0; i < WRITE_LIMIT; i++) {
       const result = await checkRateLimit('1.2.3.4');
       expect(result.allowed).toBe(true);
       expect(result.remaining).toBe(expectedRemaining[i]);
@@ -56,7 +57,7 @@ describe('rate-limit', () => {
     vi.setSystemTime(BASE_TIME);
     const { checkRateLimit } = await freshRateLimit();
 
-    for (let i = 0; i < RATE_LIMIT_MAX; i++) {
+    for (let i = 0; i < WRITE_LIMIT; i++) {
       await checkRateLimit('1.2.3.4');
     }
 
@@ -71,7 +72,7 @@ describe('rate-limit', () => {
     vi.setSystemTime(BASE_TIME);
     const { checkRateLimit } = await freshRateLimit();
 
-    for (let i = 0; i < RATE_LIMIT_MAX; i++) {
+    for (let i = 0; i < WRITE_LIMIT; i++) {
       await checkRateLimit('1.2.3.4');
     }
 
@@ -91,7 +92,7 @@ describe('rate-limit', () => {
     vi.setSystemTime(BASE_TIME);
     const { checkRateLimit } = await freshRateLimit();
 
-    for (let i = 0; i < RATE_LIMIT_MAX; i++) {
+    for (let i = 0; i < WRITE_LIMIT; i++) {
       await checkRateLimit('1.2.3.4');
     }
     const blocked = await checkRateLimit('1.2.3.4');
@@ -142,7 +143,7 @@ describe('rate-limit', () => {
     vi.setSystemTime(BASE_TIME);
     const { checkRateLimit } = await freshRateLimit();
 
-    for (let i = 0; i < RATE_LIMIT_MAX; i++) {
+    for (let i = 0; i < WRITE_LIMIT; i++) {
       await checkRateLimit('10.0.0.1');
     }
     const blockedIp1 = await checkRateLimit('10.0.0.1');
@@ -211,7 +212,7 @@ describe('rate-limit', () => {
     vi.setSystemTime(BASE_TIME);
     const { checkRateLimit } = await freshRateLimit();
 
-    for (let i = 0; i < RATE_LIMIT_MAX; i++) {
+    for (let i = 0; i < WRITE_LIMIT; i++) {
       await checkRateLimit('1.2.3.4');
     }
 
@@ -241,5 +242,39 @@ describe('rate-limit', () => {
     const result = await checkRateLimit('brand-new-ip');
 
     expect(result.resetAt).toBe(preciseTime + 60_000);
+  });
+
+  // Test 13: checkReadRateLimit allows 30 requests
+  it('checkReadRateLimit allows 30 requests per window', async () => {
+    vi.setSystemTime(BASE_TIME);
+    const { checkReadRateLimit } = await freshRateLimit();
+
+    for (let i = 0; i < READ_LIMIT; i++) {
+      const result = await checkReadRateLimit('1.2.3.4');
+      expect(result.allowed).toBe(true);
+      expect(result.remaining).toBe(READ_LIMIT - 1 - i);
+    }
+
+    const blocked = await checkReadRateLimit('1.2.3.4');
+    expect(blocked.allowed).toBe(false);
+    expect(blocked.remaining).toBe(0);
+  });
+
+  // Test 14: Read and write rate limits are independent
+  it('read and write rate limits use separate buckets', async () => {
+    vi.setSystemTime(BASE_TIME);
+    const { checkRateLimit, checkReadRateLimit } = await freshRateLimit();
+
+    // Exhaust write limit
+    for (let i = 0; i < WRITE_LIMIT; i++) {
+      await checkRateLimit('1.2.3.4');
+    }
+    const writeBlocked = await checkRateLimit('1.2.3.4');
+    expect(writeBlocked.allowed).toBe(false);
+
+    // Read limit should still be available
+    const readResult = await checkReadRateLimit('1.2.3.4');
+    expect(readResult.allowed).toBe(true);
+    expect(readResult.remaining).toBe(READ_LIMIT - 1);
   });
 });
