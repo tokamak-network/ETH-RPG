@@ -232,20 +232,37 @@ Stack: Next.js, TypeScript, Alchemy SDK, Claude API, @vercel/og, Vercel KV, Tail
 
 ---
 
-## 7. Day 2 Execution Checklist
+## 7. Launch Day Execution Checklist
 
-| Time | Task | Post # | Status |
-|------|------|--------|--------|
-| 00:01 PT | Product Hunt launch | #1 | |
-| 09:00 | CT first post | #2 | |
-| 09:30 | Farcaster /ethereum cast | #4 | |
-| 10:00 | Reddit r/ethereum | #5 | |
-| 12:00 | Hacker News Show HN | #6 | |
-| 14:00 | Famous wallet tag post 1 | #3A | |
-| 15:00 | Famous wallet tag post 2 | #3B | |
-| 16:00 | Famous wallet tag post 3 | #3C | |
-| 18:00 | Funnel data check | — | |
-| 21:00 | Monitor + hotfix | — | |
+**Launch date: 2026-02-26 (Thu)**
+**All times in KST (Korea Standard Time)**
+
+### Pre-launch (2/25 Wed)
+| KST | Task | Status |
+|-----|------|--------|
+| 오후 | PH 큐잉 (예약 등록) | |
+| 오후 | Reddit r/ethereum 카르마 확인 (10+ 필요) | |
+
+### Launch day (2/26 Thu)
+| KST | PT | Task | Post # | Status |
+|-----|-----|------|--------|--------|
+| 17:00 | 00:00 | Product Hunt 런칭 시작 | #1 | |
+| 17:30 | 00:30 | Farcaster /ethereum 캐스트 | #4 | |
+| 18:00 | 01:00 | Reddit r/ethereum (카르마 충분 시) | #5 | |
+| 20:00 | 03:00 | Hacker News Show HN | #6 | |
+| 22:00 | 05:00 | 반응 체크 + HN 댓글 대응 | — | |
+
+### Post-launch (2/27 Fri)
+| KST | Task | Status |
+|-----|------|--------|
+| 10:00 | 퍼널 데이터 체크 (PH/HN/Farcaster) | |
+| 14:00 | Farcaster 후속 캐스트 (/defi, /nft) | |
+| — | 핫픽스 대응 (필요 시) | |
+
+### Skipped channels
+- ~~Twitter/X~~ — 팔로워 없음, 바이럴 불가
+- ~~Twitter 태그 포스트~~ — 위와 동일
+- Reddit — 카르마 부족 시 스킵 (2/23~25에 댓글로 카르마 확보 시도)
 
 ---
 
@@ -254,10 +271,12 @@ Stack: Next.js, TypeScript, Alchemy SDK, Claude API, @vercel/og, Vercel KV, Tail
 - Save card images from production: visit `https://ethrpg.app/result/{address}` and use the "Save Card" button
 - Card image API URLs for direct download:
   - vitalik: `https://ethrpg.app/api/card/0xd8da6bf26964af9d7eed9e03e53415d37aa96045`
-  - stani: `https://ethrpg.app/api/card/0x7d077b10cb2f18a88d5a5a70e538d8c0cc4b57c7` (verify address)
+  - stani: `https://ethrpg.app/api/card/0x2e21f5d32841cf8c7da805185a041400bf15f21a`
   - pranksy: `https://ethrpg.app/api/card/0xd387a6e4e84a6c86bd90c158c6028a58cc8ac459`
-- PH submission must be done BEFORE 00:01 PT on launch day (queue it the night before)
-- Reddit: post from an account with karma history in r/ethereum — new accounts get filtered
+- PH submission: queue the night before (2/25 Wed afternoon KST)
+- Reddit: need 10+ comment karma in r/ethereum — start commenting 2/23~25
 - HN: keep the body technical and concise — HN audience values substance over hype
 - Class diversity: All 8 classes now represented with famous wallet examples.
   Summoner is the rarest class (zksync.eth was the only one found in ~60 wallets tested).
+- Screenshots (5): `screenshots/1~5-*.png`
+- Card images (3): `screenshots/cards/vitalik.png, stani.png, pranksy.png`
