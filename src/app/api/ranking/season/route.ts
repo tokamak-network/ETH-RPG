@@ -3,17 +3,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentSeason } from '@/lib/ranking-store';
 import { getSeasonTimeRemaining } from '@/lib/season-manager';
-import { checkReadRateLimit } from '@/lib/rate-limit';
-import { getClientIp, errorResponse } from '@/lib/route-utils';
-import { ErrorCode } from '@/lib/types';
+import { errorResponse } from '@/lib/route-utils';
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
-  const clientIp = getClientIp(request);
-  const rateResult = await checkReadRateLimit(clientIp);
-  if (!rateResult.allowed) {
-    return errorResponse(ErrorCode.RATE_LIMITED, 'Too many requests. Please try again later.', 429);
-  }
-
+// No rate limiting — read-only, CDN-cached (s-maxage=300), no expensive ops
+export async function GET(_request: NextRequest): Promise<NextResponse> {
   try {
     const season = await getCurrentSeason();
 
