@@ -79,6 +79,13 @@ export async function getSeason(id: string): Promise<Season | null> {
 
 // --- Player record operations ---
 
+// Normalize records from KV that may lack fields added after initial launch.
+// Ensures the returned object always matches the full PlayerRecord interface.
+function normalizePlayerRecord(raw: PlayerRecord): PlayerRecord {
+  if (raw.weightedScore !== undefined) return raw;
+  return { ...raw, weightedScore: 0 };
+}
+
 export async function upsertPlayerRecord(seasonId: string, record: PlayerRecord): Promise<void> {
   if (!isKvConfigured()) return;
   try {
@@ -92,31 +99,46 @@ export async function upsertPlayerRecord(seasonId: string, record: PlayerRecord)
 export async function getPlayerRecord(seasonId: string, address: string): Promise<PlayerRecord | null> {
   if (!isKvConfigured()) return null;
   try {
-    return await kv.get<PlayerRecord>(playerKey(seasonId, address));
+    const raw = await kv.get<PlayerRecord>(playerKey(seasonId, address));
+    return raw ? normalizePlayerRecord(raw) : null;
   } catch {
     return null;
   }
 }
 
-// Lua script: atomically read existing wins/losses, increment, merge with new metadata, write back.
+// Lua script: atomically read existing wins/losses/weightedScore, increment, merge with new metadata, write back.
 // Prevents race condition when two concurrent battles involve the same player.
+// ARGV[1] = baseRecord JSON, ARGV[2] = "1"|"0" (won), ARGV[3] = address, ARGV[4] = opponentPower
 const ATOMIC_UPSERT_SCRIPT = `
 local existing = redis.call('GET', KEYS[1])
 local wins = 0
 local losses = 0
+local weightedScore = 0
 if existing then
   local old = cjson.decode(existing)
   wins = old.wins or 0
   losses = old.losses or 0
+  weightedScore = old.weightedScore or 0
 end
 local record = cjson.decode(ARGV[1])
+local opponentPower = tonumber(ARGV[4]) or 0
+local myPower = record.power or 0
+if myPower == 0 then myPower = 1 end
+if opponentPower == 0 then opponentPower = 1 end
+local ratio = opponentPower / myPower
+if ratio < 0.5 then ratio = 0.5 end
+if ratio > 3.0 then ratio = 3.0 end
+local delta = 0
 if ARGV[2] == "1" then
   record.wins = wins + 1
   record.losses = losses
+  delta = math.floor(10 * ratio + 0.5)
 else
   record.wins = wins
   record.losses = losses + 1
+  delta = -math.floor(3 * (1 / ratio) + 0.5)
 end
+record.weightedScore = weightedScore + delta
 redis.call('SET', KEYS[1], cjson.encode(record))
 redis.call('SADD', KEYS[2], ARGV[3])
 return 1
@@ -126,6 +148,7 @@ export async function atomicRecordBattleResult(
   seasonId: string,
   baseRecord: PlayerRecord,
   won: boolean,
+  opponentPower: number,
 ): Promise<void> {
   if (!isKvConfigured()) return;
   try {
@@ -134,7 +157,7 @@ export async function atomicRecordBattleResult(
     await kv.eval(
       ATOMIC_UPSERT_SCRIPT,
       [key, indexKey],
-      [JSON.stringify(baseRecord), won ? '1' : '0', baseRecord.address.toLowerCase()],
+      [JSON.stringify(baseRecord), won ? '1' : '0', baseRecord.address.toLowerCase(), String(opponentPower)],
     );
   } catch {
     // Silently fail
@@ -153,7 +176,9 @@ export async function getAllPlayerRecords(seasonId: string): Promise<readonly Pl
       if (batch.length > 0) {
         const keys = batch.map((addr) => playerKey(seasonId, String(addr)));
         const results = await kv.mget<(PlayerRecord | null)[]>(...keys);
-        records.push(...(results ?? []).filter((r): r is PlayerRecord => r !== null));
+        records.push(
+          ...(results ?? []).filter((r): r is PlayerRecord => r !== null).map(normalizePlayerRecord),
+        );
       }
       if (++iterations > 5000) break;
     } while (cursor !== '0');

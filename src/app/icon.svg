@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="6" fill="#0a0a0f"/>
+  <!-- Left sword -->
+  <line x1="8" y1="24" x2="20" y2="6" stroke="#f4c430" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="14" y1="15" x2="10" y2="13" stroke="#f4c430" stroke-width="2" stroke-linecap="round"/>
+  <line x1="7" y1="23" x2="10" y2="26" stroke="#f4c430" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Right sword -->
+  <line x1="24" y1="24" x2="12" y2="6" stroke="#c9a832" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="18" y1="15" x2="22" y2="13" stroke="#c9a832" stroke-width="2" stroke-linecap="round"/>
+  <line x1="25" y1="23" x2="22" y2="26" stroke="#c9a832" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

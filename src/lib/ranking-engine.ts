@@ -40,14 +40,26 @@ export function computePowerRanking(
 
 // --- Battle Ranking ---
 
+// Mirrors the delta logic in the Lua atomic upsert script (ranking-store.ts).
+// Any change here MUST be reflected in the Lua script and vice versa.
+export function computeWeightedDelta(myPower: number, opponentPower: number, won: boolean): number {
+  const safeMy = myPower === 0 ? 1 : myPower;
+  const safeOpp = opponentPower === 0 ? 1 : opponentPower;
+  const ratio = Math.min(Math.max(safeOpp / safeMy, 0.5), 3.0);
+  if (won) {
+    return Math.round(10 * ratio);
+  }
+  return -Math.round(3 * (1 / ratio));
+}
+
 function computeWinRate(wins: number, losses: number): number {
   const total = wins + losses;
   if (total === 0) return 0;
   return Math.round((wins / total) * 100);
 }
 
-function computeRatingScore(wins: number, losses: number, winRate: number): number {
-  return wins * 10 - losses * 3 + winRate;
+function computeRatingScore(weightedScore: number, winRate: number): number {
+  return weightedScore + winRate;
 }
 
 export function computeBattleRanking(
@@ -57,7 +69,7 @@ export function computeBattleRanking(
     .filter((p) => p.wins + p.losses >= MIN_BATTLES_FOR_RANKING)
     .map((p) => {
       const winRate = computeWinRate(p.wins, p.losses);
-      const ratingScore = computeRatingScore(p.wins, p.losses, winRate);
+      const ratingScore = computeRatingScore(p.weightedScore, winRate);
       return {
         address: p.address,
         ...(p.ensName ? { ensName: p.ensName } : {}),

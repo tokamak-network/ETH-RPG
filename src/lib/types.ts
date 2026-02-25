@@ -206,6 +206,7 @@ export interface PlayerRecord {
   readonly level: number;
   readonly wins: number;
   readonly losses: number;
+  readonly weightedScore: number;
   readonly achievementCounts: Readonly<Record<AchievementTier, number>>;
   readonly lastSeenAt: number;
 }

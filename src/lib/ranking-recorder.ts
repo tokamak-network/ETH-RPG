@@ -32,6 +32,7 @@ function buildBaseRecord(fighter: BattleFighter): PlayerRecord {
     level: fighter.stats.level,
     wins: 0,
     losses: 0,
+    weightedScore: 0,
     achievementCounts: countAchievementsByTier(fighter.achievements),
     lastSeenAt: Date.now(),
   };
@@ -78,8 +79,8 @@ export async function recordBattleForRanking(
 
     // Atomic upsert + battle records in parallel
     await Promise.all([
-      atomicRecordBattleResult(season.id, base0, fighter0Won),
-      atomicRecordBattleResult(season.id, base1, fighter1Won),
+      atomicRecordBattleResult(season.id, base0, fighter0Won, fighter1.stats.power),
+      atomicRecordBattleResult(season.id, base1, fighter1Won, fighter0.stats.power),
       recordBattleOutcome(battleRecord0),
       recordBattleOutcome(battleRecord1),
     ]);

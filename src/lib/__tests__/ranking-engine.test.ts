@@ -5,6 +5,7 @@ import {
   computePowerRanking,
   computeBattleRanking,
   computeExplorerRanking,
+  computeWeightedDelta,
   findPlayerRank,
 } from '@/lib/ranking-engine';
 import type { PlayerRecord } from '@/lib/types';
@@ -17,6 +18,7 @@ function makePlayer(overrides: Partial<PlayerRecord> & { address: string }): Pla
     level: 10,
     wins: 0,
     losses: 0,
+    weightedScore: 0,
     achievementCounts: { legendary: 0, epic: 0, rare: 0, common: 0 },
     lastSeenAt: Date.now(),
     ...overrides,
@@ -90,8 +92,8 @@ describe('computeBattleRanking', () => {
 
   it('sorts by ratingScore descending', () => {
     const players = [
-      makePlayer({ address: '0xaaa', wins: 10, losses: 5 }), // score=10*10-5*3+67=152
-      makePlayer({ address: '0xbbb', wins: 20, losses: 2 }), // score=20*10-2*3+91=285
+      makePlayer({ address: '0xaaa', wins: 10, losses: 5, weightedScore: 85 }), // 85 + 67 = 152
+      makePlayer({ address: '0xbbb', wins: 20, losses: 2, weightedScore: 194 }), // 194 + 91 = 285
     ];
 
     const result = computeBattleRanking(players);
@@ -105,11 +107,92 @@ describe('computeBattleRanking', () => {
     expect(result[0].winRate).toBe(70);
   });
 
-  it('handles zero wins — losses reduce score', () => {
-    const players = [makePlayer({ address: '0xaaa', wins: 0, losses: 5 })];
+  it('handles zero wins — negative weightedScore reduces rating', () => {
+    const players = [makePlayer({ address: '0xaaa', wins: 0, losses: 5, weightedScore: -15 })];
     const result = computeBattleRanking(players);
     expect(result[0].winRate).toBe(0);
-    expect(result[0].ratingScore).toBe(-15); // 0*10 - 5*3 + 0 = -15
+    expect(result[0].ratingScore).toBe(-15); // -15 + 0 = -15
+  });
+
+  it('same wins but higher weightedScore ranks higher', () => {
+    // Player A beat strong opponents, Player B beat weak opponents
+    const players = [
+      makePlayer({ address: '0xaaa', wins: 10, losses: 5, weightedScore: 150 }), // giant-slayer
+      makePlayer({ address: '0xbbb', wins: 10, losses: 5, weightedScore: 50 }),  // easy fights
+    ];
+
+    const result = computeBattleRanking(players);
+    expect(result[0].address).toBe('0xaaa');
+    expect(result[0].ratingScore).toBe(150 + 67); // 217
+    expect(result[1].ratingScore).toBe(50 + 67);  // 117
+  });
+
+  it('high weightedScore can outrank better winRate', () => {
+    const players = [
+      makePlayer({ address: '0xaaa', wins: 6, losses: 4, weightedScore: 120 }), // 60% winRate, fought strong
+      makePlayer({ address: '0xbbb', wins: 9, losses: 1, weightedScore: 50 }),  // 90% winRate, fought weak
+    ];
+
+    const result = computeBattleRanking(players);
+    // 0xaaa: 120 + 60 = 180
+    // 0xbbb: 50 + 90 = 140
+    expect(result[0].address).toBe('0xaaa');
+    expect(result[0].ratingScore).toBe(180);
+    expect(result[1].ratingScore).toBe(140);
+  });
+});
+
+describe('computeWeightedDelta', () => {
+  it('equal power: win +10, loss -3', () => {
+    expect(computeWeightedDelta(30000, 30000, true)).toBe(10);
+    expect(computeWeightedDelta(30000, 30000, false)).toBe(-3);
+  });
+
+  it('stronger opponent: higher reward, lower penalty', () => {
+    // 40K vs 30K → ratio 1.33
+    expect(computeWeightedDelta(30000, 40000, true)).toBe(13);
+    expect(computeWeightedDelta(30000, 40000, false)).toBe(-2);
+  });
+
+  it('much stronger opponent: capped at ratio 3.0', () => {
+    // 100K vs 10K → ratio 10 → clamped to 3.0
+    expect(computeWeightedDelta(10000, 100000, true)).toBe(30);
+    expect(computeWeightedDelta(10000, 100000, false)).toBe(-1);
+  });
+
+  it('weaker opponent: lower reward, higher penalty', () => {
+    // 15K vs 30K → ratio 0.5 (clamped)
+    expect(computeWeightedDelta(30000, 15000, true)).toBe(5);
+    expect(computeWeightedDelta(30000, 15000, false)).toBe(-6);
+  });
+
+  it('much weaker opponent: clamped at ratio 0.5', () => {
+    // 1K vs 30K → ratio 0.033 → clamped to 0.5
+    expect(computeWeightedDelta(30000, 1000, true)).toBe(5);
+    expect(computeWeightedDelta(30000, 1000, false)).toBe(-6);
+  });
+
+  it('zero myPower defaults to 1', () => {
+    expect(computeWeightedDelta(0, 1000, true)).toBe(30); // ratio clamped at 3.0
+    expect(computeWeightedDelta(0, 1000, false)).toBe(-1);
+  });
+
+  it('zero opponentPower defaults to 1', () => {
+    expect(computeWeightedDelta(1000, 0, true)).toBe(5); // ratio clamped at 0.5
+    expect(computeWeightedDelta(1000, 0, false)).toBe(-6);
+  });
+
+  it('both zero power defaults to 1 each (equal)', () => {
+    expect(computeWeightedDelta(0, 0, true)).toBe(10);
+    expect(computeWeightedDelta(0, 0, false)).toBe(-3);
+  });
+
+  it('specific plan examples match (my power 30K)', () => {
+    // From the plan table
+    expect(computeWeightedDelta(30000, 50000, true)).toBe(17);  // ratio 1.67
+    expect(computeWeightedDelta(30000, 50000, false)).toBe(-2);
+    expect(computeWeightedDelta(30000, 70000, true)).toBe(23);  // ratio 2.33
+    expect(computeWeightedDelta(30000, 70000, false)).toBe(-1);
   });
 });
 

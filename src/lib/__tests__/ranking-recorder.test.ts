@@ -82,7 +82,9 @@ describe('recordBattleForRanking', () => {
     expect(winnerCall![0]).toBe('s1');
     expect(winnerCall![1].wins).toBe(0); // base record — Lua script increments
     expect(winnerCall![1].losses).toBe(0);
+    expect(winnerCall![1].weightedScore).toBe(0); // base record — Lua script accumulates
     expect(winnerCall![2]).toBe(true); // won
+    expect(winnerCall![3]).toBe(900); // opponentPower = fighter1's power
 
     // Loser (0xbbb): seasonId='s1', baseRecord with wins=0/losses=0, won=false
     const loserCall = mockAtomicRecordBattleResult.mock.calls.find(
@@ -93,6 +95,7 @@ describe('recordBattleForRanking', () => {
     expect(loserCall![1].wins).toBe(0);
     expect(loserCall![1].losses).toBe(0);
     expect(loserCall![2]).toBe(false); // lost
+    expect(loserCall![3]).toBe(1000); // opponentPower = fighter0's power
 
     // Should record 2 battle outcomes
     expect(mockRecordBattleOutcome).toHaveBeenCalledTimes(2);

@@ -49,3 +49,10 @@ docs/tokamak-contribution-answers.txt
 
 # claude code settings
 .claude/settings.json
+
+# internal operations (not for public repo)
+tasks/
+screenshots/
+workspace/
+scripts/
+capture-reveal.mjs
