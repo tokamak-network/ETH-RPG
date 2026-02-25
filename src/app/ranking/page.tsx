@@ -115,7 +115,7 @@ export default function RankingPage() {
             </div>
           )}
 
-          {status === 'success' && data && data.entries.length > 0 && (
+          {status === 'success' && data && data.type === activeTab && data.entries.length > 0 && (
             <LeaderboardTable
               type={activeTab}
               entries={data.entries}
@@ -124,7 +124,7 @@ export default function RankingPage() {
             />
           )}
 
-          {status === 'success' && data && data.entries.length === 0 && (
+          {status === 'success' && data && data.type === activeTab && data.entries.length === 0 && (
             <div className="text-center py-16">
               <p
                 className="text-lg font-semibold mb-2"

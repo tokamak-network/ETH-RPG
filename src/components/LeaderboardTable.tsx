@@ -105,7 +105,7 @@ function PowerRow({ entry }: { readonly entry: PowerRankingEntry }) {
         Lv.{entry.level}
       </td>
       <td className="px-3 py-3 text-sm text-right tabular-nums font-bold" style={{ color: '#f4c430' }}>
-        {entry.power.toLocaleString()}
+        {(entry.power ?? 0).toLocaleString()}
       </td>
     </ClickableRow>
   );
@@ -132,7 +132,7 @@ function BattleRow({ entry }: { readonly entry: BattleRankingEntry }) {
         {entry.winRate}%
       </td>
       <td className="px-3 py-3 text-sm text-right tabular-nums font-bold" style={{ color: '#f4c430' }}>
-        {entry.ratingScore.toLocaleString()}
+        {(entry.ratingScore ?? 0).toLocaleString()}
       </td>
     </ClickableRow>
   );
@@ -154,7 +154,7 @@ function ExplorerRow({ entry }: { readonly entry: ExplorerRankingEntry }) {
         {entry.achievementCount}
       </td>
       <td className="px-3 py-3 text-sm text-right tabular-nums font-bold" style={{ color: '#f4c430' }}>
-        {entry.explorerScore.toLocaleString()}
+        {(entry.explorerScore ?? 0).toLocaleString()}
       </td>
     </ClickableRow>
   );
