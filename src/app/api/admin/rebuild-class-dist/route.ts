@@ -64,19 +64,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       ops.push(kv.hset(CLASS_BY_ADDR_KEY, addressMap));
     }
 
-    // Optional: reset specific counters + their unique tracking sets
+    // Optional: rebuild specific error counters from their unique tracking sets
     const resetParam = request.nextUrl.searchParams.get('reset');
-    const resetKeys: string[] = [];
+    const rebuilt: Record<string, number> = {};
     if (resetParam) {
       const keys = resetParam.split(',').map((k) => k.trim()).filter(Boolean);
       for (const key of keys) {
-        resetKeys.push(`${KV_PREFIX}counter:${key}`);
-        // Also clear the unique_error tracking set (e.g. error_empty_wallet -> empty_wallet)
         const errorType = key.replace('error_', '');
-        resetKeys.push(`${KV_PREFIX}unique_error:${errorType}`);
-      }
-      if (resetKeys.length > 0) {
-        ops.push(kv.del(...resetKeys));
+        const setKey = `${KV_PREFIX}unique_error:${errorType}`;
+        const counterKey = `${KV_PREFIX}counter:${key}`;
+        // Count unique addresses in the SET and set counter to that value
+        const uniqueCount = await kv.scard(setKey);
+        await kv.set(counterKey, uniqueCount);
+        rebuilt[key] = uniqueCount;
       }
     }
 
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       season: season.id,
       totalPlayers: players.length,
       classDistribution: classCounts,
-      ...(resetKeys.length > 0 ? { resetKeys } : {}),
+      ...(Object.keys(rebuilt).length > 0 ? { rebuiltCounters: rebuilt } : {}),
       timestamp: new Date().toISOString(),
     });
   } catch {
