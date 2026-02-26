@@ -12,6 +12,7 @@ const EVENT_RING_BUFFER_SIZE = 100;
 const KV_PREFIX = 'metrics:';
 const EVENTS_KEY = `${KV_PREFIX}events`;
 const CLASS_DIST_KEY = `${KV_PREFIX}class_distribution`;
+const CLASS_BY_ADDR_KEY = `${KV_PREFIX}class_by_address`;
 const HOURLY_PREFIX = `${KV_PREFIX}hourly:`;
 
 // --- Types ---
@@ -58,10 +59,23 @@ export async function getCounter(key: string): Promise<number> {
 
 // --- Class distribution ---
 
-export async function incrementClassCount(classId: CharacterClassId): Promise<void> {
+export async function updateClassDistribution(address: string, classId: CharacterClassId): Promise<void> {
   if (!isKvConfigured()) return;
   try {
-    await kv.hincrby(CLASS_DIST_KEY, classId, 1);
+    const normalizedAddr = address.toLowerCase();
+    const previousClassId = await kv.hget<string>(CLASS_BY_ADDR_KEY, normalizedAddr);
+
+    if (previousClassId === classId) return; // same class — no change
+
+    if (previousClassId) {
+      // Different class — decrement old
+      await kv.hincrby(CLASS_DIST_KEY, previousClassId, -1);
+    }
+
+    await Promise.all([
+      kv.hincrby(CLASS_DIST_KEY, classId, 1),
+      kv.hset(CLASS_BY_ADDR_KEY, { [normalizedAddr]: classId }),
+    ]);
   } catch {
     // Silently fail
   }
@@ -190,11 +204,11 @@ export async function getMetricsSnapshot(): Promise<MetricsSnapshot> {
 
 // --- Convenience: record common events ---
 
-export async function trackGenerate(classId: CharacterClassId, cached: boolean): Promise<void> {
+export async function trackGenerate(address: string, classId: CharacterClassId, cached: boolean): Promise<void> {
   await Promise.all([
     incrementCounter('generate_total'),
     incrementCounter(cached ? 'generate_cached' : 'generate_fresh'),
-    incrementClassCount(classId),
+    updateClassDistribution(address, classId),
     incrementHourlyActivity(),
     recordEvent('generate', { classId, cached }),
   ]);

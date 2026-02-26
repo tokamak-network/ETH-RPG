@@ -56,7 +56,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const response = await generateCharacterData(address);
 
     // Fire-and-forget: server-side metrics
-    trackGenerate(response.class.id, response.cached).catch(() => {});
+    trackGenerate(address, response.class.id, response.cached).catch(() => {});
 
     const cacheControl = response.cached
       ? 'public, max-age=300, s-maxage=3600'

@@ -9,6 +9,8 @@ const mockKv = vi.hoisted(() => ({
   get: vi.fn().mockResolvedValue(null),
   mget: vi.fn().mockResolvedValue([]),
   hincrby: vi.fn().mockResolvedValue(1),
+  hget: vi.fn().mockResolvedValue(null),
+  hset: vi.fn().mockResolvedValue(1),
   hgetall: vi.fn().mockResolvedValue(null),
   lpush: vi.fn().mockResolvedValue(1),
   ltrim: vi.fn().mockResolvedValue('OK'),
@@ -25,7 +27,7 @@ vi.stubEnv('KV_REST_API_TOKEN', 'test-token');
 import {
   incrementCounter,
   getCounter,
-  incrementClassCount,
+  updateClassDistribution,
   recordEvent,
   getMetricsSnapshot,
   trackGenerate,
@@ -72,10 +74,27 @@ describe('metrics', () => {
     });
   });
 
-  describe('incrementClassCount', () => {
-    it('calls kv.hincrby with class distribution key', async () => {
-      await incrementClassCount('warrior');
+  describe('updateClassDistribution', () => {
+    it('increments class count for new address', async () => {
+      mockKv.hget.mockResolvedValueOnce(null);
+      await updateClassDistribution('0xABC', 'warrior');
       expect(mockKv.hincrby).toHaveBeenCalledWith('metrics:class_distribution', 'warrior', 1);
+      expect(mockKv.hset).toHaveBeenCalledWith('metrics:class_by_address', { '0xabc': 'warrior' });
+    });
+
+    it('skips when same class already recorded', async () => {
+      mockKv.hget.mockResolvedValueOnce('warrior');
+      await updateClassDistribution('0xABC', 'warrior');
+      expect(mockKv.hincrby).not.toHaveBeenCalled();
+      expect(mockKv.hset).not.toHaveBeenCalled();
+    });
+
+    it('decrements old class and increments new on class change', async () => {
+      mockKv.hget.mockResolvedValueOnce('warrior');
+      await updateClassDistribution('0xABC', 'rogue');
+      expect(mockKv.hincrby).toHaveBeenCalledWith('metrics:class_distribution', 'warrior', -1);
+      expect(mockKv.hincrby).toHaveBeenCalledWith('metrics:class_distribution', 'rogue', 1);
+      expect(mockKv.hset).toHaveBeenCalledWith('metrics:class_by_address', { '0xabc': 'rogue' });
     });
   });
 
@@ -148,14 +167,16 @@ describe('metrics', () => {
 
   describe('convenience functions', () => {
     it('trackGenerate increments correct counters', async () => {
-      await trackGenerate('hunter', false);
+      mockKv.hget.mockResolvedValueOnce(null);
+      await trackGenerate('0xABC', 'hunter', false);
       expect(mockKv.incr).toHaveBeenCalledWith('metrics:counter:generate_total');
       expect(mockKv.incr).toHaveBeenCalledWith('metrics:counter:generate_fresh');
       expect(mockKv.hincrby).toHaveBeenCalledWith('metrics:class_distribution', 'hunter', 1);
     });
 
     it('trackGenerate tracks cached correctly', async () => {
-      await trackGenerate('rogue', true);
+      mockKv.hget.mockResolvedValueOnce(null);
+      await trackGenerate('0xDEF', 'rogue', true);
       expect(mockKv.incr).toHaveBeenCalledWith('metrics:counter:generate_cached');
     });
 
