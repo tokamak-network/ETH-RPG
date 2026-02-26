@@ -14,6 +14,7 @@ const EVENTS_KEY = `${KV_PREFIX}events`;
 const CLASS_DIST_KEY = `${KV_PREFIX}class_distribution`;
 const CLASS_BY_ADDR_KEY = `${KV_PREFIX}class_by_address`;
 const HOURLY_PREFIX = `${KV_PREFIX}hourly:`;
+const UNIQUE_ERROR_PREFIX = `${KV_PREFIX}unique_error:`;
 
 // --- Types ---
 
@@ -236,6 +237,20 @@ export async function trackError(type: string): Promise<void> {
     incrementCounter(`error_${type}`),
     recordEvent('error', { type }),
   ]);
+}
+
+export async function trackErrorUnique(type: string, address: string): Promise<void> {
+  if (!isKvConfigured()) return;
+  try {
+    const added = await kv.sadd(`${UNIQUE_ERROR_PREFIX}${type}`, address.toLowerCase());
+    if (added === 0) return; // already counted
+    await Promise.all([
+      incrementCounter(`error_${type}`),
+      recordEvent('error', { type, address }),
+    ]);
+  } catch {
+    // Silently fail
+  }
 }
 
 export async function trackFunnel(step: string): Promise<void> {

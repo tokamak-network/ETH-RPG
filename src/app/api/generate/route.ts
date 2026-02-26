@@ -9,7 +9,7 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import { isValidInput, getClientIp, errorResponse } from '@/lib/route-utils';
 import { ErrorCode } from '@/lib/types';
 import { TimeoutError } from '@/lib/with-timeout';
-import { trackGenerate, trackError } from '@/lib/metrics';
+import { trackGenerate, trackError, trackErrorUnique } from '@/lib/metrics';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Rate limit check
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     if (error instanceof EmptyWalletError) {
-      trackError('empty_wallet').catch(() => {});
+      trackErrorUnique('empty_wallet', address).catch(() => {});
       return errorResponse(
         ErrorCode.NO_TRANSACTIONS,
         'This wallet has no transactions. Please enter an address with activity history.',
