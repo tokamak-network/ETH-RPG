@@ -10,7 +10,7 @@ import type {
 } from '@/lib/types';
 
 const MAX_LEADERBOARD_SIZE = 500;
-const MIN_BATTLES_FOR_RANKING = 5;
+const MIN_BATTLES_FOR_RANKING = 1;
 
 // --- Explorer scoring weights ---
 const EXPLORER_WEIGHTS: Readonly<Record<AchievementTier, number>> = {
