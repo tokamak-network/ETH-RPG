@@ -1,4 +1,5 @@
-// POST /api/admin/reset — Reset all metrics counters
+// POST /api/admin/reset — Reset metrics counters
+// Query: ?keys=error_empty_wallet,error_api (selective) or omit for full reset
 // Protected by ADMIN_SECRET via Authorization header
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -7,7 +8,7 @@ import { safeCompare, isKvConfigured } from '@/lib/kv-utils';
 
 const KV_PREFIX = 'metrics:';
 
-const COUNTER_KEYS = [
+const ALL_COUNTER_KEYS = new Set([
   'generate_total', 'generate_cached', 'generate_fresh',
   'battle_total', 'battle_cached',
   'share_twitter', 'share_farcaster', 'share_clipboard',
@@ -15,7 +16,7 @@ const COUNTER_KEYS = [
   'error_no_transactions', 'error_empty_wallet',
   'funnel_landing', 'funnel_input_focus', 'funnel_generate_start',
   'funnel_generate_success', 'funnel_share', 'og_image_load',
-];
+]);
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const authHeader = request.headers.get('authorization');
@@ -37,17 +38,39 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const keysToDelete = [
-      ...COUNTER_KEYS.map((key) => `${KV_PREFIX}counter:${key}`),
-      `${KV_PREFIX}events`,
-      `${KV_PREFIX}class_distribution`,
-    ];
+    const keysParam = request.nextUrl.searchParams.get('keys');
+    const selective = keysParam !== null;
+
+    let keysToDelete: string[];
+
+    if (selective) {
+      // Selective reset: only specified counter keys + their unique_error sets
+      const requested = keysParam.split(',').map((k) => k.trim()).filter((k) => ALL_COUNTER_KEYS.has(k));
+      if (requested.length === 0) {
+        return NextResponse.json(
+          { error: { code: 'INVALID_KEYS', message: `Valid keys: ${[...ALL_COUNTER_KEYS].join(', ')}` } },
+          { status: 400 },
+        );
+      }
+      keysToDelete = requested.flatMap((key) => [
+        `${KV_PREFIX}counter:${key}`,
+        `${KV_PREFIX}unique_error:${key.replace('error_', '')}`,
+      ]);
+    } else {
+      // Full reset
+      keysToDelete = [
+        ...[...ALL_COUNTER_KEYS].map((key) => `${KV_PREFIX}counter:${key}`),
+        `${KV_PREFIX}events`,
+        `${KV_PREFIX}class_distribution`,
+      ];
+    }
 
     await kv.del(...keysToDelete);
 
     return NextResponse.json({
       success: true,
-      deletedKeys: keysToDelete.length,
+      mode: selective ? 'selective' : 'full',
+      deletedKeys: keysToDelete,
       timestamp: new Date().toISOString(),
     });
   } catch {
