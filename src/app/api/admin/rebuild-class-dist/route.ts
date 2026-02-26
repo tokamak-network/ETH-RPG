@@ -1,5 +1,6 @@
 // POST /api/admin/rebuild-class-dist — Rebuild class distribution from player records
 // Replaces class_distribution and class_by_address with accurate unique-address counts
+// Optional: ?reset=error_empty_wallet (comma-separated counter keys to reset)
 // Protected by ADMIN_SECRET via Authorization header
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -7,8 +8,9 @@ import { kv } from '@vercel/kv';
 import { safeCompare, isKvConfigured } from '@/lib/kv-utils';
 import { getCurrentSeason, getAllPlayerRecords } from '@/lib/ranking-store';
 
-const CLASS_DIST_KEY = 'metrics:class_distribution';
-const CLASS_BY_ADDR_KEY = 'metrics:class_by_address';
+const KV_PREFIX = 'metrics:';
+const CLASS_DIST_KEY = `${KV_PREFIX}class_distribution`;
+const CLASS_BY_ADDR_KEY = `${KV_PREFIX}class_by_address`;
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const authHeader = request.headers.get('authorization');
@@ -62,6 +64,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       ops.push(kv.hset(CLASS_BY_ADDR_KEY, addressMap));
     }
 
+    // Optional: reset specific counters + their unique tracking sets
+    const resetParam = request.nextUrl.searchParams.get('reset');
+    const resetKeys: string[] = [];
+    if (resetParam) {
+      const keys = resetParam.split(',').map((k) => k.trim()).filter(Boolean);
+      for (const key of keys) {
+        resetKeys.push(`${KV_PREFIX}counter:${key}`);
+        // Also clear the unique_error tracking set (e.g. error_empty_wallet -> empty_wallet)
+        const errorType = key.replace('error_', '');
+        resetKeys.push(`${KV_PREFIX}unique_error:${errorType}`);
+      }
+      if (resetKeys.length > 0) {
+        ops.push(kv.del(...resetKeys));
+      }
+    }
+
     await Promise.all(ops);
 
     return NextResponse.json({
@@ -69,6 +87,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       season: season.id,
       totalPlayers: players.length,
       classDistribution: classCounts,
+      ...(resetKeys.length > 0 ? { resetKeys } : {}),
       timestamp: new Date().toISOString(),
     });
   } catch {
