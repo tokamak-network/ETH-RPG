@@ -71,7 +71,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         type,
         updatedAt: now,
         entries,
-        totalPlayers: players.length,
+        totalPlayers: entries.length,
       };
     }
 
