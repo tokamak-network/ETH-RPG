@@ -149,6 +149,44 @@ eth-rpg/
 ### GET /api/card/[address]
 -> 1080x1350 PNG (shareable card image)
 
+### POST /api/battle
+```typescript
+// Request
+{ address1: string, address2: string }
+
+// Response (200)
+{ result: { fighters, winner, turns, totalTurns, nonce, battleSeed }, cached: boolean }
+```
+
+### GET /api/ranking/leaderboard
+```typescript
+// Query params: type=power|battle|explorer, season?, address?, page?, limit?
+// Response (200)
+{ season, type, updatedAt, entries: RankingEntry[], totalPlayers, playerRank? }
+// Battle leaderboard requires MIN_BATTLES_FOR_RANKING (5) to appear
+```
+
+### GET /api/ranking/season
+```typescript
+// Response (200)
+{ season: { id, startedAt, endsAt, playerCount }, remaining: { days, hours } }
+```
+
+### GET /api/ranking/refresh
+-> Vercel Cron endpoint (30-min). Requires `Authorization: Bearer <CRON_SECRET>`.
+   Checks season expiry, recomputes all 3 leaderboards, saves snapshots to KV.
+
+### POST /api/events
+```typescript
+// Request — client-side analytics event
+{ event: string, properties?: Record<string, unknown>, url?: string }
+// Response (200)
+{ success: true }
+```
+
+### GET /api/admin/metrics
+-> Admin dashboard metrics. Requires `Authorization: Bearer <ADMIN_API_KEY>`.
+
 ---
 
 ## Environment Variables (.env.local)
