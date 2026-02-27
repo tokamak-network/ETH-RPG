@@ -14,7 +14,7 @@ export default function FamousWallets() {
       >
         Famous Heroes
       </p>
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
         {FAMOUS_WALLETS.map((wallet) => (
           <Link
             key={wallet.address}
@@ -37,7 +37,7 @@ export default function FamousWallets() {
                 {wallet.label}
               </p>
               <p
-                className="text-[10px]"
+                className="text-xs"
                 style={{ color: 'var(--color-text-muted)' }}
               >
                 Lv.{wallet.level} · {wallet.power.toLocaleString()}P

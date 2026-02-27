@@ -21,7 +21,7 @@ export default function RecentHeroes() {
       >
         Recent Heroes
       </p>
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
         {entries.map((entry) => (
           <Link
             key={entry.address}
@@ -43,7 +43,7 @@ export default function RecentHeroes() {
                 {entry.ensName ?? shortenAddress(entry.address)}
               </p>
               <p
-                className="text-[10px]"
+                className="text-xs"
                 style={{ color: 'var(--color-text-muted)' }}
               >
                 Lv.{entry.level} · {entry.power.toLocaleString()}P

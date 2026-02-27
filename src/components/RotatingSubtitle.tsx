@@ -33,7 +33,7 @@ export default function RotatingSubtitle() {
 
   return (
     <p
-      className="text-xl sm:text-2xl font-semibold mb-12 transition-opacity duration-400"
+      className="text-xl sm:text-2xl font-semibold mb-8 transition-opacity duration-400"
       style={{
         color: 'var(--color-text-primary)',
         opacity: visible ? 1 : 0,

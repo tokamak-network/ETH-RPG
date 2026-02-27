@@ -154,7 +154,7 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
           type="button"
           onClick={handleDownload}
           disabled={downloading}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
           style={{
             backgroundColor: 'var(--color-accent-gold)',
             color: '#000',
@@ -167,7 +167,7 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
         <button
           type="button"
           onClick={handleTwitter}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
         >
           <span aria-hidden="true">&#x1D54F;</span>
           <span>Twitter</span>
@@ -176,7 +176,7 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
         <button
           type="button"
           onClick={handleFarcaster}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
         >
           <span aria-hidden="true">&#x1F7E3;</span>
           <span>Farcaster</span>
@@ -185,7 +185,7 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
         <button
           type="button"
           onClick={handleTelegram}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
         >
           <span aria-hidden="true">{'\u2708\uFE0F'}</span>
           <span>Telegram</span>
@@ -194,7 +194,7 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
         <button
           type="button"
           onClick={handleKakaoTalk}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
         >
           <span aria-hidden="true">{'\uD83D\uDCAC'}</span>
           <span>{kakaoTalkCopied ? 'Copied!' : 'KakaoTalk'}</span>
@@ -203,7 +203,7 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
         <button
           type="button"
           onClick={handleDiscord}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
         >
           <span aria-hidden="true">{'\uD83C\uDFAE'}</span>
           <span>{discordCopied ? 'Copied!' : 'Discord'}</span>
@@ -212,7 +212,7 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
         >
           <span aria-hidden="true">&#x1F4CB;</span>
           <span>{copied ? 'Copied!' : 'Copy Link'}</span>

@@ -116,7 +116,7 @@ export default function AddressInput({ onSubmit, isLoading, autoFocus = false }:
                 type="button"
                 onClick={handlePaste}
                 title="Paste from clipboard"
-                className="shrink-0 p-1.5 rounded transition-colors hover:bg-white/10 cursor-pointer"
+                className="shrink-0 p-2.5 rounded transition-colors hover:bg-white/10 cursor-pointer"
                 style={{ color: 'var(--color-text-muted)' }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -129,7 +129,7 @@ export default function AddressInput({ onSubmit, isLoading, autoFocus = false }:
           <button
             type="submit"
             disabled={isSubmitDisabled}
-            className="px-6 py-3 rounded-lg font-semibold text-sm whitespace-nowrap transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110"
+            className="px-6 py-3 rounded-lg font-semibold text-sm whitespace-nowrap transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-110 focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
             style={{
               backgroundColor: 'var(--color-accent-gold)',
               color: '#000',

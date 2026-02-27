@@ -25,6 +25,13 @@ Pit two wallets against each other in a turn-based battle simulation:
 - **Rematch** button generates a fresh fight (nonce-based randomness)
 - Every battle is shareable via URL — same link always replays the same fight
 
+### Ranking & Leaderboards
+Compete on three seasonal leaderboards (90-day cycles, top 500 per board):
+- **Power Ranking** — raw combat power score
+- **Battle Ranking** — weighted PvP rating (requires 5+ battles to qualify)
+- **Explorer Ranking** — achievement badge score (weighted by tier)
+- Anti-Sybil mechanics: winRate multiplier (0.5x–1.5x) rewards legitimate play over win-trading
+
 ### Sharing
 - Download card as PNG image
 - Share to Twitter, Farcaster, Telegram, Discord
@@ -217,7 +224,7 @@ Wallets that were active during major crypto events earn LUCK bonuses and may un
 | Image Generation | next/og (Satori) |
 | Monitoring | Sentry |
 | Deployment | Vercel |
-| Testing | Vitest (200+ tests) |
+| Testing | Vitest (650+ tests) |
 
 ---
 
