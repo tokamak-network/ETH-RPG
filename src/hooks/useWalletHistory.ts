@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import type { CharacterClassId } from '@/lib/types';
 
 const STORAGE_KEY = 'eth-rpg-history';
@@ -54,11 +55,12 @@ function saveEntries(entries: readonly WalletHistoryEntry[]): void {
 
 export function useWalletHistory() {
   const [entries, setEntries] = useState<readonly WalletHistoryEntry[]>([]);
+  const pathname = usePathname();
 
-  // Load on mount (client only)
+  // Reload from localStorage on mount AND on navigation
   useEffect(() => {
     setEntries(loadEntries());
-  }, []);
+  }, [pathname]);
 
   const addEntry = useCallback(
     (entry: Omit<WalletHistoryEntry, 'timestamp'>) => {
