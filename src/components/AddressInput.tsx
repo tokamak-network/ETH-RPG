@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useRef, type FormEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, type FormEvent } from 'react';
 import { trackEvent } from '@/lib/analytics';
 
 interface AddressInputProps {
   readonly onSubmit: (address: string) => void;
   readonly isLoading: boolean;
+  readonly autoFocus?: boolean;
 }
 
 const ETH_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
@@ -16,10 +17,41 @@ function isValidAddressOrEns(value: string): boolean {
   return ETH_ADDRESS_REGEX.test(trimmed) || ENS_NAME_REGEX.test(trimmed);
 }
 
-export default function AddressInput({ onSubmit, isLoading }: AddressInputProps) {
+export default function AddressInput({ onSubmit, isLoading, autoFocus = false }: AddressInputProps) {
   const [address, setAddress] = useState('');
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [clipboardSupported, setClipboardSupported] = useState(false);
   const hasTrackedInput = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Desktop-only autoFocus (skip on mobile to avoid keyboard popup)
+  useEffect(() => {
+    if (autoFocus && inputRef.current && window.innerWidth > 768) {
+      inputRef.current.focus();
+    }
+  }, [autoFocus]);
+
+  // Check clipboard API availability
+  useEffect(() => {
+    setClipboardSupported(
+      typeof navigator !== 'undefined' &&
+      typeof navigator.clipboard?.readText === 'function' &&
+      window.isSecureContext,
+    );
+  }, []);
+
+  const handlePaste = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const trimmed = text.trim();
+      if (trimmed.length > 0) {
+        trackEvent('paste_address');
+        handleChange(trimmed);
+      }
+    } catch {
+      // clipboard permission denied — silently ignore
+    }
+  }, []);
 
   const trimmedAddress = address.trim();
   const isValid = isValidAddressOrEns(trimmedAddress);
@@ -62,6 +94,7 @@ export default function AddressInput({ onSubmit, isLoading }: AddressInputProps)
             </label>
             <span className="text-text-muted text-sm shrink-0" aria-hidden="true">{'\u{1F50D}'}</span>
             <input
+              ref={inputRef}
               id="address-input"
               type="text"
               value={address}
@@ -73,6 +106,20 @@ export default function AddressInput({ onSubmit, isLoading }: AddressInputProps)
               aria-describedby="address-error"
               className="flex-1 py-3 bg-transparent text-white placeholder-text-muted font-mono text-base sm:text-sm focus:outline-none disabled:opacity-50"
             />
+            {clipboardSupported && address.length === 0 && !isLoading && (
+              <button
+                type="button"
+                onClick={handlePaste}
+                title="Paste from clipboard"
+                className="shrink-0 p-1.5 rounded transition-colors hover:bg-white/10 cursor-pointer"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="2" width="6" height="4" rx="1" />
+                  <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2" />
+                </svg>
+              </button>
+            )}
           </div>
           <button
             type="submit"

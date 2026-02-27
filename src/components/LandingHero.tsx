@@ -6,6 +6,7 @@ import AddressInput from '@/components/AddressInput';
 import DemoButton from '@/components/DemoButton';
 import FamousWallets from '@/components/FamousWallets';
 import RecentHeroes from '@/components/RecentHeroes';
+import RotatingSubtitle from '@/components/RotatingSubtitle';
 import { usePageView } from '@/hooks/useAnalytics';
 
 export default function LandingHero() {
@@ -37,16 +38,11 @@ export default function LandingHero() {
       <p className="text-base sm:text-lg mb-2" style={{ color: 'var(--color-text-secondary)' }}>
         The blockchain holds your history.
       </p>
-      <p
-        className="text-xl sm:text-2xl font-semibold mb-12"
-        style={{ color: 'var(--color-text-primary)' }}
-      >
-        What hero is your wallet?
-      </p>
+      <RotatingSubtitle />
 
       {/* Address Input */}
       <div className="max-w-lg mx-auto mb-4">
-        <AddressInput onSubmit={handleSubmit} isLoading={isNavigating} />
+        <AddressInput onSubmit={handleSubmit} isLoading={isNavigating} autoFocus />
       </div>
 
       {/* Demo button */}
