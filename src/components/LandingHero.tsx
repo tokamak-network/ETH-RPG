@@ -9,7 +9,12 @@ import { FAMOUS_WALLETS } from '@/lib/famous-wallets';
 import { CLASS_THEMES } from '@/styles/themes';
 import { trackEvent } from '@/lib/analytics';
 
-const SAMPLE_WALLETS = FAMOUS_WALLETS.slice(0, 3);
+/** Pick one wallet per class (first seen wins), take up to 3 for the hero chips. */
+const SAMPLE_WALLETS = FAMOUS_WALLETS.reduce<typeof FAMOUS_WALLETS[number][]>((acc, wallet) => {
+  if (acc.length >= 4) return acc;
+  if (acc.some((w) => w.classId === wallet.classId)) return acc;
+  return [...acc, wallet];
+}, []);
 
 export default function LandingHero() {
   const router = useRouter();
@@ -43,18 +48,18 @@ export default function LandingHero() {
       <RotatingSubtitle />
 
       {/* Address Input */}
-      <div className="max-w-lg mx-auto mb-4">
+      <div className="max-w-lg mx-auto mb-5">
         <AddressInput onSubmit={handleSubmit} isLoading={isNavigating} autoFocus />
       </div>
 
       {/* Trust micro-text */}
-      <p className="text-xs mb-6" style={{ color: 'var(--color-text-muted)' }}>
+      <p className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>
         Only public data is analyzed.
       </p>
 
       {/* Try a famous wallet */}
-      <div className="mb-6">
-        <p className="text-xs mb-3" style={{ color: 'var(--color-text-muted)' }}>
+      <div className="mb-8">
+        <p className="text-xs mb-4" style={{ color: 'var(--color-text-muted)' }}>
           or try a famous wallet
         </p>
         <div className="flex items-center justify-center gap-2 flex-wrap">
@@ -77,7 +82,7 @@ export default function LandingHero() {
                 }}
               >
                 <span aria-hidden="true">{theme.icon}</span>
-                <span>{wallet.label.split(' ')[0]}</span>
+                <span>{wallet.shortLabel}</span>
               </button>
             );
           })}

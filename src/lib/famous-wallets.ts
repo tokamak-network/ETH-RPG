@@ -3,6 +3,7 @@ import type { CharacterClassId } from '@/lib/types';
 export interface FamousWallet {
   readonly address: string;
   readonly label: string;
+  readonly shortLabel: string;
   readonly classId: CharacterClassId;
   readonly level: number;
   readonly power: number;
@@ -17,6 +18,7 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
   {
     address: 'vitalik.eth',
     label: 'Vitalik Buterin',
+    shortLabel: 'Vitalik',
     classId: 'hunter',
     level: 33,
     power: 61_545,
@@ -24,6 +26,7 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
   {
     address: 'pranksy.eth',
     label: 'Pranksy',
+    shortLabel: 'Pranksy',
     classId: 'hunter',
     level: 49,
     power: 69_640,
@@ -31,6 +34,7 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
   {
     address: 'griff.eth',
     label: 'Griff Green',
+    shortLabel: 'Griff',
     classId: 'merchant',
     level: 38,
     power: 69_875,
@@ -38,6 +42,7 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
   {
     address: 'stani.eth',
     label: 'Stani Kulechov',
+    shortLabel: 'Stani',
     classId: 'priest',
     level: 32,
     power: 62_505,
@@ -45,6 +50,7 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
   {
     address: 'ricmoo.eth',
     label: 'Richard Moore',
+    shortLabel: 'Richard',
     classId: 'guardian',
     level: 19,
     power: 45_150,
@@ -52,6 +58,7 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
   {
     address: 'sassal.eth',
     label: 'Sassal',
+    shortLabel: 'Sassal',
     classId: 'summoner',
     level: 31,
     power: 57_995,
