@@ -54,7 +54,7 @@ export default function LoadingScreen({ step }: LoadingScreenProps) {
                 }`}
               />
               <span
-                className={`text-[10px] whitespace-nowrap transition-colors duration-300 hidden sm:block ${
+                className={`text-xs whitespace-nowrap transition-colors duration-300 hidden sm:block ${
                   isCompleted || isActive ? 'text-text-secondary' : 'text-text-muted'
                 }`}
               >

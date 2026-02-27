@@ -13,7 +13,7 @@ export default function TrustBanner() {
         {/* Left spacer */}
         <div />
         {/* Center: trust text */}
-        <p className="text-xs text-text-secondary text-center">
+        <p className="text-sm text-text-secondary text-center">
           <span aria-hidden="true" className="mr-1">{'\u{1F6E1}\uFE0F'}</span>
           Address lookup only &middot; No wallet connection required
         </p>
@@ -21,21 +21,21 @@ export default function TrustBanner() {
         <div className="hidden sm:flex items-center justify-end gap-4">
           <a
             href="/#classes"
-            className="text-xs transition-colors hover:text-text-primary"
+            className="text-sm transition-colors hover:text-text-primary"
             style={{ color: 'var(--color-text-muted)' }}
           >
             Classes
           </a>
           <a
             href="/ranking"
-            className="text-xs transition-colors hover:text-text-primary"
+            className="text-sm transition-colors hover:text-text-primary"
             style={{ color: 'var(--color-text-muted)' }}
           >
             Leaderboard
           </a>
           <a
             href="/#faq"
-            className="text-xs transition-colors hover:text-text-primary"
+            className="text-sm transition-colors hover:text-text-primary"
             style={{ color: 'var(--color-text-muted)' }}
           >
             FAQ
