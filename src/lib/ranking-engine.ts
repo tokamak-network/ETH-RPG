@@ -10,7 +10,7 @@ import type {
 } from '@/lib/types';
 
 const MAX_LEADERBOARD_SIZE = 500;
-const MIN_BATTLES_FOR_RANKING = 1;
+const MIN_BATTLES_FOR_RANKING = 5;
 
 // --- Explorer scoring weights ---
 const EXPLORER_WEIGHTS: Readonly<Record<AchievementTier, number>> = {
@@ -59,7 +59,10 @@ function computeWinRate(wins: number, losses: number): number {
 }
 
 function computeRatingScore(weightedScore: number, winRate: number): number {
-  return weightedScore + winRate;
+  // winRate as multiplier: 100% → 1.5x, 50% → 1.0x, 0% → 0.5x
+  // Sybil pairs (50% winRate) get no bonus; legitimate high-winrate players get up to 1.5x
+  const winRateMultiplier = 0.5 + winRate / 100;
+  return Math.round(weightedScore * winRateMultiplier);
 }
 
 export function computeBattleRanking(

@@ -92,8 +92,8 @@ describe('computeBattleRanking', () => {
 
   it('sorts by ratingScore descending', () => {
     const players = [
-      makePlayer({ address: '0xaaa', wins: 10, losses: 5, weightedScore: 85 }), // 85 + 67 = 152
-      makePlayer({ address: '0xbbb', wins: 20, losses: 2, weightedScore: 194 }), // 194 + 91 = 285
+      makePlayer({ address: '0xaaa', wins: 10, losses: 5, weightedScore: 85 }), // round(85 * 1.17) = 99
+      makePlayer({ address: '0xbbb', wins: 20, losses: 2, weightedScore: 194 }), // round(194 * 1.41) = 274
     ];
 
     const result = computeBattleRanking(players);
@@ -111,7 +111,7 @@ describe('computeBattleRanking', () => {
     const players = [makePlayer({ address: '0xaaa', wins: 0, losses: 5, weightedScore: -15 })];
     const result = computeBattleRanking(players);
     expect(result[0].winRate).toBe(0);
-    expect(result[0].ratingScore).toBe(-15); // -15 + 0 = -15
+    expect(result[0].ratingScore).toBe(-7); // round(-15 * 0.5) = -7
   });
 
   it('same wins but higher weightedScore ranks higher', () => {
@@ -123,8 +123,8 @@ describe('computeBattleRanking', () => {
 
     const result = computeBattleRanking(players);
     expect(result[0].address).toBe('0xaaa');
-    expect(result[0].ratingScore).toBe(150 + 67); // 217
-    expect(result[1].ratingScore).toBe(50 + 67);  // 117
+    expect(result[0].ratingScore).toBe(176); // round(150 * 1.17) = 176
+    expect(result[1].ratingScore).toBe(59);  // round(50 * 1.17) = 59
   });
 
   it('high weightedScore can outrank better winRate', () => {
@@ -134,11 +134,11 @@ describe('computeBattleRanking', () => {
     ];
 
     const result = computeBattleRanking(players);
-    // 0xaaa: 120 + 60 = 180
-    // 0xbbb: 50 + 90 = 140
+    // 0xaaa: round(120 * 1.1) = 132
+    // 0xbbb: round(50 * 1.4) = 70
     expect(result[0].address).toBe('0xaaa');
-    expect(result[0].ratingScore).toBe(180);
-    expect(result[1].ratingScore).toBe(140);
+    expect(result[0].ratingScore).toBe(132);
+    expect(result[1].ratingScore).toBe(70);
   });
 });
 
