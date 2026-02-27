@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import AddressInput from '@/components/AddressInput';
 import DemoButton from '@/components/DemoButton';
+import FamousWallets from '@/components/FamousWallets';
 import RecentHeroes from '@/components/RecentHeroes';
 import { usePageView } from '@/hooks/useAnalytics';
 
@@ -64,9 +65,10 @@ export default function LandingHero() {
         Only public data is analyzed.
       </p>
 
-      {/* Recent Heroes */}
+      {/* Recent Heroes (returning users) + Famous Heroes (social proof) */}
       <div className="mb-8">
         <RecentHeroes />
+        <FamousWallets />
       </div>
 
       {/* Battle Mode CTA */}
