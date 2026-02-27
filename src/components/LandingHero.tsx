@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import AddressInput from '@/components/AddressInput';
+import DemoButton from '@/components/DemoButton';
 import RecentHeroes from '@/components/RecentHeroes';
 import { usePageView } from '@/hooks/useAnalytics';
 
@@ -45,6 +46,17 @@ export default function LandingHero() {
       {/* Address Input */}
       <div className="max-w-lg mx-auto mb-4">
         <AddressInput onSubmit={handleSubmit} isLoading={isNavigating} />
+      </div>
+
+      {/* Demo button */}
+      <div className="mb-3">
+        <span
+          className="text-xs mr-2"
+          style={{ color: 'var(--color-text-muted)' }}
+        >
+          or
+        </span>
+        <DemoButton onTry={handleSubmit} isLoading={isNavigating} />
       </div>
 
       {/* Trust micro-text */}
