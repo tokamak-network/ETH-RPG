@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { GenerateResponse } from '@/lib/types';
+import type { GenerateResponse, ErrorCodeType } from '@/lib/types';
 import { ERROR_MESSAGES, ErrorCode } from '@/lib/types';
 import { trackEvent } from '@/lib/analytics';
-import { isApiErrorResponse } from '@/lib/api-guards';
+import { extractErrorInfo } from '@/lib/api-guards';
 
 type GenerateStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -12,6 +12,7 @@ interface GenerateState {
   readonly status: GenerateStatus;
   readonly data: GenerateResponse | null;
   readonly error: string | null;
+  readonly errorCode: ErrorCodeType | null;
   readonly step: string;
 }
 
@@ -28,6 +29,7 @@ const INITIAL_STATE: GenerateState = {
   status: 'idle',
   data: null,
   error: null,
+  errorCode: null,
   step: '',
 };
 
@@ -79,6 +81,7 @@ export function useGenerateCharacter() {
         status: 'loading',
         data: null,
         error: null,
+        errorCode: null,
         step: LOADING_STEPS[0],
       });
 
@@ -96,15 +99,14 @@ export function useGenerateCharacter() {
         const body: unknown = await response.json();
 
         if (!response.ok) {
-          const errorMessage = isApiErrorResponse(body)
-            ? body.error.message
-            : ERROR_MESSAGES[ErrorCode.API_ERROR];
+          const errorInfo = extractErrorInfo(body);
 
           clearStepInterval();
           setState({
             status: 'error',
             data: null,
-            error: errorMessage,
+            error: errorInfo.message,
+            errorCode: errorInfo.code,
             step: '',
           });
           return;
@@ -115,6 +117,7 @@ export function useGenerateCharacter() {
           status: 'success',
           data: body as GenerateResponse,
           error: null,
+          errorCode: null,
           step: '',
         });
       } catch (err: unknown) {
@@ -132,6 +135,7 @@ export function useGenerateCharacter() {
           error: isTimeout
             ? 'The request timed out. Please try again.'
             : ERROR_MESSAGES[ErrorCode.API_ERROR],
+          errorCode: isTimeout ? ErrorCode.TIMEOUT : ErrorCode.API_ERROR,
           step: '',
         });
       }
@@ -143,6 +147,7 @@ export function useGenerateCharacter() {
     status: state.status,
     data: state.data,
     error: state.error,
+    errorCode: state.errorCode,
     step: state.step,
     generate,
   } as const;

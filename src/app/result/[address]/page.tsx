@@ -10,14 +10,16 @@ import LoadingScreen from '@/components/LoadingScreen';
 import CardReveal from '@/components/CardReveal';
 import ShareButtons from '@/components/ShareButtons';
 import AddressInput from '@/components/AddressInput';
+import FamousWallets from '@/components/FamousWallets';
 import { CLASS_THEMES } from '@/styles/themes';
 import { usePageView } from '@/hooks/useAnalytics';
 import { trackEvent } from '@/lib/analytics';
+import { ErrorCode } from '@/lib/types';
 
 export default function ResultPage() {
   const params = useParams<{ address: string }>();
   const router = useRouter();
-  const { status, data, error, step, generate } = useGenerateCharacter();
+  const { status, data, error, errorCode, step, generate } = useGenerateCharacter();
   const { addEntry } = useWalletHistory();
   const { playSummon, playRevealSeal, playRevealTier } = useSound();
   const [revealed, setRevealed] = useState(false);
@@ -84,8 +86,41 @@ export default function ResultPage() {
           </div>
         )}
 
-        {/* Error State */}
-        {status === 'error' && (
+        {/* Error State — Empty Wallet */}
+        {status === 'error' && errorCode === ErrorCode.NO_TRANSACTIONS && (
+          <div className="flex-1 flex items-center justify-center w-full animate-fade-in-up">
+            <div className="text-center max-w-md">
+              <div className="text-6xl mb-6">{'\u{1F4AD}'}</div>
+              <h2
+                className="text-2xl font-bold mb-4"
+                style={{ color: 'var(--color-text-primary)' }}
+              >
+                No Adventures Yet
+              </h2>
+              <p
+                className="mb-6 text-base"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                This wallet hasn&apos;t made any transactions yet.
+                Try a famous wallet to see what a hero card looks like!
+              </p>
+              <FamousWallets />
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={handleTryAnother}
+                  className="text-sm transition-colors hover:underline cursor-pointer"
+                  style={{ color: 'var(--color-text-muted)' }}
+                >
+                  {'\u2190'} Try another address
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error State — Generic */}
+        {status === 'error' && errorCode !== ErrorCode.NO_TRANSACTIONS && (
           <div className="flex-1 flex items-center justify-center w-full animate-fade-in-up">
             <div className="text-center max-w-md">
               <div className="text-6xl mb-6">{'\u{1F6E1}\uFE0F'}</div>
