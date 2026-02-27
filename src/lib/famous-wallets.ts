@@ -4,7 +4,6 @@ export interface FamousWallet {
   readonly address: string;
   readonly label: string;
   readonly classId: CharacterClassId;
-  readonly icon: string;
   readonly level: number;
   readonly power: number;
 }
@@ -19,7 +18,6 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     address: 'vitalik.eth',
     label: 'Vitalik Buterin',
     classId: 'hunter',
-    icon: '\u{1F3F9}',
     level: 33,
     power: 61_545,
   },
@@ -27,7 +25,6 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     address: 'pranksy.eth',
     label: 'Pranksy',
     classId: 'hunter',
-    icon: '\u{1F3F9}',
     level: 49,
     power: 69_640,
   },
@@ -35,7 +32,6 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     address: 'griff.eth',
     label: 'Griff Green',
     classId: 'merchant',
-    icon: '\u{1F4B0}',
     level: 38,
     power: 69_875,
   },
@@ -43,7 +39,6 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     address: 'stani.eth',
     label: 'Stani Kulechov',
     classId: 'priest',
-    icon: '\u2720\uFE0F',
     level: 32,
     power: 62_505,
   },
@@ -51,7 +46,6 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     address: 'ricmoo.eth',
     label: 'Richard Moore',
     classId: 'guardian',
-    icon: '\u{1F6E1}\uFE0F',
     level: 19,
     power: 45_150,
   },
@@ -59,7 +53,6 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     address: 'sassal.eth',
     label: 'Sassal',
     classId: 'summoner',
-    icon: '\u{1F300}',
     level: 31,
     power: 57_995,
   },

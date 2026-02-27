@@ -86,67 +86,66 @@ export default function ResultPage() {
           </div>
         )}
 
-        {/* Error State — Empty Wallet */}
-        {status === 'error' && errorCode === ErrorCode.NO_TRANSACTIONS && (
+        {/* Error State */}
+        {status === 'error' && (
           <div className="flex-1 flex items-center justify-center w-full animate-fade-in-up">
             <div className="text-center max-w-md">
-              <div className="text-6xl mb-6">{'\u{1F4AD}'}</div>
-              <h2
-                className="text-2xl font-bold mb-4"
-                style={{ color: 'var(--color-text-primary)' }}
-              >
-                No Adventures Yet
-              </h2>
-              <p
-                className="mb-6 text-base"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
-                This wallet hasn&apos;t made any transactions yet.
-                Try a famous wallet to see what a hero card looks like!
-              </p>
-              <FamousWallets />
-              <div className="mt-6">
-                <button
-                  type="button"
-                  onClick={handleTryAnother}
-                  className="text-sm transition-colors hover:underline cursor-pointer"
-                  style={{ color: 'var(--color-text-muted)' }}
-                >
-                  {'\u2190'} Try another address
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Error State — Generic */}
-        {status === 'error' && errorCode !== ErrorCode.NO_TRANSACTIONS && (
-          <div className="flex-1 flex items-center justify-center w-full animate-fade-in-up">
-            <div className="text-center max-w-md">
-              <div className="text-6xl mb-6">{'\u{1F6E1}\uFE0F'}</div>
-              <h2
-                className="text-2xl font-bold mb-4"
-                style={{ color: 'var(--color-accent-red)' }}
-              >
-                Summoning Failed
-              </h2>
-              <p
-                className="mb-8 text-base"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
-                {error}
-              </p>
-              <button
-                type="button"
-                onClick={handleTryAnother}
-                className="px-6 py-3 rounded-lg font-semibold transition-all duration-200 cursor-pointer hover:brightness-110"
-                style={{
-                  backgroundColor: 'var(--color-accent-gold)',
-                  color: '#000',
-                }}
-              >
-                Try Again
-              </button>
+              {errorCode === ErrorCode.NO_TRANSACTIONS ? (
+                <>
+                  <div className="text-6xl mb-6">{'\u{1F4AD}'}</div>
+                  <h2
+                    className="text-2xl font-bold mb-4"
+                    style={{ color: 'var(--color-text-primary)' }}
+                  >
+                    No Adventures Yet
+                  </h2>
+                  <p
+                    className="mb-6 text-base"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    This wallet hasn&apos;t made any transactions yet.
+                    Try a famous wallet to see what a hero card looks like!
+                  </p>
+                  <FamousWallets />
+                  <div className="mt-6">
+                    <button
+                      type="button"
+                      onClick={handleTryAnother}
+                      className="text-sm transition-colors hover:underline cursor-pointer"
+                      style={{ color: 'var(--color-text-muted)' }}
+                    >
+                      {'\u2190'} Try another address
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="text-6xl mb-6">{'\u{1F6E1}\uFE0F'}</div>
+                  <h2
+                    className="text-2xl font-bold mb-4"
+                    style={{ color: 'var(--color-accent-red)' }}
+                  >
+                    Summoning Failed
+                  </h2>
+                  <p
+                    className="mb-8 text-base"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    {error}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleTryAnother}
+                    className="px-6 py-3 rounded-lg font-semibold transition-all duration-200 cursor-pointer hover:brightness-110"
+                    style={{
+                      backgroundColor: 'var(--color-accent-gold)',
+                      color: '#000',
+                    }}
+                  >
+                    Try Again
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}

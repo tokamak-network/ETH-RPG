@@ -46,7 +46,12 @@ export default function AddressInput({ onSubmit, isLoading, autoFocus = false }:
       const trimmed = text.trim();
       if (trimmed.length > 0) {
         trackEvent('paste_address');
-        handleChange(trimmed);
+        if (!hasTrackedInput.current) {
+          hasTrackedInput.current = true;
+          trackEvent('address_input_start');
+        }
+        setAddress(trimmed);
+        setHasAttemptedSubmit(false);
       }
     } catch {
       // clipboard permission denied — silently ignore

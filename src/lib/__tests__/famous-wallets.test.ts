@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FAMOUS_WALLETS, DEMO_WALLET, type FamousWallet } from '@/lib/famous-wallets';
+import { FAMOUS_WALLETS, DEMO_WALLET } from '@/lib/famous-wallets';
 
 describe('FAMOUS_WALLETS', () => {
   it('should contain at least 4 wallets', () => {
@@ -11,7 +11,6 @@ describe('FAMOUS_WALLETS', () => {
       expect(wallet.address).toBeTruthy();
       expect(wallet.label).toBeTruthy();
       expect(wallet.classId).toBeTruthy();
-      expect(wallet.icon).toBeTruthy();
       expect(typeof wallet.level).toBe('number');
       expect(typeof wallet.power).toBe('number');
       expect(wallet.level).toBeGreaterThanOrEqual(1);

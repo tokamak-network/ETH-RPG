@@ -16,15 +16,19 @@ export default function RotatingSubtitle() {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
     const timer = setInterval(() => {
       setVisible(false);
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         setIndex((prev) => (prev + 1) % SUBTITLES.length);
         setVisible(true);
       }, 400);
     }, CYCLE_MS);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   return (

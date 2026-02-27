@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { FAMOUS_WALLETS } from '@/lib/famous-wallets';
+import { CLASS_THEMES } from '@/styles/themes';
 import { trackEvent } from '@/lib/analytics';
 
 export default function FamousWallets() {
@@ -26,7 +27,7 @@ export default function FamousWallets() {
             }}
           >
             <span className="text-lg" aria-hidden="true">
-              {wallet.icon}
+              {CLASS_THEMES[wallet.classId].icon}
             </span>
             <div className="min-w-0">
               <p

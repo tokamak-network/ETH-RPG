@@ -1,6 +1,7 @@
 'use client';
 
 import { DEMO_WALLET } from '@/lib/famous-wallets';
+import { CLASS_THEMES } from '@/styles/themes';
 import { trackEvent } from '@/lib/analytics';
 
 interface DemoButtonProps {
@@ -26,7 +27,7 @@ export default function DemoButton({ onTry, isLoading }: DemoButtonProps) {
         color: 'var(--color-text-secondary)',
       }}
     >
-      <span aria-hidden="true">{DEMO_WALLET.icon}</span>
+      <span aria-hidden="true">{CLASS_THEMES[DEMO_WALLET.classId].icon}</span>
       <span>
         Try <strong style={{ color: 'var(--color-text-primary)' }}>{DEMO_WALLET.address}</strong>
       </span>
