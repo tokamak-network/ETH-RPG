@@ -209,7 +209,7 @@ export async function trackGenerate(address: string, classId: CharacterClassId, 
   await Promise.all([
     incrementCounter('generate_total'),
     incrementCounter(cached ? 'generate_cached' : 'generate_fresh'),
-    updateClassDistribution(address, classId),
+    ...(cached ? [] : [updateClassDistribution(address, classId)]),
     incrementHourlyActivity(),
     recordEvent('generate', { classId, cached }),
   ]);
