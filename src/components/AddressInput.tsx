@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, type FormEvent } from 'react';
 import { trackEvent } from '@/lib/analytics';
+import { COPY } from '@/lib/experiment-copy';
 
 interface AddressInputProps {
   readonly onSubmit: (address: string) => void;
@@ -135,7 +136,7 @@ export default function AddressInput({ onSubmit, isLoading, autoFocus = false }:
               color: '#000',
             }}
           >
-            {isLoading ? 'Summoning...' : 'Summon \u2192'}
+            {isLoading ? COPY.ctaLoading : COPY.ctaButton}
           </button>
         </div>
         {showError && (

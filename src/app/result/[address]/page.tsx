@@ -25,7 +25,10 @@ export default function ResultPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fromQuiz = searchParams.get('from') === 'quiz';
-  const predictedClassId = searchParams.get('predicted') as CharacterClassId | null;
+  const rawPredicted = searchParams.get('predicted');
+  const predictedClassId = rawPredicted && rawPredicted in CLASS_LABELS
+    ? (rawPredicted as CharacterClassId)
+    : null;
   const { status, data, error, errorCode, step, generate } = useGenerateCharacter();
   const { addEntry } = useWalletHistory();
   const { playSummon, playRevealSeal, playRevealTier } = useSound();

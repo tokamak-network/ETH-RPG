@@ -1,6 +1,8 @@
 import TrustBanner from '@/components/TrustBanner';
 import LandingHero from '@/components/LandingHero';
+import WalletGallery from '@/components/WalletGallery';
 import FAQ from '@/components/FAQ';
+import { COPY } from '@/lib/experiment-copy';
 
 const ALL_CLASSES = [
   { icon: '\u{1F3F9}', name: 'Hunter', color: '#22c55e', desc: 'NFT collectors & traders' },
@@ -22,14 +24,39 @@ export default function LandingPage() {
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-16">
         <div className="text-center max-w-2xl mx-auto">
           <LandingHero />
+        </div>
 
-          {/* Character Classes + Famous Wallets (merged) */}
+        {/* Famous Wallet Gallery */}
+        <div className="mt-8 w-screen relative left-1/2 -translate-x-1/2">
+          <WalletGallery />
+        </div>
+
+        {/* Quiz CTA */}
+        <div className="text-center max-w-md mx-auto mt-8 mb-4">
+          <a
+            href="/quiz"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
+            style={{
+              backgroundColor: 'var(--color-accent-gold)',
+              color: '#000',
+            }}
+          >
+            <span>{'\u{1F52E}'}</span>
+            <span>Take the On-Chain Personality Quiz</span>
+          </a>
+          <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
+            No wallet needed — 5 questions to predict your class
+          </p>
+        </div>
+
+        {/* Character Classes */}
+        <div className="text-center max-w-2xl mx-auto">
           <div id="classes" className="mt-8 mb-10">
             <h2
               className="text-sm font-semibold uppercase tracking-[0.2em] mb-6"
               style={{ color: 'var(--color-text-muted)', fontFamily: 'var(--font-display)' }}
             >
-              Character Classes
+              {COPY.classesHeading}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto">
               {ALL_CLASSES.map((cls) => (

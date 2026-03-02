@@ -1,13 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { COPY } from '@/lib/experiment-copy';
 
-const SUBTITLES = [
-  'What hero is your wallet?',
-  'Are you a Rogue? A Guardian? An Elder Wizard?',
-  'Your transactions tell your story.',
-  'Discover your on-chain identity.',
-] as const;
+const SUBTITLES = COPY.rotatingSubtitles;
 
 const CYCLE_MS = 3500;
 

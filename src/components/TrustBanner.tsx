@@ -20,6 +20,13 @@ export default function TrustBanner() {
         {/* Right: nav links */}
         <div className="hidden sm:flex items-center justify-end gap-4">
           <a
+            href="/quiz"
+            className="text-sm transition-colors hover:text-text-primary"
+            style={{ color: 'var(--color-accent-gold)' }}
+          >
+            Quiz
+          </a>
+          <a
             href="/#classes"
             className="text-sm transition-colors hover:text-text-primary"
             style={{ color: 'var(--color-text-muted)' }}

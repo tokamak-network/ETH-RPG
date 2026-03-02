@@ -41,9 +41,9 @@ function buildBattleShareText(data: BattleResponse): string {
   const winnerName = getDisplayName(winner);
   const loserName = getDisplayName(loser);
   if (isKoreanLocale()) {
-    return `\u2694\uFE0F \uC9C0\uAC11 \uBC30\uD2C0!\n${winner.class.name} (${winnerName})\uC774 ${loser.class.name} (${loserName})\uC744 \uACA9\uD30C\n${data.result.totalTurns}\uD134 \u2014 HP ${data.result.winnerHpPercent}% \uB0A8\uC74C`;
+    return `\u2694\uFE0F \uC9C0\uAC11 \uBC30\uD2C0!\n${winner.class.name} (${winnerName})\uC774 ${loser.class.name} (${loserName})\uC744 \uACA9\uD30C\n${data.result.totalTurns}\uD134 \u2014 HP ${data.result.winnerHpPercent}% \uB0A8\uC74C\n${winner.class.name} vs ${loser.class.name} \u2014 \uB204\uAC00 \uC774\uAE38\uAE4C?`;
   }
-  return `\u2694\uFE0F Wallet Battle!\n${winner.class.name} (${winnerName}) defeated ${loser.class.name} (${loserName})\n${data.result.totalTurns} turns \u2014 ${data.result.winnerHpPercent}% HP left`;
+  return `\u2694\uFE0F Wallet Battle!\n${winner.class.name} (${winnerName}) defeated ${loser.class.name} (${loserName})\n${data.result.totalTurns} turns \u2014 ${data.result.winnerHpPercent}% HP left\n${winner.class.name} vs ${loser.class.name} \u2014 who would win?`;
 }
 
 function buildBattleShareUrl(data: BattleResponse): string {
@@ -226,6 +226,25 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
     }
   }, [shareText, baseShareUrl]);
 
+  const handleDownloadCard = useCallback(async () => {
+    trackEvent('battle_card_download');
+    const f0 = data.result.fighters[0].address;
+    const f1 = data.result.fighters[1].address;
+    const url = `/api/card/battle/${f0}/${f1}?n=${data.result.nonce}`;
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `ethrpg-battle-${shortenAddress(f0)}-vs-${shortenAddress(f1)}.png`;
+      link.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      // Download may fail in some environments
+    }
+  }, [data]);
+
   return (
     <div className="w-full max-w-2xl mx-auto">
       {/* Fighter cards side by side */}
@@ -291,6 +310,15 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
           >
             <span aria-hidden="true">{'\u2694\uFE0F'}</span>
             <span>Rematch</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownloadCard}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
+          >
+            <span aria-hidden="true">{'\uD83D\uDCF7'}</span>
+            <span>Battle Card</span>
           </button>
 
           <button

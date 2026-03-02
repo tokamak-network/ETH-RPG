@@ -543,6 +543,16 @@ body {
   margin-top: 4px;
 }
 
+/* Gallery scroll snap */
+.gallery-scroll {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gallery-scroll > * {
+  scroll-snap-align: start;
+}
+
 /* Hide scrollbar utility */
 .scrollbar-hide {
   -ms-overflow-style: none;
