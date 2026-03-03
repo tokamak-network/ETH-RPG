@@ -1,6 +1,7 @@
 import TrustBanner from '@/components/TrustBanner';
 import LandingHero from '@/components/LandingHero';
 import WalletGallery from '@/components/WalletGallery';
+import ClassWarStandings from '@/components/ClassWarStandings';
 import FAQ from '@/components/FAQ';
 import { COPY } from '@/lib/experiment-copy';
 
@@ -29,6 +30,11 @@ export default function LandingPage() {
         {/* Famous Wallet Gallery */}
         <div className="mt-8 w-screen relative left-1/2 -translate-x-1/2">
           <WalletGallery />
+        </div>
+
+        {/* Class War Standings */}
+        <div className="mt-8 max-w-2xl mx-auto w-full px-4">
+          <ClassWarStandings />
         </div>
 
         {/* Character Classes */}

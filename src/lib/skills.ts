@@ -16,6 +16,7 @@ export interface FighterState {
   damageDealtModifier: number;
   isReflecting: boolean;
   turnsElapsed: number;
+  classWarDamageBonus: number;  // persistent buff: 1.0 or 1.05
 }
 
 // --- Skill result (immutable output of skill execution) ---

@@ -11,7 +11,7 @@ export interface FamousWallet {
 }
 
 /**
- * Pre-verified famous wallet data (from v10 rebalance, 2026-02-23).
+ * Pre-verified famous wallet data (refreshed 2026-03-04).
  * Used for gallery cards and social proof on landing page.
  * Actual card is generated live — these are display hints only.
  */
@@ -22,7 +22,7 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     shortLabel: 'Vitalik',
     classId: 'hunter',
     level: 33,
-    power: 61_545,
+    power: 61_865,
     previewDescription: 'The original NFT whale and Ethereum creator',
   },
   {
@@ -31,7 +31,7 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     shortLabel: 'Pranksy',
     classId: 'hunter',
     level: 49,
-    power: 69_640,
+    power: 68_220,
     previewDescription: 'Legendary NFT collector and early adopter',
   },
   {
@@ -40,7 +40,7 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     shortLabel: 'Griff',
     classId: 'merchant',
     level: 38,
-    power: 69_875,
+    power: 70_775,
     previewDescription: 'Stablecoin power broker and Giveth founder',
   },
   {
@@ -49,7 +49,7 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     shortLabel: 'Stani',
     classId: 'priest',
     level: 32,
-    power: 62_505,
+    power: 62_005,
     previewDescription: 'Gas-heavy protocol architect behind Aave',
   },
   {
@@ -58,7 +58,7 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     shortLabel: 'Richard',
     classId: 'guardian',
     level: 19,
-    power: 45_150,
+    power: 47_675,
     previewDescription: 'Quiet holder and ethers.js creator',
   },
   {
@@ -71,31 +71,31 @@ export const FAMOUS_WALLETS: readonly FamousWallet[] = [
     previewDescription: 'Cross-chain explorer and ETH educator',
   },
   {
-    address: 'hayden.eth',
-    label: 'Hayden Adams',
-    shortLabel: 'Hayden',
+    address: 'convexfinance.eth',
+    label: 'Convex Finance',
+    shortLabel: 'Convex',
     classId: 'rogue',
-    level: 42,
-    power: 65_320,
-    previewDescription: 'DEX swap mastermind and Uniswap creator',
+    level: 33,
+    power: 60_760,
+    previewDescription: 'DEX swap powerhouse and Curve yield optimizer',
   },
   {
-    address: 'nick.eth',
-    label: 'Nick Johnson',
-    shortLabel: 'Nick',
+    address: '0xngmi.eth',
+    label: '0xngmi',
+    shortLabel: '0xngmi',
     classId: 'elder_wizard',
-    level: 22,
-    power: 52_780,
-    previewDescription: 'Ancient wallet sage and ENS architect',
+    level: 17,
+    power: 33_820,
+    previewDescription: 'Quiet sage and DefiLlama creator',
   },
   {
-    address: 'brantly.eth',
-    label: 'Brantly Millegan',
-    shortLabel: 'Brantly',
+    address: 'kain.eth',
+    label: 'Kain Warwick',
+    shortLabel: 'Kain',
     classId: 'warrior',
-    level: 27,
-    power: 48_900,
-    previewDescription: 'Versatile on-chain fighter and ENS advocate',
+    level: 26,
+    power: 55_945,
+    previewDescription: 'Versatile on-chain fighter and Synthetix founder',
   },
 ] as const;
 

@@ -14,6 +14,7 @@ import {
 import { resolveMatchup, getDamageModifier, getReceiveModifier } from '@/lib/matchups';
 import { generateNarrative } from '@/lib/battle-narrative';
 import { formatFighterName } from '@/lib/format-utils';
+import { getClassWarDamageMultiplier } from '@/lib/classwar-engine';
 
 // --- Constants ---
 
@@ -56,7 +57,10 @@ export function generateBattleSeed(addr1: string, addr2: string, nonce: string):
 
 // --- Fighter state initialization ---
 
-function initFighterState(fighter: BattleFighter): FighterState {
+function initFighterState(
+  fighter: BattleFighter,
+  classWarBuffClassId?: CharacterClassId | null,
+): FighterState {
   const passive = CLASS_PASSIVES[fighter.class.id];
   const baseHp = fighter.stats.hp;
   const maxHp = Math.round(baseHp * (1 + passive.battleStartHpBonus));
@@ -75,6 +79,7 @@ function initFighterState(fighter: BattleFighter): FighterState {
     damageDealtModifier: 1.0,
     isReflecting: false,
     turnsElapsed: 0,
+    classWarDamageBonus: getClassWarDamageMultiplier(fighter.class.id, classWarBuffClassId ?? null),
   };
 }
 
@@ -132,6 +137,7 @@ export function simulateBattle(
   fighter0: BattleFighter,
   fighter1: BattleFighter,
   nonce: string,
+  classWarBuffClassId?: CharacterClassId | null,
 ): BattleResult {
   const battleSeed = generateBattleSeed(fighter0.address, fighter1.address, nonce);
   const seedNum = parseInt(battleSeed, 16);
@@ -139,8 +145,8 @@ export function simulateBattle(
 
   const fighters: readonly [BattleFighter, BattleFighter] = [fighter0, fighter1];
   const states: [FighterState, FighterState] = [
-    initFighterState(fighter0),
-    initFighterState(fighter1),
+    initFighterState(fighter0, classWarBuffClassId),
+    initFighterState(fighter1, classWarBuffClassId),
   ];
 
   const matchup = resolveMatchup(fighter0.class.id, fighter1.class.id);
@@ -277,6 +283,9 @@ export function simulateBattle(
 
       // Actor's damage dealt modifier (e.g., Merchant boost)
       effectiveDamage = Math.round(effectiveDamage * actor.damageDealtModifier);
+
+      // Class War weekly buff (persistent, not reset per turn)
+      effectiveDamage = Math.round(effectiveDamage * actor.classWarDamageBonus);
 
       // Target's damage received modifier (e.g., Priest shield)
       effectiveDamage = Math.round(effectiveDamage * target.damageReceivedModifier);

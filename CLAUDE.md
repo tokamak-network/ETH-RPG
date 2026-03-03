@@ -108,6 +108,12 @@ eth-rpg/
 │   │   ├── quiz-types.ts            <- Quiz type definitions
 │   │   ├── quiz-data.ts             <- 5 quiz questions + class weight mappings
 │   │   ├── quiz-engine.ts           <- Client-side quiz scoring (pure function)
+│   │   ├── classwar-types.ts         <- Class War type definitions
+│   │   ├── classwar-week.ts         <- ISO week lifecycle (pure functions)
+│   │   ├── classwar-engine.ts       <- Standings computation + buff logic
+│   │   ├── classwar-store.ts        <- Class War KV operations
+│   │   ├── classwar-lifecycle.ts    <- Week rotation (cron-only, owns lifecycle)
+│   │   ├── classwar-recorder.ts     <- Battle → Class War score bridge
 │   │   ├── cache.ts                 <- In-memory cache
 │   │   ├── rate-limit.ts            <- Rate limiting
 │   │   ├── crypto-events.ts         <- Crypto event timeline
@@ -121,6 +127,8 @@ eth-rpg/
 │   │   ├── ShareButtons.tsx          <- Share button group
 │   │   ├── LoadingScreen.tsx         <- Loading screen
 │   │   ├── TrustBanner.tsx           <- Trust message banner + quiz nav
+│   │   ├── ClassWarStandings.tsx      <- Weekly 8-class competition bar chart
+│   │   ├── ClassWarBadge.tsx         <- +5% DMG buff badge
 │   │   ├── FAQ.tsx                   <- FAQ accordion
 │   │   └── quiz/
 │   │       ├── QuizFlow.tsx          <- Quiz state machine (intro→questions→result)
@@ -128,7 +136,8 @@ eth-rpg/
 │   │       ├── QuizQuestion.tsx      <- Single quiz question + options
 │   │       └── QuizResult.tsx        <- Predicted class + verify CTA
 │   ├── hooks/
-│   │   └── useGenerateCharacter.ts   <- Character generation hook
+│   │   ├── useGenerateCharacter.ts   <- Character generation hook
+│   │   └── useClassWar.ts            <- Class War standings fetch hook
 │   └── styles/
 │       └── themes.ts                 <- Class-specific color/themes
 ├── public/
@@ -201,6 +210,21 @@ eth-rpg/
 ### GET /api/ranking/refresh
 -> Vercel Cron endpoint (30-min). Requires `Authorization: Bearer <CRON_SECRET>`.
    Checks season expiry, recomputes all 3 leaderboards, saves snapshots to KV.
+   Also manages Class War week lifecycle (create/finalize/rotate).
+
+### GET /api/classwar/standings
+```typescript
+// Response (200) — CDN-cached 2min
+{ weekId, week: { startedAt, endsAt, isActive }, scores: ClassWarScore[], totalBattles, updatedAt, buffClassId }
+// ClassWarScore: { classId, score, rank, battleCount }
+```
+
+### GET /api/classwar/history
+```typescript
+// Response (200) — CDN-cached 1hr
+{ weeks: ClassWarResult[] }
+// ClassWarResult: { weekId, winnerClassId, scores, totalBattles, endedAt }
+```
 
 ### POST /api/events
 ```typescript

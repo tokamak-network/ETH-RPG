@@ -63,6 +63,9 @@ export default function ResultPage() {
         level: data.stats.level,
         power: data.stats.power,
       });
+
+      // Persist class for Class War personalization
+      try { localStorage.setItem('ethrpg_last_class', data.class.id); } catch { /* noop */ }
     }
   }, [status, data, addEntry]);
 

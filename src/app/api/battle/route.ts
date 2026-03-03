@@ -13,6 +13,7 @@ import { ErrorCode } from '@/lib/types';
 import { TimeoutError } from '@/lib/with-timeout';
 import { trackBattle, trackError } from '@/lib/metrics';
 import { recordBattleForRanking } from '@/lib/ranking-recorder';
+import { recordBattleForClassWar } from '@/lib/classwar-recorder';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Rate limit
@@ -86,6 +87,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     trackBattle(false).catch(() => {});
     const { result } = response;
     recordBattleForRanking(result.fighters[0], result.fighters[1], result).catch(() => {});
+    recordBattleForClassWar(result.fighters[0], result.fighters[1], result).catch(() => {});
 
     return NextResponse.json(response, {
       headers: { 'Cache-Control': 'private, no-cache' },

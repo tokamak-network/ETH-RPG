@@ -201,6 +201,52 @@ describe('simulateBattle', () => {
     }
   });
 
+  it('classWarBuffClassId applies 5% damage buff to matching class', () => {
+    // Compare the FIRST warrior attack in identical battles (before state diverges).
+    // Same PRNG sequence, same initial state — only difference is the 1.05x multiplier.
+    const nonce = 'buff-first-hit-test';
+    const resultNoBuff = simulateBattle(warrior, rogue, nonce);
+    const resultWithBuff = simulateBattle(warrior, rogue, nonce, 'warrior');
+
+    // Find first warrior (actorIndex 0) attack with nonzero damage
+    const firstHitNoBuff = resultNoBuff.turns.find(
+      (t) => t.actorIndex === 0 && t.damage > 0,
+    );
+    const firstHitWithBuff = resultWithBuff.turns.find(
+      (t) => t.actorIndex === 0 && t.damage > 0,
+    );
+
+    expect(firstHitNoBuff).toBeDefined();
+    expect(firstHitWithBuff).toBeDefined();
+
+    // The buffed hit should be >= unbuffed (5% of any value >= 10 adds at least 1 after rounding)
+    // Both use the same PRNG path up to this point, so only the multiplier differs
+    expect(firstHitWithBuff!.damage).toBeGreaterThanOrEqual(firstHitNoBuff!.damage);
+
+    // Verify across multiple nonces that at least some show strictly greater damage
+    let strictlyGreater = 0;
+    for (let i = 0; i < 10; i++) {
+      const n = `buff-verify-${i}`;
+      const a = simulateBattle(warrior, rogue, n);
+      const b = simulateBattle(warrior, rogue, n, 'warrior');
+      const hitA = a.turns.find((t) => t.actorIndex === 0 && t.damage > 0);
+      const hitB = b.turns.find((t) => t.actorIndex === 0 && t.damage > 0);
+      if (hitA && hitB && hitB.damage > hitA.damage) strictlyGreater++;
+    }
+    // At least some of 10 battles should show strictly greater first-hit damage
+    expect(strictlyGreater).toBeGreaterThan(0);
+  });
+
+  it('classWarBuffClassId=null produces same result as no buff', () => {
+    const nonce = 'null-buff-nonce';
+    const resultA = simulateBattle(warrior, rogue, nonce);
+    const resultB = simulateBattle(warrior, rogue, nonce, null);
+
+    expect(resultA.winner).toBe(resultB.winner);
+    expect(resultA.totalTurns).toBe(resultB.totalTurns);
+    expect(resultA.winnerHpRemaining).toBe(resultB.winnerHpRemaining);
+  });
+
   it('Power tiebreaker works when HP% is equal', () => {
     // Create two fighters with same stats but different power
     const f1 = makeBattleFighter({
