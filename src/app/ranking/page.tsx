@@ -52,7 +52,7 @@ export default function RankingPage() {
     <div className="min-h-screen flex flex-col bg-atmosphere">
       <TrustBanner />
 
-      <main className="relative z-10 flex-1 px-4 py-8">
+      <main id="main-content" className="relative z-10 flex-1 px-4 py-8">
         <div className="max-w-3xl mx-auto space-y-6">
           {/* Page title */}
           <div className="text-center">

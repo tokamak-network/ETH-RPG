@@ -110,7 +110,7 @@ export default function AddressInput({ onSubmit, isLoading, autoFocus = false }:
               spellCheck={false}
               autoComplete="off"
               aria-describedby="address-error"
-              className="flex-1 py-3 bg-transparent text-white placeholder-text-muted font-mono text-base sm:text-sm focus:outline-none disabled:opacity-50"
+              className="flex-1 py-3 bg-transparent text-white placeholder-text-muted font-mono text-base focus:outline-none disabled:opacity-50"
             />
             {clipboardSupported && address.length === 0 && !isLoading && (
               <button

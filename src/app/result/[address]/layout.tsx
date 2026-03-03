@@ -18,6 +18,7 @@ export async function generateMetadata({
   if (!ETH_ADDRESS_REGEX.test(rawAddress) && !ENS_REGEX.test(rawAddress)) {
     return {
       title: 'Eth\u00B7RPG \u2014 What hero is your wallet?',
+      alternates: { canonical: '/' },
     };
   }
 
@@ -30,6 +31,7 @@ export async function generateMetadata({
     return {
       title: `${label}'s Character Card | Eth\u00B7RPG`,
       description: 'Analyze Ethereum wallet addresses to generate RPG character cards.',
+      alternates: { canonical: `/result/${encodedAddress}` },
       openGraph: {
         title: `${label}'s Character Card`,
         description: 'Check out my on-chain hero!',
@@ -56,6 +58,7 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: { canonical: `/result/${ogAddress}` },
     openGraph: {
       title,
       description: `${data.class.name} | Power ${data.stats.power.toLocaleString()}`,

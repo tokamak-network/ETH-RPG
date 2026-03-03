@@ -21,7 +21,7 @@ export default function LandingPage() {
       <TrustBanner />
 
       {/* Hero Section */}
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-16">
+      <main id="main-content" className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-16">
         <div className="text-center max-w-2xl mx-auto">
           <LandingHero />
         </div>

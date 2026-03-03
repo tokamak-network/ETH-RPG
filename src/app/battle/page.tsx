@@ -110,7 +110,7 @@ export default function BattlePage() {
     <div className="min-h-screen flex flex-col bg-atmosphere">
       <TrustBanner />
 
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-16">
+      <main id="main-content" className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-16">
         <Suspense>
           <BattlePageContent />
         </Suspense>

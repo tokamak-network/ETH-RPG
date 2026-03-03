@@ -56,6 +56,9 @@ export const metadata: Metadata = {
     title: 'Eth\u00B7RPG',
     description: COPY.metaTwitterDescription,
   },
+  alternates: {
+    canonical: '/',
+  },
   robots: {
     index: true,
     follow: true,

@@ -88,7 +88,7 @@ export default function ResultPage() {
     <div className="min-h-screen flex flex-col bg-atmosphere">
       <TrustBanner />
 
-      <main className="relative z-10 flex-1 flex flex-col items-center px-4 py-8" aria-live="polite" aria-busy={status === 'loading'}>
+      <main id="main-content" className="relative z-10 flex-1 flex flex-col items-center px-4 py-8" aria-live="polite" aria-busy={status === 'loading'}>
         {/* Loading State */}
         {status === 'loading' && (
           <div className="flex-1 flex items-center justify-center w-full">
@@ -98,7 +98,7 @@ export default function ResultPage() {
 
         {/* Error State */}
         {status === 'error' && (
-          <div className="flex-1 flex items-center justify-center w-full animate-fade-in-up">
+          <div className="flex-1 flex items-center justify-center w-full animate-fade-in-up" role="alert">
             <div className="text-center max-w-md">
               {errorCode === ErrorCode.NO_TRANSACTIONS ? (
                 <>
