@@ -18,7 +18,7 @@ export default function RotatingSubtitle() {
       timeoutId = setTimeout(() => {
         setIndex((prev) => (prev + 1) % SUBTITLES.length);
         setVisible(true);
-      }, 400);
+      }, 200);
     }, CYCLE_MS);
 
     return () => {
@@ -29,10 +29,11 @@ export default function RotatingSubtitle() {
 
   return (
     <p
-      className="text-xl sm:text-2xl font-semibold mb-8 transition-opacity duration-400"
+      className="text-xl sm:text-2xl font-semibold mb-8 transition-all duration-300"
       style={{
         color: 'var(--color-text-primary)',
         opacity: visible ? 1 : 0,
+        filter: visible ? 'blur(0px)' : 'blur(4px)',
         minHeight: '2em',
       }}
     >

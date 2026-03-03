@@ -64,7 +64,7 @@ export default function GalleryCard({ wallet, onClick }: GalleryCardProps) {
 
       {/* Preview description */}
       <p
-        className="text-xs leading-relaxed line-clamp-2"
+        className="text-sm leading-relaxed line-clamp-2"
         style={{ color: 'var(--color-text-secondary)' }}
       >
         {wallet.previewDescription}

@@ -6,7 +6,7 @@ import { FAMOUS_WALLETS } from '@/lib/famous-wallets';
 import { trackEvent } from '@/lib/analytics';
 import GalleryCard from '@/components/GalleryCard';
 
-const SECTION_HEADING = 'Famous On-Chain Personalities';
+const SECTION_HEADING = 'Famous Wallets';
 const CTA_HEADING = 'Your Turn';
 const CTA_SUBTEXT = "What's your on-chain class?";
 const CTA_BUTTON_LABEL = 'See your class';

@@ -31,24 +31,6 @@ export default function LandingPage() {
           <WalletGallery />
         </div>
 
-        {/* Quiz CTA */}
-        <div className="text-center max-w-md mx-auto mt-8 mb-4">
-          <a
-            href="/quiz"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110"
-            style={{
-              backgroundColor: 'var(--color-accent-gold)',
-              color: '#000',
-            }}
-          >
-            <span>{'\u{1F52E}'}</span>
-            <span>Take the On-Chain Personality Quiz</span>
-          </a>
-          <p className="text-xs mt-2" style={{ color: 'var(--color-text-muted)' }}>
-            No wallet needed — 5 questions to predict your class
-          </p>
-        </div>
-
         {/* Character Classes */}
         <div className="text-center max-w-2xl mx-auto">
           <div id="classes" className="mt-8 mb-10">
