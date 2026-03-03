@@ -17,6 +17,13 @@ Enter an Ethereum address (or ENS name) and receive a full RPG character profile
 - **Pixel Art Sprite** class-specific character art that evolves with level (6 tiers per class)
 - **Achievement Badges** earned from on-chain milestones (15 badges across 4 tiers)
 
+### On-Chain Personality Quiz
+Take a 5-question quiz to predict your Ethereum class — no wallet needed:
+- **Client-side scoring** with class weight mappings for all 8 classes
+- Predicted class + confidence percentage shown at the end
+- "Verify with your wallet" CTA leads to actual card generation
+- Result page shows prediction comparison (match or mismatch)
+
 ### PvP Battle Mode
 Pit two wallets against each other in a turn-based battle simulation:
 - **Class matchup system** with advantage/disadvantage rings
@@ -224,7 +231,7 @@ Wallets that were active during major crypto events earn LUCK bonuses and may un
 | Image Generation | next/og (Satori) |
 | Monitoring | Sentry |
 | Deployment | Vercel |
-| Testing | Vitest (650+ tests) |
+| Testing | Vitest (669+ tests) |
 
 ---
 
@@ -287,6 +294,10 @@ Returns a 1200x630 PNG OG image for the character card.
 ### GET `/api/card/[address]`
 
 Returns a 1080x1350 PNG shareable card image.
+
+### GET `/api/card/battle/[addr1]/[addr2]?n={nonce}`
+
+Returns a 1080x1350 PNG battle comparison card (winner/loser layout, downloadable).
 
 ### GET `/api/og/battle/[addr1]/[addr2]?n={nonce}`
 
@@ -352,7 +363,8 @@ npm start
 ```
 src/
 ├── app/
-│   ├── page.tsx                          # Landing page
+│   ├── page.tsx                          # Landing page (gallery + quiz CTA)
+│   ├── quiz/page.tsx                     # On-chain personality quiz
 │   ├── result/[address]/page.tsx         # Character card result
 │   ├── battle/
 │   │   ├── page.tsx                      # Battle input (2 addresses)
@@ -363,9 +375,14 @@ src/
 │       ├── og/[address]/route.tsx        # OG image (character)
 │       ├── og/battle/[addr1]/[addr2]/route.tsx  # OG image (battle)
 │       ├── card/[address]/route.tsx      # Shareable card image
+│       ├── card/battle/[addr1]/[addr2]/route.tsx  # Battle comparison card
 │       └── health/route.ts              # Health check
 ├── lib/
 │   ├── alchemy.ts                        # Alchemy SDK integration
+│   ├── experiment-copy.ts                # A/B copy variants (V1=RPG, V2=Quiz)
+│   ├── quiz-types.ts                     # Quiz type definitions
+│   ├── quiz-data.ts                      # 5 quiz questions + class weights
+│   ├── quiz-engine.ts                    # Client-side quiz scoring
 │   ├── classifier.ts                     # Transaction classification
 │   ├── class.ts                          # Class determination (8 classes)
 │   ├── stats.ts                          # Stat calculation formulas
@@ -382,16 +399,23 @@ src/
 │   └── types.ts                          # Shared TypeScript types
 ├── components/
 │   ├── CharacterCard.tsx                 # Character card (front + back flip)
+│   ├── GalleryCard.tsx                   # Famous wallet mini-preview card
+│   ├── WalletGallery.tsx                 # Horizontal scroll gallery
 │   ├── StatBar.tsx                       # Animated stat bar
 │   ├── AchievementBadge.tsx              # Single achievement badge
 │   ├── AchievementRow.tsx                # Badge row on card
 │   ├── BattleArena.tsx                   # Battle sprite arena + HP bars
 │   ├── BattleLog.tsx                     # Turn-by-turn battle log
-│   ├── BattleResult.tsx                  # Winner display + share
+│   ├── BattleResult.tsx                  # Winner display + share + download
 │   ├── ShareButtons.tsx                  # Share button group
 │   ├── AddressInput.tsx                  # Address/ENS input
 │   ├── LoadingScreen.tsx                 # Loading animation
-│   ├── TrustBanner.tsx                   # Privacy trust banner
+│   ├── TrustBanner.tsx                   # Privacy trust banner + quiz nav
+│   ├── quiz/                             # On-chain personality quiz
+│   │   ├── QuizFlow.tsx                  # Quiz state machine
+│   │   ├── QuizProgress.tsx              # Progress bar
+│   │   ├── QuizQuestion.tsx              # Question + options
+│   │   └── QuizResult.tsx                # Result + verify CTA
 │   └── pixel-sprites/                    # Pixel art sprite components
 ├── hooks/
 │   ├── useGenerateCharacter.ts           # Character generation hook

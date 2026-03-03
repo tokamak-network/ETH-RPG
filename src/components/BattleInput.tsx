@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useRef, useEffect, useState, type FormEvent } from 'react';
 
 interface BattleInputProps {
   readonly onSubmit: (addr1: string, addr2: string) => void;
   readonly isLoading: boolean;
   readonly defaultAddress1?: string;
+  readonly defaultAddress2?: string;
 }
 
 const ETH_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
@@ -16,10 +17,18 @@ function isValidAddressOrEns(value: string): boolean {
   return ETH_ADDRESS_REGEX.test(trimmed) || ENS_NAME_REGEX.test(trimmed);
 }
 
-export default function BattleInput({ onSubmit, isLoading, defaultAddress1 = '' }: BattleInputProps) {
+export default function BattleInput({ onSubmit, isLoading, defaultAddress1 = '', defaultAddress2 = '' }: BattleInputProps) {
   const [address1, setAddress1] = useState(defaultAddress1);
-  const [address2, setAddress2] = useState('');
+  const [address2, setAddress2] = useState(defaultAddress2);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const challengerRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus challenger input when opponent is pre-filled
+  useEffect(() => {
+    if (defaultAddress2 && !defaultAddress1 && challengerRef.current) {
+      challengerRef.current.focus();
+    }
+  }, [defaultAddress1, defaultAddress2]);
 
   const trimmed1 = address1.trim();
   const trimmed2 = address2.trim();
@@ -75,11 +84,12 @@ export default function BattleInput({ onSubmit, isLoading, defaultAddress1 = '' 
           >
             <span className="text-text-muted text-sm shrink-0" aria-hidden="true">{'\u2694\uFE0F'}</span>
             <input
+              ref={challengerRef}
               id="battle-challenger"
               type="text"
               value={address1}
               onChange={(e) => handleChange1(e.target.value)}
-              placeholder="0x... or vitalik.eth"
+              placeholder={defaultAddress2 ? 'Paste YOUR wallet address' : '0x... or vitalik.eth'}
               disabled={isLoading}
               spellCheck={false}
               autoComplete="off"

@@ -6,6 +6,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import FeedbackButton from '@/components/FeedbackButton';
 import SoundToggle from '@/components/SoundToggle';
 import { SoundProvider } from '@/contexts/SoundContext';
+import { COPY } from '@/lib/experiment-copy';
 import './globals.css';
 
 const cinzel = Cinzel({
@@ -39,23 +40,24 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
   title: {
-    default: 'Eth\u00B7RPG \u2014 What hero is your wallet?',
+    default: COPY.metaTitle,
     template: '%s | Eth\u00B7RPG',
   },
-  description:
-    'Enter an Ethereum wallet address to analyze on-chain transactions and generate an RPG character card. Stats, class, and AI hero lore included.',
+  description: COPY.metaDescription,
   openGraph: {
     type: 'website',
     siteName: 'Eth\u00B7RPG',
-    title: 'Eth\u00B7RPG \u2014 What hero is your wallet?',
-    description:
-      'Enter an Ethereum wallet address to analyze on-chain transactions and generate an RPG character card.',
+    title: COPY.ogTitle,
+    description: COPY.ogDescription,
     images: ['/api/og/default'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Eth\u00B7RPG',
-    description: 'What hero is your wallet?',
+    description: COPY.metaTwitterDescription,
+  },
+  alternates: {
+    canonical: '/',
   },
   robots: {
     index: true,

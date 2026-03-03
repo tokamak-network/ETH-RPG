@@ -1,13 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { COPY } from '@/lib/experiment-copy';
 
-const SUBTITLES = [
-  'What hero is your wallet?',
-  'Are you a Rogue? A Guardian? An Elder Wizard?',
-  'Your transactions tell your story.',
-  'Discover your on-chain identity.',
-] as const;
+const SUBTITLES = COPY.rotatingSubtitles;
 
 const CYCLE_MS = 3500;
 
@@ -22,7 +18,7 @@ export default function RotatingSubtitle() {
       timeoutId = setTimeout(() => {
         setIndex((prev) => (prev + 1) % SUBTITLES.length);
         setVisible(true);
-      }, 400);
+      }, 200);
     }, CYCLE_MS);
 
     return () => {
@@ -33,10 +29,11 @@ export default function RotatingSubtitle() {
 
   return (
     <p
-      className="text-xl sm:text-2xl font-semibold mb-8 transition-opacity duration-400"
+      className="text-xl sm:text-2xl font-semibold mb-8 transition-all duration-300"
       style={{
         color: 'var(--color-text-primary)',
         opacity: visible ? 1 : 0,
+        filter: visible ? 'blur(0px)' : 'blur(4px)',
         minHeight: '2em',
       }}
     >

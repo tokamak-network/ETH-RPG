@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, type FormEvent } from 'react';
 import { trackEvent } from '@/lib/analytics';
+import { COPY } from '@/lib/experiment-copy';
 
 interface AddressInputProps {
   readonly onSubmit: (address: string) => void;
@@ -109,7 +110,7 @@ export default function AddressInput({ onSubmit, isLoading, autoFocus = false }:
               spellCheck={false}
               autoComplete="off"
               aria-describedby="address-error"
-              className="flex-1 py-3 bg-transparent text-white placeholder-text-muted font-mono text-base sm:text-sm focus:outline-none disabled:opacity-50"
+              className="flex-1 py-3 bg-transparent text-white placeholder-text-muted font-mono text-base focus:outline-none disabled:opacity-50"
             />
             {clipboardSupported && address.length === 0 && !isLoading && (
               <button
@@ -135,7 +136,7 @@ export default function AddressInput({ onSubmit, isLoading, autoFocus = false }:
               color: '#000',
             }}
           >
-            {isLoading ? 'Summoning...' : 'Summon \u2192'}
+            {isLoading ? COPY.ctaLoading : COPY.ctaButton}
           </button>
         </div>
         {showError && (

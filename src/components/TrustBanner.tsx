@@ -1,5 +1,16 @@
 export default function TrustBanner() {
   return (
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[60] focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold"
+        style={{
+          backgroundColor: 'var(--color-accent-gold)',
+          color: '#000',
+        }}
+      >
+        Skip to content
+      </a>
     <div
       className="sticky top-0 z-50 w-full border-b"
       style={{
@@ -19,6 +30,13 @@ export default function TrustBanner() {
         </p>
         {/* Right: nav links */}
         <div className="hidden sm:flex items-center justify-end gap-4">
+          <a
+            href="/quiz"
+            className="text-sm transition-colors hover:text-text-primary"
+            style={{ color: 'var(--color-accent-gold)' }}
+          >
+            Quiz
+          </a>
           <a
             href="/#classes"
             className="text-sm transition-colors hover:text-text-primary"
@@ -43,5 +61,6 @@ export default function TrustBanner() {
         </div>
       </div>
     </div>
+    </>
   );
 }

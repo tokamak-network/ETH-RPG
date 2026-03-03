@@ -12,6 +12,7 @@ function BattlePageContent() {
   const searchParams = useSearchParams();
   const [isNavigating, setIsNavigating] = useState(false);
   const challenger = searchParams.get('challenger') ?? '';
+  const opponent = searchParams.get('opponent') ?? '';
   usePageView('battle');
 
   function handleSubmit(addr1: string, addr2: string) {
@@ -43,7 +44,7 @@ function BattlePageContent() {
 
       {/* Dual address input */}
       <div className="max-w-lg mx-auto mb-6">
-        <BattleInput onSubmit={handleSubmit} isLoading={isNavigating} defaultAddress1={challenger} />
+        <BattleInput onSubmit={handleSubmit} isLoading={isNavigating} defaultAddress1={challenger} defaultAddress2={opponent} />
       </div>
 
       {/* Trust micro-text */}
@@ -109,7 +110,7 @@ export default function BattlePage() {
     <div className="min-h-screen flex flex-col bg-atmosphere">
       <TrustBanner />
 
-      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-16">
+      <main id="main-content" className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-16">
         <Suspense>
           <BattlePageContent />
         </Suspense>

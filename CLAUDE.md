@@ -4,6 +4,10 @@
 A web service that analyzes on-chain transactions from an Ethereum wallet address and generates an RPG character card.
 It calculates stats (Level/HP/MP/STR/INT/LUCK) + class (8 types) + AI hero lore + combat power, and renders a shareable card image.
 
+Two entry paths:
+1. **Direct wallet entry** — paste address/ENS → generate card
+2. **Personality quiz** — 5 questions predict class → "verify with your wallet" → generate card
+
 ---
 
 ## Tech Stack
@@ -30,6 +34,12 @@ User: Enter wallet address (0x... or ENS)
   -> Card image rendering: @vercel/og
   -> Save to cache + return response
 User: View card -> Share (Twitter/Farcaster/copy) -> Viral loop
+
+Alternative entry (quiz):
+User: Take quiz (5 questions, no wallet needed)
+  -> Client-side class weight scoring (quiz-engine.ts)
+  -> Show predicted class + confidence
+  -> CTA: "Verify with your wallet" -> Enter wallet -> Standard flow above
 ```
 
 ---
@@ -76,13 +86,15 @@ eth-rpg/
 ├── CLAUDE.md               <- (this file)
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx                  <- Landing (address input)
+│   │   ├── page.tsx                  <- Landing (gallery + input + quiz CTA)
+│   │   ├── quiz/page.tsx             <- On-chain personality quiz
 │   │   ├── result/[address]/
-│   │   │   └── page.tsx              <- Result (character card)
+│   │   │   └── page.tsx              <- Result (card + quiz prediction comparison)
 │   │   ├── api/
 │   │   │   ├── generate/route.ts     <- Main API
 │   │   │   ├── og/[address]/route.tsx <- OG image
 │   │   │   ├── card/[address]/route.tsx <- Shareable card image
+│   │   │   ├── card/battle/[addr1]/[addr2]/route.tsx <- Battle comparison card
 │   │   │   └── health/route.ts       <- Health check
 │   │   ├── layout.tsx
 │   │   └── globals.css
@@ -92,6 +104,10 @@ eth-rpg/
 │   │   ├── stats.ts                 <- Stat calculation logic
 │   │   ├── class.ts                 <- Class determination logic
 │   │   ├── lore.ts                  <- AI lore generation + fallback
+│   │   ├── experiment-copy.ts       <- A/B copy variants (V1=RPG, V2=Personality Test)
+│   │   ├── quiz-types.ts            <- Quiz type definitions
+│   │   ├── quiz-data.ts             <- 5 quiz questions + class weight mappings
+│   │   ├── quiz-engine.ts           <- Client-side quiz scoring (pure function)
 │   │   ├── cache.ts                 <- In-memory cache
 │   │   ├── rate-limit.ts            <- Rate limiting
 │   │   ├── crypto-events.ts         <- Crypto event timeline
@@ -99,11 +115,18 @@ eth-rpg/
 │   ├── components/
 │   │   ├── AddressInput.tsx          <- Address input component
 │   │   ├── CharacterCard.tsx         <- Result card (frontend display)
+│   │   ├── GalleryCard.tsx           <- Famous wallet mini-preview card
+│   │   ├── WalletGallery.tsx         <- Horizontal scroll gallery of famous wallets
 │   │   ├── StatBar.tsx               <- Stat bar component
 │   │   ├── ShareButtons.tsx          <- Share button group
 │   │   ├── LoadingScreen.tsx         <- Loading screen
-│   │   ├── TrustBanner.tsx           <- Trust message banner
-│   │   └── FAQ.tsx                   <- FAQ accordion
+│   │   ├── TrustBanner.tsx           <- Trust message banner + quiz nav
+│   │   ├── FAQ.tsx                   <- FAQ accordion
+│   │   └── quiz/
+│   │       ├── QuizFlow.tsx          <- Quiz state machine (intro→questions→result)
+│   │       ├── QuizProgress.tsx      <- Quiz progress bar
+│   │       ├── QuizQuestion.tsx      <- Single quiz question + options
+│   │       └── QuizResult.tsx        <- Predicted class + verify CTA
 │   ├── hooks/
 │   │   └── useGenerateCharacter.ts   <- Character generation hook
 │   └── styles/
@@ -148,6 +171,9 @@ eth-rpg/
 
 ### GET /api/card/[address]
 -> 1080x1350 PNG (shareable card image)
+
+### GET /api/card/battle/[addr1]/[addr2]?n={nonce}
+-> 1080x1350 PNG (shareable battle comparison card, winner/loser layout)
 
 ### POST /api/battle
 ```typescript

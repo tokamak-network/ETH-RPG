@@ -5,16 +5,7 @@ import { useState } from 'react';
 import AddressInput from '@/components/AddressInput';
 import RotatingSubtitle from '@/components/RotatingSubtitle';
 import { usePageView } from '@/hooks/useAnalytics';
-import { FAMOUS_WALLETS } from '@/lib/famous-wallets';
-import { CLASS_THEMES } from '@/styles/themes';
-import { trackEvent } from '@/lib/analytics';
-
-/** Pick one wallet per class (first seen wins), take up to 3 for the hero chips. */
-const SAMPLE_WALLETS = FAMOUS_WALLETS.reduce<typeof FAMOUS_WALLETS[number][]>((acc, wallet) => {
-  if (acc.length >= 4) return acc;
-  if (acc.some((w) => w.classId === wallet.classId)) return acc;
-  return [...acc, wallet];
-}, []);
+import { COPY } from '@/lib/experiment-copy';
 
 export default function LandingHero() {
   const router = useRouter();
@@ -43,7 +34,7 @@ export default function LandingHero() {
 
       {/* Narrative subtitle */}
       <p className="text-base sm:text-lg mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-        The blockchain holds your history.
+        {COPY.subtitle}
       </p>
       <RotatingSubtitle />
 
@@ -52,42 +43,19 @@ export default function LandingHero() {
         <AddressInput onSubmit={handleSubmit} isLoading={isNavigating} autoFocus />
       </div>
 
-      {/* Trust micro-text */}
-      <p className="text-xs mb-1" style={{ color: 'var(--color-text-muted)' }}>
+      {/* Trust micro-text + quiz link */}
+      <p className="text-xs mb-2" style={{ color: 'var(--color-text-muted)' }}>
         Only public data is analyzed.
       </p>
-
-      {/* Try a famous wallet */}
-      <div className="mb-8">
-        <p className="text-xs mb-4" style={{ color: 'var(--color-text-muted)' }}>
-          or try a famous wallet
-        </p>
-        <div className="flex items-center justify-center gap-2 flex-wrap">
-          {SAMPLE_WALLETS.map((wallet) => {
-            const theme = CLASS_THEMES[wallet.classId];
-            return (
-              <button
-                key={wallet.address}
-                type="button"
-                disabled={isNavigating}
-                onClick={() => {
-                  trackEvent('famous_wallet_click', { wallet: wallet.label });
-                  handleSubmit(wallet.address);
-                }}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
-                style={{
-                  backgroundColor: 'var(--color-bg-tertiary)',
-                  border: `1px solid ${theme.primary}30`,
-                  color: 'var(--color-text-primary)',
-                }}
-              >
-                <span aria-hidden="true">{theme.icon}</span>
-                <span>{wallet.shortLabel}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <p className="text-sm mb-6">
+        <a
+          href="/quiz"
+          className="transition-colors hover:underline"
+          style={{ color: 'var(--color-accent-gold)' }}
+        >
+          No wallet? Take the quiz {'\u2192'}
+        </a>
+      </p>
 
       {/* Battle Mode CTA */}
       <div className="mb-6">
