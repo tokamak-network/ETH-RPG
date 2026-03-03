@@ -43,6 +43,7 @@ function makeFighter(overrides: Partial<FighterState> = {}): FighterState {
     damageDealtModifier: 1.0,
     isReflecting: false,
     turnsElapsed: 0,
+    classWarDamageBonus: 1.0,
     ...overrides,
   };
 }

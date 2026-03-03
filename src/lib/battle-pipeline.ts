@@ -4,6 +4,8 @@ import { generateCharacterData } from '@/lib/pipeline';
 import { simulateBattle } from '@/lib/battle';
 import { setCachedBattle } from '@/lib/battle-cache';
 import type { BattleFighter, BattleResponse } from '@/lib/types';
+import { getCurrentWeekId } from '@/lib/classwar-week';
+import { getWeekBuff } from '@/lib/classwar-store';
 
 interface BattlePipelineInput {
   readonly address1: string;
@@ -43,8 +45,11 @@ export async function executeBattle(input: BattlePipelineInput): Promise<BattleR
   // Generate nonce if not provided
   const battleNonce = input.nonce ?? crypto.randomUUID();
 
+  // Fetch Class War buff (fire-and-forget on failure — battles work without it)
+  const classWarBuffClassId = await getWeekBuff(getCurrentWeekId()).catch(() => null);
+
   // Simulate
-  const result = simulateBattle(fighter0, fighter1, battleNonce);
+  const result = simulateBattle(fighter0, fighter1, battleNonce, classWarBuffClassId);
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
   const response: BattleResponse = {

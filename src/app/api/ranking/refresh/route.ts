@@ -25,6 +25,7 @@ import {
 import { safeCompare } from '@/lib/kv-utils';
 import { errorResponse } from '@/lib/route-utils';
 import type { LeaderboardResponse, LeaderboardType, RankingEntry } from '@/lib/types';
+import { rotateClassWarWeek } from '@/lib/classwar-lifecycle';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   // Verify cron secret (Vercel sends as Authorization: Bearer <secret>)
@@ -82,9 +83,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       setLeaderboardSnapshot(season.id, 'explorer', buildSnapshot('explorer', explorerEntries)),
     ]);
 
+    // 5. Class War week lifecycle (create/finalize/rotate + snapshot)
+    const classWarResult = await rotateClassWarWeek().catch(() => null);
+    const classWarWeekId = classWarResult?.weekId ?? '';
+
     return NextResponse.json({
       ok: true,
       season: season.id,
+      classWarWeek: classWarWeekId || null,
       counts: {
         totalPlayers: players.length,
         powerRanked: powerEntries.length,
