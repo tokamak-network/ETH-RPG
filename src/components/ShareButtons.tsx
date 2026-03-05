@@ -12,9 +12,9 @@ interface ShareButtonsProps {
 
 function buildShareText(data: GenerateResponse): string {
   if (isKoreanLocale()) {
-    return `\uB0B4 \uC9C0\uAC11 \uC804\uD22C\uB825 ${data.stats.power.toLocaleString()}\u2026 \uB108\uB294 \uBA87\uC774\uB0D0 \uD83D\uDDE1\uFE0F\n${data.class.name} | Lv.${data.stats.level}`;
+    return `\uB098\uB294 Lv.${data.stats.level} ${data.class.name}, \uC804\uD22C\uB825 ${data.stats.power.toLocaleString()}. \uC774\uAE38 \uC218 \uC788\uC5B4? \u2694\uFE0F`;
   }
-  return `My wallet power ${data.stats.power.toLocaleString()}\u2026 What\u2019s yours? \uD83D\uDDE1\uFE0F\n${data.class.name} | Lv.${data.stats.level}`;
+  return `I'm a Lv.${data.stats.level} ${data.class.nameEn} with ${data.stats.power.toLocaleString()} power. Think you can beat me? \u2694\uFE0F`;
 }
 
 function buildShareUrl(address: string): string {
@@ -147,66 +147,34 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
     }
   }, [data.address, downloading]);
 
+  const kr = isKoreanLocale();
+  const [showMore, setShowMore] = useState(false);
+
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="flex items-center justify-center gap-3 flex-wrap">
+      {/* Competitive headline */}
+      <p
+        className="text-sm font-bold tracking-wide"
+        style={{ color: 'var(--color-accent-gold)', fontFamily: 'var(--font-display)' }}
+      >
+        {kr
+          ? `\uC804\uD22C\uB825 ${power.toLocaleString()} \u2014 \uC774\uAE38 \uC218 \uC788\uC5B4?`
+          : `Power ${power.toLocaleString()} \u2014 think you can beat this?`}
+      </p>
+
+      {/* Primary buttons: Share on X + Copy Link */}
+      <div className="flex items-center justify-center gap-3">
         <button
           type="button"
-          onClick={handleDownload}
-          disabled={downloading}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
+          onClick={handleTwitter}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors hover:brightness-110 focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
           style={{
             backgroundColor: 'var(--color-accent-gold)',
             color: '#000',
           }}
         >
-          <span aria-hidden="true">{'\u2B07\uFE0F'}</span>
-          <span>{downloading ? 'Saving...' : 'Save Card'}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleTwitter}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
-        >
           <span aria-hidden="true">&#x1D54F;</span>
-          <span>Twitter</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleFarcaster}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
-        >
-          <span aria-hidden="true">&#x1F7E3;</span>
-          <span>Farcaster</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleTelegram}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
-        >
-          <span aria-hidden="true">{'\u2708\uFE0F'}</span>
-          <span>Telegram</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleKakaoTalk}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
-        >
-          <span aria-hidden="true">{'\uD83D\uDCAC'}</span>
-          <span>{kakaoTalkCopied ? 'Copied!' : 'KakaoTalk'}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleDiscord}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
-        >
-          <span aria-hidden="true">{'\uD83C\uDFAE'}</span>
-          <span>{discordCopied ? 'Copied!' : 'Discord'}</span>
+          <span>Share on X</span>
         </button>
 
         <button
@@ -217,7 +185,68 @@ export default function ShareButtons({ data }: ShareButtonsProps) {
           <span aria-hidden="true">&#x1F4CB;</span>
           <span>{copied ? 'Copied!' : 'Copy Link'}</span>
         </button>
+
+        <button
+          type="button"
+          onClick={() => setShowMore((prev) => !prev)}
+          className="flex items-center gap-1 px-3 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
+        >
+          <span>{showMore ? 'Less' : 'More'}</span>
+          <span aria-hidden="true" className="text-xs">{showMore ? '\u25B2' : '\u25BC'}</span>
+        </button>
       </div>
+
+      {/* Secondary buttons (toggled) */}
+      {showMore && (
+        <div className="flex items-center justify-center gap-3 flex-wrap animate-fade-in-up">
+          <button
+            type="button"
+            onClick={handleFarcaster}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
+          >
+            <span aria-hidden="true">&#x1F7E3;</span>
+            <span>Farcaster</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleTelegram}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
+          >
+            <span aria-hidden="true">{'\u2708\uFE0F'}</span>
+            <span>Telegram</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleKakaoTalk}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
+          >
+            <span aria-hidden="true">{'\uD83D\uDCAC'}</span>
+            <span>{kakaoTalkCopied ? 'Copied!' : 'KakaoTalk'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDiscord}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
+          >
+            <span aria-hidden="true">{'\uD83C\uDFAE'}</span>
+            <span>{discordCopied ? 'Copied!' : 'Discord'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={downloading}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary disabled:opacity-50 focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
+          >
+            <span aria-hidden="true">{'\u2B07\uFE0F'}</span>
+            <span>{downloading ? 'Saving...' : 'Save Card'}</span>
+          </button>
+        </div>
+      )}
+
       {downloadError && (
         <p className="text-sm" style={{ color: 'var(--color-accent-red)' }}>
           Failed to save card. Please try again later.

@@ -19,6 +19,7 @@ import type { CharacterClassId } from '@/lib/types';
 import { COPY } from '@/lib/experiment-copy';
 import { CLASS_LABELS } from '@/styles/themes';
 import { FAMOUS_WALLETS } from '@/lib/famous-wallets';
+import { isKoreanLocale } from '@/lib/locale';
 
 export default function ResultPage() {
   const params = useParams<{ address: string }>();
@@ -194,8 +195,16 @@ export default function ResultPage() {
             {/* Below-card content — only after reveal */}
             {revealed && (
               <div className="animate-fade-in-up">
+                {/* Share headline */}
+                <p
+                  className="text-center text-sm font-bold tracking-wide mb-3"
+                  style={{ color: 'var(--color-accent-gold)', fontFamily: 'var(--font-display)' }}
+                >
+                  {isKoreanLocale() ? '\uD788\uC5B4\uB85C\uB97C \uC790\uB791\uD574' : 'Show off your hero'}
+                </p>
+
                 {/* Share Buttons */}
-                <div className="mb-8">
+                <div className="mb-4">
                   <ShareButtons data={data} />
                 </div>
 

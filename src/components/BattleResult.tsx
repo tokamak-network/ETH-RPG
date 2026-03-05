@@ -38,12 +38,11 @@ function getAdvantageColor(advantage: MatchupAdvantage): string {
 function buildBattleShareText(data: BattleResponse): string {
   const winner = data.result.fighters[data.result.winner];
   const loser = data.result.fighters[data.result.winner === 0 ? 1 : 0];
-  const winnerName = getDisplayName(winner);
   const loserName = getDisplayName(loser);
   if (isKoreanLocale()) {
-    return `\u2694\uFE0F \uC9C0\uAC11 \uBC30\uD2C0!\n${winner.class.name} (${winnerName})\uC774 ${loser.class.name} (${loserName})\uC744 \uACA9\uD30C\n${data.result.totalTurns}\uD134 \u2014 HP ${data.result.winnerHpPercent}% \uB0A8\uC74C\n${winner.class.name} vs ${loser.class.name} \u2014 \uB204\uAC00 \uC774\uAE38\uAE4C?`;
+    return `${loserName} \uACA9\uD30C! ${winner.class.name} vs ${loser.class.name} \u2014 ${data.result.totalTurns}\uD134, HP ${data.result.winnerHpPercent}% \uB0A8\uC74C. \uB3C4\uC804\uD574\uBD10 \u2694\uFE0F`;
   }
-  return `\u2694\uFE0F Wallet Battle!\n${winner.class.name} (${winnerName}) defeated ${loser.class.name} (${loserName})\n${data.result.totalTurns} turns \u2014 ${data.result.winnerHpPercent}% HP left\n${winner.class.name} vs ${loser.class.name} \u2014 who would win?`;
+  return `I just crushed ${loserName} in a wallet battle! ${winner.class.name} vs ${loser.class.name} \u2014 ${data.result.totalTurns} turns, ${data.result.winnerHpPercent}% HP left. Challenge me \u2694\uFE0F`;
 }
 
 function buildBattleShareUrl(data: BattleResponse): string {
@@ -149,9 +148,11 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
   const [copied, setCopied] = useState(false);
   const [discordCopied, setDiscordCopied] = useState(false);
   const [kakaoTalkCopied, setKakaoTalkCopied] = useState(false);
+  const [showMore, setShowMore] = useState(false);
   const { result } = data;
   const winner = result.fighters[result.winner];
   const winnerTheme = CLASS_THEMES[winner.class.id];
+  const kr = isKoreanLocale();
 
   const shareText = buildBattleShareText(data);
   const baseShareUrl = buildBattleShareUrl(data);
@@ -273,7 +274,7 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
 
       {/* Winner banner */}
       <div
-        className="text-center rounded-xl p-6 mb-6"
+        className="text-center rounded-xl p-6 mb-4"
         style={{
           background: `linear-gradient(135deg, ${winnerTheme.primary}15 0%, transparent 50%, ${winnerTheme.primary}15 100%)`,
           border: `1px solid ${winnerTheme.primary}40`,
@@ -296,85 +297,110 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
         </p>
       </div>
 
-      {/* Share + Rematch buttons */}
-      <div className="flex flex-col items-center gap-3">
-        <div className="flex items-center justify-center gap-3 flex-wrap">
+      {/* Share victory headline */}
+      <p
+        className="text-center text-sm font-bold tracking-wide mb-3"
+        style={{ color: 'var(--color-accent-gold)', fontFamily: 'var(--font-display)' }}
+      >
+        {kr ? '\uC2B9\uB9AC\uB97C \uC790\uB791\uD574!' : 'Share your victory!'}
+      </p>
+
+      {/* Primary buttons: Share Victory (Twitter gold) + Copy Link + More toggle */}
+      <div className="flex flex-col items-center gap-3 mb-4">
+        <div className="flex items-center justify-center gap-3">
           <button
             type="button"
-            onClick={onRematch}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer hover:brightness-110"
+            onClick={handleTwitter}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer hover:brightness-110 focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
             style={{
               backgroundColor: 'var(--color-accent-gold)',
               color: '#000',
             }}
           >
-            <span aria-hidden="true">{'\u2694\uFE0F'}</span>
-            <span>Rematch</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDownloadCard}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
-            <span aria-hidden="true">{'\uD83D\uDCF7'}</span>
-            <span>Battle Card</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleTwitter}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
             <span aria-hidden="true">&#x1D54F;</span>
-            <span>Twitter</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleFarcaster}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
-            <span aria-hidden="true">&#x1F7E3;</span>
-            <span>Farcaster</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleTelegram}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
-            <span aria-hidden="true">{'\u2708\uFE0F'}</span>
-            <span>Telegram</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleKakaoTalk}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
-            <span aria-hidden="true">{'\uD83D\uDCAC'}</span>
-            <span>{kakaoTalkCopied ? 'Copied!' : 'KakaoTalk'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDiscord}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
-            <span aria-hidden="true">{'\uD83C\uDFAE'}</span>
-            <span>{discordCopied ? 'Copied!' : 'Discord'}</span>
+            <span>{kr ? '\uC2B9\uB9AC \uACF5\uC720' : 'Share Victory'}</span>
           </button>
 
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
           >
             <span aria-hidden="true">&#x1F4CB;</span>
             <span>{copied ? 'Copied!' : 'Copy Link'}</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setShowMore((prev) => !prev)}
+            className="flex items-center gap-1 px-3 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
+          >
+            <span>{showMore ? 'Less' : 'More'}</span>
+            <span aria-hidden="true" className="text-xs">{showMore ? '\u25B2' : '\u25BC'}</span>
+          </button>
         </div>
+
+        {/* Secondary buttons (toggled) */}
+        {showMore && (
+          <div className="flex items-center justify-center gap-3 flex-wrap animate-fade-in-up">
+            <button
+              type="button"
+              onClick={handleDownloadCard}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
+            >
+              <span aria-hidden="true">{'\uD83D\uDCF7'}</span>
+              <span>Battle Card</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleFarcaster}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
+            >
+              <span aria-hidden="true">&#x1F7E3;</span>
+              <span>Farcaster</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleTelegram}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
+            >
+              <span aria-hidden="true">{'\u2708\uFE0F'}</span>
+              <span>Telegram</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleKakaoTalk}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
+            >
+              <span aria-hidden="true">{'\uD83D\uDCAC'}</span>
+              <span>{kakaoTalkCopied ? 'Copied!' : 'KakaoTalk'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDiscord}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
+            >
+              <span aria-hidden="true">{'\uD83C\uDFAE'}</span>
+              <span>{discordCopied ? 'Copied!' : 'Discord'}</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Rematch button (always visible, secondary) */}
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={onRematch}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors cursor-pointer hover:bg-bg-secondary"
+        >
+          <span aria-hidden="true">{'\u2694\uFE0F'}</span>
+          <span>Rematch</span>
+        </button>
       </div>
     </div>
   );
