@@ -1,9 +1,13 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { QuizResult as QuizResultType } from '@/lib/quiz-types';
 import { CLASS_THEMES, CLASS_LABELS } from '@/styles/themes';
 import { trackEvent } from '@/lib/analytics';
+import { isKoreanLocale } from '@/lib/locale';
+import { openTwitterIntent, copyToClipboard } from '@/lib/share-utils';
+import { appendUtmToUrl } from '@/lib/utm';
 
 interface QuizResultProps {
   readonly result: QuizResultType;
@@ -12,10 +16,20 @@ interface QuizResultProps {
 
 export default function QuizResult({ result, onRetake }: QuizResultProps) {
   const router = useRouter();
+  const [copied, setCopied] = useState(false);
   const theme = CLASS_THEMES[result.predictedClass];
   const className = CLASS_LABELS[result.predictedClass];
   const runnerUpName = CLASS_LABELS[result.runnerUp];
   const confidencePercent = Math.round(result.confidence * 100);
+  const kr = isKoreanLocale();
+
+  const quizUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/quiz`
+    : 'https://ethrpg.com/quiz';
+
+  const shareText = kr
+    ? `나는 ${confidencePercent}% ${className} ${theme.icon}. 퀴즈 풀고 니 클래스 확인해.`
+    : `I'm ${confidencePercent}% ${className} ${theme.icon}. Take the quiz and find out yours.`;
 
   function handleVerify() {
     trackEvent('quiz_to_wallet_click', { predictedClass: result.predictedClass });
@@ -28,17 +42,19 @@ export default function QuizResult({ result, onRetake }: QuizResultProps) {
   }
 
   function handleShare() {
-    trackEvent('quiz_share', { predictedClass: result.predictedClass });
-    const text = `My on-chain personality is ${className} ${theme.icon}! What's yours?`;
-    const url = typeof window !== 'undefined'
-      ? `${window.location.origin}/quiz`
-      : 'https://ethrpg.com/quiz';
-    const params = new URLSearchParams({ text: `${text}\n${url}` });
-    window.open(
-      `https://twitter.com/intent/tweet?${params.toString()}`,
-      '_blank',
-      'noopener,noreferrer',
-    );
+    trackEvent('share_click', { platform: 'twitter', context: 'quiz', predictedClass: result.predictedClass });
+    const url = appendUtmToUrl(quizUrl, { utm_source: 'twitter', utm_medium: 'social', utm_campaign: 'quiz' });
+    openTwitterIntent(shareText, url);
+  }
+
+  async function handleCopy() {
+    trackEvent('share_click', { platform: 'copy', context: 'quiz', predictedClass: result.predictedClass });
+    const url = appendUtmToUrl(quizUrl, { utm_source: 'copy', utm_medium: 'clipboard', utm_campaign: 'quiz' });
+    const ok = await copyToClipboard(`${shareText}\n${url}`);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   }
 
   return (
@@ -108,14 +124,28 @@ export default function QuizResult({ result, onRetake }: QuizResultProps) {
         <button
           type="button"
           onClick={handleShare}
-          className="px-4 py-2.5 rounded-lg text-sm font-medium transition-colors hover:brightness-110 cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors hover:brightness-110 cursor-pointer"
           style={{
             backgroundColor: 'var(--color-bg-tertiary)',
             border: '1px solid var(--color-border)',
             color: 'var(--color-text-primary)',
           }}
         >
-          Share Result
+          <span aria-hidden="true">&#x1D54F;</span>
+          <span>Share</span>
+        </button>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors hover:brightness-110 cursor-pointer"
+          style={{
+            backgroundColor: 'var(--color-bg-tertiary)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-primary)',
+          }}
+        >
+          <span aria-hidden="true">&#x1F4CB;</span>
+          <span>{copied ? (kr ? '복사됨!' : 'Copied!') : (kr ? '복사' : 'Copy')}</span>
         </button>
       </div>
     </div>
