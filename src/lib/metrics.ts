@@ -135,7 +135,7 @@ export async function getMetricsSnapshot(): Promise<MetricsSnapshot> {
     const counterKeys = [
       'generate_total', 'generate_cached', 'generate_fresh',
       'battle_total', 'battle_cached',
-      'share_twitter', 'share_farcaster', 'share_clipboard',
+      'share_twitter', 'share_farcaster', 'share_clipboard', 'share_auto_copy',
       'error_api', 'error_rate_limit', 'error_invalid_address',
       'error_no_transactions', 'error_empty_wallet',
       'funnel_landing', 'funnel_input_focus', 'funnel_generate_start',

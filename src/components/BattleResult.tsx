@@ -1,22 +1,24 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { BattleResponse, BattleFighter, MatchupAdvantage } from '@/lib/types';
 import { CLASS_THEMES } from '@/styles/themes';
-import { shortenAddress } from '@/lib/format-utils';
 import { trackEvent } from '@/lib/analytics';
-import { appendUtmToUrl } from '@/lib/utm';
 import { isKoreanLocale } from '@/lib/locale';
+import {
+  openTwitterIntent,
+  copyToClipboard,
+  buildBattleShareText,
+  buildBattleTwitterUrl,
+  buildBattleCopyUrl,
+  getDisplayName,
+} from '@/lib/share-utils';
 import AchievementRow from './AchievementRow';
 import { PixelCharacter } from './pixel-sprites';
 
 interface BattleResultProps {
   readonly data: BattleResponse;
   readonly onRematch: () => void;
-}
-
-function getDisplayName(fighter: BattleFighter): string {
-  return fighter.ensName ?? shortenAddress(fighter.address);
 }
 
 function getAdvantageLabel(advantage: MatchupAdvantage): string {
@@ -35,39 +37,12 @@ function getAdvantageColor(advantage: MatchupAdvantage): string {
   }
 }
 
-function buildBattleShareText(data: BattleResponse): string {
-  const winner = data.result.fighters[data.result.winner];
-  const loser = data.result.fighters[data.result.winner === 0 ? 1 : 0];
-  const winnerName = getDisplayName(winner);
-  const loserName = getDisplayName(loser);
-  if (isKoreanLocale()) {
-    return `\u2694\uFE0F \uC9C0\uAC11 \uBC30\uD2C0!\n${winner.class.name} (${winnerName})\uC774 ${loser.class.name} (${loserName})\uC744 \uACA9\uD30C\n${data.result.totalTurns}\uD134 \u2014 HP ${data.result.winnerHpPercent}% \uB0A8\uC74C\n${winner.class.name} vs ${loser.class.name} \u2014 \uB204\uAC00 \uC774\uAE38\uAE4C?`;
-  }
-  return `\u2694\uFE0F Wallet Battle!\n${winner.class.name} (${winnerName}) defeated ${loser.class.name} (${loserName})\n${data.result.totalTurns} turns \u2014 ${data.result.winnerHpPercent}% HP left\n${winner.class.name} vs ${loser.class.name} \u2014 who would win?`;
-}
-
-function buildBattleShareUrl(data: BattleResponse): string {
-  if (typeof window === 'undefined') return '';
-  const f0 = data.result.fighters[0].address;
-  const f1 = data.result.fighters[1].address;
-  return `${window.location.origin}/battle/${f0}/${f1}?n=${data.result.nonce}`;
-}
-
-function buildRematchUrl(data: BattleResponse): string {
-  if (typeof window === 'undefined') return '';
-  const f0 = data.result.fighters[0].address;
-  const f1 = data.result.fighters[1].address;
-  return `${window.location.origin}/battle/${f0}/${f1}`;
-}
-
 function FighterCard({
   fighter,
-  index,
   isWinner,
   advantage,
 }: {
   readonly fighter: BattleFighter;
-  readonly index: 0 | 1;
   readonly isWinner: boolean;
   readonly advantage: MatchupAdvantage;
 }) {
@@ -147,111 +122,64 @@ function FighterCard({
 
 export default function BattleResultDisplay({ data, onRematch }: BattleResultProps) {
   const [copied, setCopied] = useState(false);
-  const [discordCopied, setDiscordCopied] = useState(false);
-  const [kakaoTalkCopied, setKakaoTalkCopied] = useState(false);
+  const [autoCopyToast, setAutoCopyToast] = useState(false);
   const { result } = data;
   const winner = result.fighters[result.winner];
   const winnerTheme = CLASS_THEMES[winner.class.id];
+  const kr = isKoreanLocale();
 
   const shareText = buildBattleShareText(data);
-  const baseShareUrl = buildBattleShareUrl(data);
+
+  // Auto-copy challenge link on mount
+  useEffect(() => {
+    const url = buildBattleCopyUrl(data);
+    const fullText = `${shareText}\n${url}`;
+    copyToClipboard(fullText).then((ok) => {
+      if (ok) {
+        trackEvent('share_click', { platform: 'auto_copy', context: 'battle' });
+        setAutoCopyToast(true);
+        setTimeout(() => setAutoCopyToast(false), 2000);
+      }
+    });
+  // Run only once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleTwitter = useCallback(() => {
-    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'twitter', utm_medium: 'social', utm_campaign: 'battle' });
+    const url = buildBattleTwitterUrl(data);
     trackEvent('share_click', { platform: 'twitter', context: 'battle' });
-    const params = new URLSearchParams({ text: shareText, url });
-    window.open(
-      `https://twitter.com/intent/tweet?${params.toString()}`,
-      '_blank',
-      'noopener,noreferrer',
-    );
-  }, [shareText, baseShareUrl]);
-
-  const handleFarcaster = useCallback(() => {
-    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'farcaster', utm_medium: 'social', utm_campaign: 'battle' });
-    trackEvent('share_click', { platform: 'farcaster', context: 'battle' });
-    const fullText = `${shareText}\n${url}`;
-    const params = new URLSearchParams({ text: fullText });
-    window.open(
-      `https://warpcast.com/~/compose?${params.toString()}`,
-      '_blank',
-      'noopener,noreferrer',
-    );
-  }, [shareText, baseShareUrl]);
-
-  const handleTelegram = useCallback(() => {
-    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'telegram', utm_medium: 'social', utm_campaign: 'battle' });
-    trackEvent('share_click', { platform: 'telegram', context: 'battle' });
-    const params = new URLSearchParams({ url, text: shareText });
-    window.open(
-      `https://t.me/share/url?${params.toString()}`,
-      '_blank',
-      'noopener,noreferrer',
-    );
-  }, [shareText, baseShareUrl]);
-
-  const handleKakaoTalk = useCallback(async () => {
-    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'kakaotalk', utm_medium: 'social', utm_campaign: 'battle' });
-    trackEvent('share_click', { platform: 'kakaotalk', context: 'battle' });
-    try {
-      await navigator.clipboard.writeText(`${shareText}\n${url}`);
-      setKakaoTalkCopied(true);
-      setTimeout(() => setKakaoTalkCopied(false), 2000);
-    } catch {
-      // Clipboard API may fail in some environments
-    }
-  }, [shareText, baseShareUrl]);
-
-  const handleDiscord = useCallback(async () => {
-    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'discord', utm_medium: 'social', utm_campaign: 'battle' });
-    trackEvent('share_click', { platform: 'discord', context: 'battle' });
-    try {
-      await navigator.clipboard.writeText(`${shareText}\n${url}`);
-      setDiscordCopied(true);
-      setTimeout(() => setDiscordCopied(false), 2000);
-    } catch {
-      // Clipboard API may fail in some environments
-    }
-  }, [shareText, baseShareUrl]);
+    openTwitterIntent(shareText, url);
+  }, [shareText, data]);
 
   const handleCopy = useCallback(async () => {
-    const url = appendUtmToUrl(baseShareUrl, { utm_source: 'copy', utm_medium: 'clipboard', utm_campaign: 'battle' });
+    const url = buildBattleCopyUrl(data);
     trackEvent('share_click', { platform: 'copy', context: 'battle' });
-    try {
-      await navigator.clipboard.writeText(`${shareText}\n${url}`);
+    const ok = await copyToClipboard(`${shareText}\n${url}`);
+    if (ok) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard API may fail in some environments
     }
-  }, [shareText, baseShareUrl]);
-
-  const handleDownloadCard = useCallback(async () => {
-    trackEvent('battle_card_download');
-    const f0 = data.result.fighters[0].address;
-    const f1 = data.result.fighters[1].address;
-    const url = `/api/card/battle/${f0}/${f1}?n=${data.result.nonce}`;
-    try {
-      const response = await fetch(url);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = `ethrpg-battle-${shortenAddress(f0)}-vs-${shortenAddress(f1)}.png`;
-      link.click();
-      URL.revokeObjectURL(blobUrl);
-    } catch {
-      // Download may fail in some environments
-    }
-  }, [data]);
+  }, [shareText, data]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      {/* Auto-copy toast */}
+      {autoCopyToast && (
+        <div
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-sm font-medium animate-fade-in-up"
+          style={{
+            backgroundColor: 'var(--color-accent-gold)',
+            color: '#000',
+          }}
+        >
+          {kr ? '도전 링크가 복사됐어!' : 'Challenge link copied!'}
+        </div>
+      )}
+
       {/* Fighter cards side by side */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <FighterCard
           fighter={result.fighters[0]}
-          index={0}
           isWinner={result.winner === 0}
           advantage={result.matchup.fighter0Advantage}
         />
@@ -265,7 +193,6 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
         </div>
         <FighterCard
           fighter={result.fighters[1]}
-          index={1}
           isWinner={result.winner === 1}
           advantage={result.matchup.fighter1Advantage}
         />
@@ -273,7 +200,7 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
 
       {/* Winner banner */}
       <div
-        className="text-center rounded-xl p-6 mb-6"
+        className="text-center rounded-xl p-6 mb-4"
         style={{
           background: `linear-gradient(135deg, ${winnerTheme.primary}15 0%, transparent 50%, ${winnerTheme.primary}15 100%)`,
           border: `1px solid ${winnerTheme.primary}40`,
@@ -296,85 +223,57 @@ export default function BattleResultDisplay({ data, onRematch }: BattleResultPro
         </p>
       </div>
 
-      {/* Share + Rematch buttons */}
-      <div className="flex flex-col items-center gap-3">
-        <div className="flex items-center justify-center gap-3 flex-wrap">
+      {/* Share block — gold border, prominent */}
+      <div
+        className="rounded-xl p-4 mb-4"
+        style={{
+          border: '1px solid var(--color-accent-gold)',
+          background: 'rgba(244, 196, 48, 0.05)',
+        }}
+      >
+        <div className="flex flex-col gap-3">
+          {/* Primary: Share Victory (Twitter, gold, full width) */}
           <button
             type="button"
-            onClick={onRematch}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer hover:brightness-110"
+            onClick={handleTwitter}
+            className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg text-sm font-bold transition-colors cursor-pointer hover:brightness-110 focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
             style={{
               backgroundColor: 'var(--color-accent-gold)',
               color: '#000',
             }}
           >
-            <span aria-hidden="true">{'\u2694\uFE0F'}</span>
-            <span>Rematch</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDownloadCard}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
-            <span aria-hidden="true">{'\uD83D\uDCF7'}</span>
-            <span>Battle Card</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleTwitter}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
+            <span aria-hidden="true">{'\uD83C\uDFC6'}</span>
+            <span>{kr ? '승리 공유' : 'Share Victory'}</span>
             <span aria-hidden="true">&#x1D54F;</span>
-            <span>Twitter</span>
           </button>
 
-          <button
-            type="button"
-            onClick={handleFarcaster}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
-            <span aria-hidden="true">&#x1F7E3;</span>
-            <span>Farcaster</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleTelegram}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
-            <span aria-hidden="true">{'\u2708\uFE0F'}</span>
-            <span>Telegram</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleKakaoTalk}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
-            <span aria-hidden="true">{'\uD83D\uDCAC'}</span>
-            <span>{kakaoTalkCopied ? 'Copied!' : 'KakaoTalk'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDiscord}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
-          >
-            <span aria-hidden="true">{'\uD83C\uDFAE'}</span>
-            <span>{discordCopied ? 'Copied!' : 'Discord'}</span>
-          </button>
-
+          {/* Secondary: Copy Challenge Link */}
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors hover:bg-bg-secondary cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors hover:brightness-110 cursor-pointer focus:ring-2 focus:ring-accent-gold/50 focus:outline-none"
+            style={{
+              backgroundColor: 'var(--color-bg-tertiary)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
           >
             <span aria-hidden="true">&#x1F4CB;</span>
-            <span>{copied ? 'Copied!' : 'Copy Link'}</span>
+            <span>{copied ? (kr ? '복사됨!' : 'Copied!') : (kr ? '도전 링크 복사' : 'Copy Challenge Link')}</span>
           </button>
         </div>
+      </div>
+
+      {/* Rematch + New Battle row */}
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={onRematch}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-bg-tertiary text-white text-sm font-medium transition-colors cursor-pointer hover:bg-bg-secondary"
+        >
+          <span aria-hidden="true">{'\u2694\uFE0F'}</span>
+          <span>Rematch</span>
+        </button>
       </div>
     </div>
   );
